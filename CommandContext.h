@@ -1,6 +1,9 @@
 #ifndef COMMANDCONTEXT_H
 #define COMMANDCONTEXT_H
 
+#include <cstdio>
+#include <QTextStream>
+
 class CommandContext {
 public:
     QTextStream out{stdout};

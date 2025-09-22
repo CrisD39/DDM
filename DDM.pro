@@ -16,6 +16,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    BaseCommand.h \
     CommandContext.h \
+    CommandParser.h \
     CommandRegistry.h \
-    ICommand.h
+    EchoCommand.h \
+    ICommand.h \
+    IInputParser.h

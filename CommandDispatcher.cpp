@@ -1,8 +1,31 @@
+#include <QObject>
+#include <QString>
+#include "ICommand.h"
+#include <CommandRegistry.h>
+#include <CommandContext.h>
+#include "IInputParser.h"
+
 class CommandDispatcher : public QObject {
     Q_OBJECT
 public:
     CommandDispatcher(CommandRegistry* reg, IInputParser* parser, QObject* p=nullptr)
         : QObject(p), reg_(reg), parser_(parser) {}
+
+signals:
+    void quitRequested();
+
+private:
+    void printHelp() {
+        ctx_.out << "Comandos disponibles:\n";
+        for (auto& c : reg_->all())
+            ctx_.out << "  " << c->getName() << " - " << c->getDescription() << "\n";
+        ctx_.out << "  help, salir\n";
+        ctx_.out.flush();
+    }
+
+    CommandRegistry* reg_;
+    IInputParser*    parser_;
+    CommandContext   ctx_;   // stdout, stderr y servicios compartidos
 
 public slots:
     void onLine(const QString& line) {
@@ -32,7 +55,7 @@ public slots:
         }
 
         // 4) Ejecución (Command)
-        CommandResult res = cmd->execute(ctx_, inv);
+        CommandResult res = cmd->execute(inv, ctx_);
 
         // 5) Salida
         if (!res.message.isEmpty()) {
@@ -41,19 +64,4 @@ public slots:
         }
     }
 
-signals:
-    void quitRequested();
-
-private:
-    void printHelp() {
-        ctx_.out << "Comandos disponibles:\n";
-        for (auto& c : reg_->all())
-            ctx_.out << "  " << c->name() << " - " << c->description() << "\n";
-        ctx_.out << "  help, salir\n";
-        ctx_.out.flush();
-    }
-
-    CommandRegistry* reg_;
-    IInputParser*    parser_;
-    CommandContext   ctx_;   // stdout, stderr y servicios compartidos
 };
