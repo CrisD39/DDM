@@ -1,14 +1,15 @@
-#ifndef COMMANDCONTEXT_H
-#define COMMANDCONTEXT_H
-
-#include <cstdio>
+// CommandContext.h
+#pragma once
 #include <QTextStream>
+#include <QStringConverter>   // Qt 6.x
 
-class CommandContext {
-public:
-    QTextStream out{stdout};
-    QTextStream err{stderr};
-    // Agregá aquí servicios compartidos (settings, db, logger, etc.)
+struct CommandContext {
+    CommandContext() : out(stdout), err(stderr) {
+        out.setEncoding(QStringConverter::Utf8);
+        err.setEncoding(QStringConverter::Utf8);
+    }
+    QTextStream out;
+    QTextStream err;
+
+    int echoCounter = 1; // dejalo si lo usás; agregá aquí cualquier otro estado que ya tenías
 };
-
-#endif // COMMANDCONTEXT_H
