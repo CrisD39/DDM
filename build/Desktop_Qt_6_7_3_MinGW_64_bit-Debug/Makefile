@@ -86,8 +86,6 @@ Makefile: ../../DDM.pro C:/Qt/6.7.3/mingw_64/mkspecs/win32-g++/qmake.conf C:/Qt/
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_concurrent.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_concurrent_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core.pri \
-		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core5compat.pri \
-		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core5compat_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_dbus.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_dbus_private.pri \
@@ -213,8 +211,6 @@ Makefile: ../../DDM.pro C:/Qt/6.7.3/mingw_64/mkspecs/win32-g++/qmake.conf C:/Qt/
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_remoteobjectsqml_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_repparser.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_repparser_private.pri \
-		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_shadertools.pri \
-		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_shadertools_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_sql.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_sql_private.pri \
 		C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_svg.pri \
@@ -282,8 +278,6 @@ C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_ext_libpng.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_concurrent.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_concurrent_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core.pri:
-C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core5compat.pri:
-C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core5compat_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_core_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_dbus.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_dbus_private.pri:
@@ -409,8 +403,6 @@ C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_remoteobjectsqml.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_remoteobjectsqml_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_repparser.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_repparser_private.pri:
-C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_shadertools.pri:
-C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_shadertools_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_sql.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_sql_private.pri:
 C:/Qt/6.7.3/mingw_64/mkspecs/modules/qt_lib_svg.pri:

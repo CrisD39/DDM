@@ -41,12 +41,10 @@ int main(int argc, char* argv[]) {
     CommandRegistry registry;
     CommandParser parser;
 
-    // registrar comandos
     registry.registerCommand(QSharedPointer<ICommand>(new EchoCommand(ctx)));
 
     CommandDispatcher dispatcher(&registry, &parser, ctx);
 
-    // hilo para lectura de stdin (opcional)
     QThread ioThread;
     StdinReader reader;
     reader.moveToThread(&ioThread);
