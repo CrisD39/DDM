@@ -40,7 +40,7 @@ public slots:
 
         // 2) Comandos internos básicos
         if (inv.name.compare("exit", Qt::CaseInsensitive)==0) {
-            emit quitRequested();
+            // emit quitRequested();
             return;
         }
         if (inv.name == "help") { printHelp(); return; }

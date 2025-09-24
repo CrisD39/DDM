@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     QObject::connect(&reader, &StdinReader::lineRead, &dispatcher, &CommandDispatcher::onLine);
 
     // Si un comando pide salir → cerrar app
-    QObject::connect(&dispatcher, &CommandDispatcher::quitRequested, &app, &QCoreApplication::quit);
+    // QObject::connect(&dispatcher, &CommandDispatcher::quitRequested, &app, &QCoreApplication::quit);
 
     QObject::connect(&reader, &StdinReader::finished, &ioThread, &QThread::quit);
 
