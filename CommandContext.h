@@ -2,6 +2,19 @@
 #pragma once
 #include <QTextStream>
 #include <QStringConverter>   // Qt 6.x
+#include <QList>
+#include <QString>
+
+// Dominio de tracks
+enum class TrackType { Friendly, Enemy, Unknown };
+
+struct Track {
+    int id = 0;
+    TrackType type = TrackType::Unknown;
+    QString identity; // de flags -s|-a|-b (opcional)
+    double x = 0.0;
+    double y = 0.0;
+};
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -11,5 +24,18 @@ struct CommandContext {
     QTextStream out;
     QTextStream err;
 
-    int echoCounter = 1; // dejalo si lo usás; agregá aquí cualquier otro estado que ya tenías
+    // Evita ejecutar dos veces el mismo comando consecutivo (anti-replay)
+    QString lastCommandLine;
+    quint64 lastCommandHash = 0;
+
+    // Contador de líneas/comandos: "1 echo list", "2 echo add ..."
+    int commandCounter = 1;
+
+    // Estado del dominio
+    QList<Track> tracks;
+    int nextTrackId = 1;
+
+    // "center" global
+    double centerX = 0.0;
+    double centerY = 0.0;
 };

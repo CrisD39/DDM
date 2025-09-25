@@ -1,4 +1,5 @@
-QT += core
+QT += core \
+    widgets
 CONFIG += c++17 cmdline
 
 SOURCES += \
@@ -10,7 +11,9 @@ HEADERS += \
     CommandContext.h \
     CommandParser.h \
     CommandRegistry.h \
+    ConsoleUtils.h \
     EchoCommand.h \
     ICommand.h \
     IInputParser.h \
-    CommandDispatcher.h
+    CommandDispatcher.h \
+    ansi.h
