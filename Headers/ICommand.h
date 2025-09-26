@@ -1,3 +1,8 @@
+/*
+    Interfaz común de comandos (`getName()`, `getDescription()`, `usage()`,
+    `execute(...)`), más tipos `CommandResult` y `CommandInvocation`.
+*/
+
 #ifndef ICOMMAND_H
 #define ICOMMAND_H
 
@@ -31,8 +36,5 @@ public:
     virtual CommandResult execute(const CommandInvocation& inv, CommandContext& ctx) const = 0;
 
 };
-
-
-
 
 #endif // ICOMMAND_H

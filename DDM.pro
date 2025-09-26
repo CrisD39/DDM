@@ -1,19 +1,11 @@
-QT += core \
-    widgets
-CONFIG += c++17 cmdline
 
-SOURCES += \
-    CommandDispatcher.cpp \
-    main.cpp
+QT += core
+CONFIG += console c++17
+TEMPLATE = app
+TARGET = DDM
 
-HEADERS += \
-    BaseCommand.h \
-    CommandContext.h \
-    CommandParser.h \
-    CommandRegistry.h \
-    ConsoleUtils.h \
-    EchoCommand.h \
-    ICommand.h \
-    IInputParser.h \
-    CommandDispatcher.h \
-    ansi.h
+INCLUDEPATH += Headers
+
+SOURCES +=     Sources/main.cpp     Sources/CommandDispatcher.cpp     Sources/Commands/AddCommand.cpp     Sources/Commands/DeleteCommand.cpp     Sources/Commands/CenterCommand.cpp     Sources/Commands/ListCommand.cpp
+
+HEADERS +=     Headers/ICommand.h     Headers/CommandContext.h     Headers/CommandRegistry.h     Headers/IInputParser.h     Headers/CommandParser.h     Headers/ConsoleUtils.h     Headers/ansi.h     Headers/commanddispatcher.h     Headers/Commands/AddCommand.h     Headers/Commands/DeleteCommand.h     Headers/Commands/CenterCommand.h     Headers/Commands/ListCommand.h

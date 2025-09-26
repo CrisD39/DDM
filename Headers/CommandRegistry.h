@@ -1,3 +1,7 @@
+/*
+    Registro de comandos (`registerCommand`, `find`, `names`, `all`) usando `QSharedPointer<ICommand>`.
+*/
+
 #ifndef COMMANDREGISTRY_H
 #define COMMANDREGISTRY_H
 #include <QObject>

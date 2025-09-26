@@ -1,4 +1,6 @@
-// Ansi.h
+/*
+    Utilidades de color ANSI para la consola (códigos de escape).
+*/
 #pragma once
 namespace Ansi {
 inline constexpr const char* reset  = "\x1b[0m";

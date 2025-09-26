@@ -1,3 +1,7 @@
+/*
+    Helpers para prefijos/formatos de salida en consola (p. ej., OK/ERROR con color).
+*/
+
 #pragma once
 #include <QTextStream>
 

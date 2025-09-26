@@ -1,4 +1,7 @@
-// CommandDispatcher.cpp
+/*
+    Interfaz/implementación del despachador: recibe líneas, invoca el parser y
+    ejecuta el comando correspondiente; maneja `help` y `exit`.
+*/
 #include "CommandDispatcher.h"
 #include "CommandRegistry.h"
 #include "IInputParser.h"
@@ -59,10 +62,10 @@ void CommandDispatcher::onLine(const QString& line) {
         ctx_.out << Ansi::cyan
                  << "Comandos:\n"
                  << "  help, exit/salir\n"
-                 << "  echo add <-s|-a|-b> <-f|-e|-u> <x> <y>\n"
-                 << "  echo delete <id>\n"
-                 << "  echo center <x> <y>\n"
-                 << "  echo list\n"
+                 << "  add <-s|-a|-b> <-f|-e|-u> <x> <y>\n"
+                 << "  delete <id>\n"
+                 << "  center <x> <y>\n"
+                 << "  list\n"
                  << Ansi::reset;
         ctx_.out.flush();
         return;

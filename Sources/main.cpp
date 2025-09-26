@@ -9,7 +9,10 @@
 #include "CommandDispatcher.h"
 #include "CommandRegistry.h"
 #include "CommandParser.h"
-#include "EchoCommand.h"
+#include "Commands/AddCommand.h"
+#include "Commands/DeleteCommand.h"
+#include "Commands/CenterCommand.h"
+#include "Commands/ListCommand.h"
 #include "CommandContext.h"
 #ifdef Q_OS_WIN
 #endif
@@ -67,9 +70,11 @@ int main(int argc, char* argv[]) {
     CommandParser parser;
 
     // registrar comandos
-    registry.registerCommand(QSharedPointer<ICommand>(new EchoCommand(ctx)));
-
-    CommandDispatcher dispatcher(&registry, &parser, ctx);
+    registry.registerCommand(QSharedPointer<ICommand>(new AddCommand()));
+    registry.registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
+    registry.registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
+    registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
+CommandDispatcher dispatcher(&registry, &parser, ctx);
 
     // hilo para lectura de stdin (opcional)
     QThread ioThread;

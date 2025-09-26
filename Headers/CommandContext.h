@@ -1,4 +1,7 @@
-// CommandContext.h
+/*
+  Estado global y I/O: streams `out/err`, contador de comandos;
+    modelo de dominio (lista de `Track`, `nextTrackId`, `centerX/centerY`).
+*/
 #pragma once
 #include <QTextStream>
 #include <QStringConverter>   // Qt 6.x
