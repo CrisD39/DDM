@@ -2,12 +2,13 @@
 #define FCDECODIFICATOR_H
 
 #include <IDecodificator.h>
+#include <QByteArray>
 
 class FCDecodificator: public IDecodificator
 {
 public:
     FCDecodificator();
-    void decodificate(QByteArray message) override;
+    void decode(QByteArray message) override;
 
     bitArrayToByteArray(const QBitArray bitArray);
 private:
@@ -57,6 +58,8 @@ private:
     QString mikSlave;
 
     QJsonObject jsonFile;
+
+    int currentBit;
 };
 
 #endif // FCDECODIFICATOR_H
