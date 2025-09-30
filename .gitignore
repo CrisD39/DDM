@@ -1,0 +1,42 @@
+# Qt / C++ build artifacts
+build/
+cmake-build-*/
+Desktop_Qt_*/
+*.o
+*.obj
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.exp
+*.pdb
+*.ilk
+/build/*
+
+# qmake / Qt Creator
+*.pro.user*
+*.qbs.user*
+*.qbs.user.*
+*.qmake.stash
+Makefile*
+moc_*
+ui_*
+qrc_*
+*.autosave
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+
+# Logs / misc
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

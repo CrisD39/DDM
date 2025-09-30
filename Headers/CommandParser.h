@@ -1,4 +1,7 @@
-// CommandParser.h
+/*
+    Implementa `IInputParser`: tokeniza la línea de entrada (soporta comillas),
+    llena `CommandInvocation` con nombre y args.
+*/
 #ifndef COMMANDPARSER_H
 #define COMMANDPARSER_H
 

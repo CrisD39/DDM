@@ -1,24 +1,40 @@
 QT += core
-CONFIG += c++17 cmdline
+CONFIG += console c++17
+TEMPLATE = app
+TARGET = DDM
 
 SOURCES += \
-    CommandDispatcher.cpp \
-    fcdecodificator.cpp \
-    main.cpp
+    Sources/main.cpp \
+    Sources/fcdecodificator.cpp \
+    Sources/CommandDispatcher.cpp \
+    Sources/Commands/AddCommand.cpp \
+    Sources/Commands/DeleteCommand.cpp \
+    Sources/Commands/CenterCommand.cpp \
+    Sources/Commands/ListCommand.cpp
 
 HEADERS += \
     BaseCommand.h \
-    CommandContext.h \
-    CommandParser.h \
-    CommandRegistry.h \
     EchoCommand.h \
-    ICommand.h \
     IDecodificator.h \
-    IInputParser.h \
-    CommandDispatcher.h \
-    fcdecodificator.h
+    fcdecodificator.h \
+
+    Headers/ICommand.h \
+    Headers/CommandContext.h \ 
+    Headers/CommandRegistry.h \
+    Headers/IInputParser.h \
+    Headers/CommandParser.h \
+    Headers/ConsoleUtils.h \
+    Headers/ansi.h \
+    Headers/commanddispatcher.h \
+    Headers/Commands/AddCommand.h \
+    Headers/Commands/DeleteCommand.h \
+    Headers/Commands/CenterCommand.h \
+    Headers/Commands/ListCommand.h
 
 DISTFILES +=
 
 RESOURCES += \
     resources.qrc
+
+INCLUDEPATH += Headers                           
+                                                          
