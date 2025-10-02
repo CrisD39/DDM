@@ -7,7 +7,7 @@ class IDecodificator: public QObject{
     Q_OBJECT
 
 public:
-    virtual void decode(QByteArray message) const = 0;
+    virtual void decode(QByteArray message) = 0;
 
 protected:
     QByteArray decodificatedMessage;

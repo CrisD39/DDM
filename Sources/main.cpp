@@ -1,3 +1,5 @@
+#include "Encoderlpd.h"
+#include "clientsocket.h"
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QThread>
@@ -14,6 +16,7 @@
 #include "Commands/CenterCommand.h"
 #include "Commands/ListCommand.h"
 #include "CommandContext.h"
+#include "QTimer"
 #ifdef Q_OS_WIN
 #endif
 #include <windows.h>
@@ -88,6 +91,19 @@ int main(int argc, char* argv[]) {
     QTextStream out(stdout);
     ctx.out << ANSI_YELLOW << "Consola lista (help | exit)" << ANSI_RESET << "\n";
     ctx.out.flush();
+
+    encoderLPD *encoder = new encoderLPD();
+
+    clientSocket *socket = new clientSocket(nullptr);
+
+    QTimer timer;
+
+    QObject::connect(&timer, &QTimer::timeout, &timer, [&ctx, encoder, socket]() {
+        QByteArray message = encoder->buildFullMessage(ctx);
+        socket->sendMessage(message);
+    });
+
+    timer.start(1000);
 
     ioThread.start();
     const int code = app.exec();

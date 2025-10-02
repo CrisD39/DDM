@@ -8,10 +8,10 @@ FCDecodificator::FCDecodificator() {}
 
 void FCDecodificator::decode(QByteArray message)
 {
-    currentBit = 0;
-    *inComingMessage = byteArrayToBitArray(message);
+    // currentBit = 0;
+    // *inComingMessage = byteArrayToBitArray(message);
 
-    decomsg1();
+    // decomsg1();
 }
 
 

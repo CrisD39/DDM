@@ -1,25 +1,30 @@
-QT += core
+QT += core \
+    widgets network
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
 
 SOURCES += \
+    Sources/Encoderlpd.cpp \
     Sources/main.cpp \
-    Sources/fcdecodificator.cpp \
+    # Sources/fcdecodificator.cpp \
     Sources/CommandDispatcher.cpp \
     Sources/Commands/AddCommand.cpp \
     Sources/Commands/DeleteCommand.cpp \
     Sources/Commands/CenterCommand.cpp \
-    Sources/Commands/ListCommand.cpp
+    Sources/Commands/ListCommand.cpp \
+    clientsocket.cpp \
+    configuration.cpp
 
 HEADERS += \
-    BaseCommand.h \
-    EchoCommand.h \
-    IDecodificator.h \
-    fcdecodificator.h \
-
+    Headers/BaseCommand.h \
+    Headers/EchoCommand.h \
+    Headers/IDecodificator.h \
+    # Headers/fcdecodificator.h \
     Headers/ICommand.h \
-    Headers/CommandContext.h \ 
+    Headers/CommandContext.h \
+    Headers/Encoderlpd.h \
+    clientsocket.h \
     Headers/CommandRegistry.h \
     Headers/IInputParser.h \
     Headers/CommandParser.h \
@@ -29,9 +34,8 @@ HEADERS += \
     Headers/Commands/AddCommand.h \
     Headers/Commands/DeleteCommand.h \
     Headers/Commands/CenterCommand.h \
-    Headers/Commands/ListCommand.h
-
-DISTFILES +=
+    Headers/Commands/ListCommand.h \
+    configuration.h
 
 RESOURCES += \
     resources.qrc
