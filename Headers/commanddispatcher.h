@@ -4,6 +4,11 @@
 #include <QString>
 
 class CommandRegistry;
+/*
+    Interfaz/implementación del despachador: recibe líneas, invoca el parser
+    y ejecuta el comando correspondiente; maneja `help` y `exit`.
+*/
+
 class IInputParser;
 class CommandContext;
 

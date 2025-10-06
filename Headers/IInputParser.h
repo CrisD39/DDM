@@ -1,4 +1,7 @@
-// IInputParser.h
+/*
+    Interfaz de parser de línea (`parse(line, CommandInvocation&, err)`);
+    desacopla el tokenizer del dispatcher.
+*/
 #ifndef IINPUTPARSER_H
 #define IINPUTPARSER_H
 

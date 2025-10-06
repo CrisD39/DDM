@@ -9,8 +9,8 @@ class FCDecodificator: public IDecodificator
 public:
     FCDecodificator();
     void decode(QByteArray message) override;
+    //bitArrayToByteArray(const QBitArray bitArray);
 
-    bitArrayToByteArray(const QBitArray bitArray);
 private:
     void decomsg1();
     void decomsg2();
@@ -43,8 +43,8 @@ private:
     QVector<bool> quickEntryKeyboardMaster;
     QVector<bool> centerMaster;
     QVector<bool> icmMaster;
-    QQueue<RollingSteps> rollingBallMaster;
-    QQueue<RollingSteps> rollingBallSlave;
+    // QQueue<RollingSteps> rollingBallMaster;
+    // QQueue<RollingSteps> rollingBallSlave;
     QString overlayMaster;
     QString mikMaster;
 
@@ -57,7 +57,7 @@ private:
     QString overlaySlave;
     QString mikSlave;
 
-    QJsonObject jsonFile;
+    // QJsonObject jsonFile;
 
     int currentBit;
 };

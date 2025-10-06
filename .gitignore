@@ -39,4 +39,8 @@ install_manifest.txt
 .DS_Store
 Thumbs.db
 .idea/
+<<<<<<< HEAD
 .vscode/
+=======
+.vscode/
+>>>>>>> jotaBranch
