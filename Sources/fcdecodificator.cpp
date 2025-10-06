@@ -154,8 +154,8 @@ void FCDecodificator::decomsg1()
 
  void FCDecodificator::decomsg4()
  {
-     word4 = WORD_SIZE * 3;
-     currentBit = word3;
+     int word4 = WORD_SIZE * 3;
+     currentBit = word4;
      // --- QEK Master (bits 23–16) ---
      QString qekMasterBits;
      for (int i = 0; i <= 7; i++) {

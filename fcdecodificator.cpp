@@ -22,6 +22,8 @@ void FCDecodificator::decode(QByteArray message)
 
 void FCDecodificator::decomsg1()
     {
+        int word1 = WORD_SIZE * 0;
+        currentBit = word1;
         // --- RANGE SCALE (bits 0-2) ---
         QString rangeBits;
         for (int i = 0; i <= 2; ++i) {

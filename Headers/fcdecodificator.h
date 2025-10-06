@@ -3,6 +3,7 @@
 
 #include <IDecodificator.h>
 #include <QByteArray>
+#include <QJsonObject>
 
 class FCDecodificator: public IDecodificator
 {
@@ -57,7 +58,7 @@ private:
     QString overlaySlave;
     QString mikSlave;
 
-    // QJsonObject jsonFile;
+    QJsonObject jsonFile;
 
     int currentBit;
 };

@@ -7,7 +7,7 @@ TARGET = DDM
 SOURCES += \
     Sources/Encoderlpd.cpp \
     Sources/main.cpp \
-    # Sources/fcdecodificator.cpp \
+    Sources/fcdecodificator.cpp \
     Sources/CommandDispatcher.cpp \
     Sources/Commands/AddCommand.cpp \
     Sources/Commands/DeleteCommand.cpp \
@@ -20,7 +20,7 @@ HEADERS += \
     Headers/BaseCommand.h \
     Headers/EchoCommand.h \
     Headers/IDecodificator.h \
-    # Headers/fcdecodificator.h \
+    Headers/fcdecodificator.h \
     Headers/ICommand.h \
     Headers/CommandContext.h \
     Headers/Encoderlpd.h \
