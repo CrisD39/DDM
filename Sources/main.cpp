@@ -1,3 +1,5 @@
+#include "Encoderlpd.h"
+#include "clientsocket.h"
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QThread>
@@ -5,6 +7,7 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+#include <stdinreader.h>
 
 #include "CommandDispatcher.h"
 #include "CommandRegistry.h"
@@ -14,6 +17,7 @@
 #include "Commands/CenterCommand.h"
 #include "Commands/ListCommand.h"
 #include "CommandContext.h"
+#include "QTimer"
 #ifdef Q_OS_WIN
 #endif
 #include <windows.h>
@@ -21,23 +25,6 @@
 
 #define ANSI_YELLOW  "\x1b[33m"
 #define ANSI_RESET   "\x1b[0m"
-
-class StdinReader : public QObject {
-    Q_OBJECT
-signals:
-    void lineRead(const QString& line);
-    void finished();
-public slots:
-    void readLoop() {
-        QTextStream in(stdin);
-        while (true) {
-            QString l = in.readLine();
-            if (l.isNull()) break;
-            emit lineRead(l);
-        }
-        emit finished();
-    }
-};
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -52,8 +39,6 @@ static void enableAnsiColorsOnWindows() {
         SetConsoleMode(hErr, mode);
     }
 }
-
-
 
 int main(int argc, char* argv[]) {
 
@@ -74,9 +59,8 @@ int main(int argc, char* argv[]) {
     registry.registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
     registry.registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
     registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-CommandDispatcher dispatcher(&registry, &parser, ctx);
+    CommandDispatcher dispatcher(&registry, &parser, ctx);
 
-    // hilo para lectura de stdin (opcional)
     QThread ioThread;
     StdinReader reader;
     reader.moveToThread(&ioThread);
@@ -90,10 +74,21 @@ CommandDispatcher dispatcher(&registry, &parser, ctx);
     ctx.out << ANSI_YELLOW << "Consola lista (help | exit)" << ANSI_RESET << "\n";
     ctx.out.flush();
 
+    encoderLPD *encoder = new encoderLPD();
+
+    clientSocket *socket = new clientSocket(nullptr);
+
+    QTimer timer;
+
+    QObject::connect(&timer, &QTimer::timeout, &timer, [&ctx, encoder, socket]() {
+        QByteArray message = encoder->buildFullMessage(ctx);
+        socket->sendMessage(message);
+    });
+
+    timer.start(1000);
+
     ioThread.start();
     const int code = app.exec();
     ioThread.wait();
     return code;
 }
-
-#include "main.moc"
