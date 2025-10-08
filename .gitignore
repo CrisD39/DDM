@@ -39,8 +39,31 @@ install_manifest.txt
 .DS_Store
 Thumbs.db
 .idea/
-<<<<<<< HEAD
 .vscode/
-=======
-.vscode/
->>>>>>> jotaBranch
+
+# Ignorar carpetas de salida
+/bin/
+/lib/
+/dist/
+
+# Ignorar archivos de compilación
+*.o
+*.obj
+*.dll
+*.exe
+*.pdb
+*.qrc.dep
+*.moc
+moc_*
+ui_*
+qrc_*
+
+# Ignorar archivos temporales de Qt Creator
+*.pro.user
+*.autosave
+*.qmlc
+*.jsc
+
+# Ignorar carpetas de build de Qt
+/build/
+/build-*/
