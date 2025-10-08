@@ -67,3 +67,7 @@ qrc_*
 # Ignorar carpetas de build de Qt
 /build/
 /build-*/
+
+# Archivos de configuración del entorno Qt Creator
+*.pro.user
+
