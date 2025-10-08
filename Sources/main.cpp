@@ -1,114 +1,162 @@
-#include "Encoderlpd.h"
-#include "clientsocket.h"
+// #include "Encoderlpd.h"
+// #include "clientsocket.h"
+// #include <QCoreApplication>
+// #include <QTextStream>
+// #include <QThread>
+// #include <QObject>
+// #ifdef Q_OS_WIN
+// #include <windows.h>
+// #endif
+
+// #include "CommandDispatcher.h"
+// #include "CommandRegistry.h"
+// #include "CommandParser.h"
+// #include "Commands/AddCommand.h"
+// #include "Commands/DeleteCommand.h"
+// #include "Commands/CenterCommand.h"
+// #include "Commands/ListCommand.h"
+// #include "CommandContext.h"
+// #include "QTimer"
+// #ifdef Q_OS_WIN
+// #endif
+// #include <windows.h>
+
+
+// #define ANSI_YELLOW  "\x1b[33m"
+// #define ANSI_RESET   "\x1b[0m"
+
+// class StdinReader : public QObject {
+//     Q_OBJECT
+// signals:
+//     void lineRead(const QString& line);
+//     void finished();
+// public slots:
+//     void readLoop() {
+//         QTextStream in(stdin);
+//         while (true) {
+//             QString l = in.readLine();
+//             if (l.isNull()) break;
+//             emit lineRead(l);
+//         }
+//         emit finished();
+//     }
+// };
+
+// static void enableAnsiColorsOnWindows() {
+//     DWORD mode = 0;
+//     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+//     if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &mode)) {
+//         mode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+//         SetConsoleMode(hOut, mode);
+//     }
+//     HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+//     if (hErr != INVALID_HANDLE_VALUE && GetConsoleMode(hErr, &mode)) {
+//         mode |= 0x0004;
+//         SetConsoleMode(hErr, mode);
+//     }
+// }
+
+
+
+// int main(int argc, char* argv[]) {
+
+//     #ifdef Q_OS_WIN
+//         enableAnsiColorsOnWindows();
+//         SetConsoleCP(CP_UTF8);
+//         SetConsoleOutputCP(CP_UTF8);
+//     #endif
+
+//     QCoreApplication app(argc, argv);
+
+//     CommandContext ctx;
+//     CommandRegistry registry;
+//     CommandParser parser;
+
+//     // registrar comandos
+//     registry.registerCommand(QSharedPointer<ICommand>(new AddCommand()));
+//     registry.registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
+//     registry.registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
+//     registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
+//     CommandDispatcher dispatcher(&registry, &parser, ctx);
+
+//     QThread ioThread;
+//     StdinReader reader;
+//     reader.moveToThread(&ioThread);
+
+//     QObject::connect(&ioThread, &QThread::started, &reader, &StdinReader::readLoop);
+//     QObject::connect(&reader, &StdinReader::lineRead, &dispatcher, &CommandDispatcher::onLine);
+//     QObject::connect(&dispatcher, &CommandDispatcher::quitRequested, &app, &QCoreApplication::quit);
+//     QObject::connect(&reader, &StdinReader::finished, &ioThread, &QThread::quit);
+
+//     QTextStream out(stdout);
+//     ctx.out << ANSI_YELLOW << "Consola lista (help | exit)" << ANSI_RESET << "\n";
+//     ctx.out.flush();
+
+//     encoderLPD *encoder = new encoderLPD();
+
+//     clientSocket *socket = new clientSocket(nullptr);
+
+//     QTimer timer;
+
+//     QObject::connect(&timer, &QTimer::timeout, &timer, [&ctx, encoder, socket]() {
+//         QByteArray message = encoder->buildFullMessage(ctx);
+//         socket->sendMessage(message);
+//     });
+
+//     timer.start(1000);
+
+//     ioThread.start();
+//     const int code = app.exec();
+//     ioThread.wait();
+//     return code;
+// }
+
+// #include "main.moc"
+
 #include <QCoreApplication>
-#include <QTextStream>
-#include <QThread>
-#include <QObject>
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
+#include "fcdecodificator.h"
 
-#include "CommandDispatcher.h"
-#include "CommandRegistry.h"
-#include "CommandParser.h"
-#include "Commands/AddCommand.h"
-#include "Commands/DeleteCommand.h"
-#include "Commands/CenterCommand.h"
-#include "Commands/ListCommand.h"
-#include "CommandContext.h"
-#include "QTimer"
-#ifdef Q_OS_WIN
-#endif
-#include <windows.h>
-
-
-#define ANSI_YELLOW  "\x1b[33m"
-#define ANSI_RESET   "\x1b[0m"
-
-class StdinReader : public QObject {
-    Q_OBJECT
-signals:
-    void lineRead(const QString& line);
-    void finished();
-public slots:
-    void readLoop() {
-        QTextStream in(stdin);
-        while (true) {
-            QString l = in.readLine();
-            if (l.isNull()) break;
-            emit lineRead(l);
-        }
-        emit finished();
-    }
-};
-
-static void enableAnsiColorsOnWindows() {
-    DWORD mode = 0;
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &mode)) {
-        mode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
-        SetConsoleMode(hOut, mode);
-    }
-    HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
-    if (hErr != INVALID_HANDLE_VALUE && GetConsoleMode(hErr, &mode)) {
-        mode |= 0x0004;
-        SetConsoleMode(hErr, mode);
-    }
-}
-
-
-
-int main(int argc, char* argv[]) {
-
-    #ifdef Q_OS_WIN
-        enableAnsiColorsOnWindows();
-        SetConsoleCP(CP_UTF8);
-        SetConsoleOutputCP(CP_UTF8);
-    #endif
-
+int main(int argc, char *argv[])
+{
     QCoreApplication app(argc, argv);
 
-    CommandContext ctx;
-    CommandRegistry registry;
-    CommandParser parser;
+    // Instancia del decodificador
+    FCDecodificator decoder;
 
-    // registrar comandos
-    registry.registerCommand(QSharedPointer<ICommand>(new AddCommand()));
-    registry.registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
-    registry.registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
-    registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-    CommandDispatcher dispatcher(&registry, &parser, ctx);
+    // Simulamos el mensaje binario "0101001000010000"
+    // (16 bits = 2 bytes)
+    QByteArray message;
 
-    QThread ioThread;
-    StdinReader reader;
-    reader.moveToThread(&ioThread);
+    // Primera línea
+    message.append(char(0b01010010)); // 0x52
+    message.append(char(0b00010000)); // 0x10
+    message.append(char(0b00000000)); // 0x00
+    message.append(char(0b10001000)); // 0x88
 
-    QObject::connect(&ioThread, &QThread::started, &reader, &StdinReader::readLoop);
-    QObject::connect(&reader, &StdinReader::lineRead, &dispatcher, &CommandDispatcher::onLine);
-    QObject::connect(&dispatcher, &CommandDispatcher::quitRequested, &app, &QCoreApplication::quit);
-    QObject::connect(&reader, &StdinReader::finished, &ioThread, &QThread::quit);
+    // Segunda línea (todo ceros)
+    message.append(char(0b00000000)); // 0x00
+    message.append(char(0b00000000)); // 0x00
+    message.append(char(0b00000000)); // 0x00
+    message.append(char(0b00000000)); // 0x00
 
-    QTextStream out(stdout);
-    ctx.out << ANSI_YELLOW << "Consola lista (help | exit)" << ANSI_RESET << "\n";
-    ctx.out.flush();
+    // Tercera línea
+    message.append(char(0b00100101)); // 0x25
+    message.append(char(0b00101000)); // 0x28
+    message.append(char(0b00000000)); // 0x00
+    message.append(char(0b00000000)); // 0x00
 
-    encoderLPD *encoder = new encoderLPD();
+    qDebug() << "Mensaje en hexadecimal:" << message.toHex(' ');
 
-    clientSocket *socket = new clientSocket(nullptr);
 
-    QTimer timer;
+    qDebug() << "Mensaje en hexadecimal:" << message.toHex(' ');
 
-    QObject::connect(&timer, &QTimer::timeout, &timer, [&ctx, encoder, socket]() {
-        QByteArray message = encoder->buildFullMessage(ctx);
-        socket->sendMessage(message);
-    });
 
-    timer.start(1000);
 
-    ioThread.start();
-    const int code = app.exec();
-    ioThread.wait();
-    return code;
+    qDebug() << "Mensaje a decodificar (binario):" << message.toHex(' ');
+
+    // Llamamos a decode() para procesarlo
+    decoder.decode(message);
+
+    return 0;
 }
 
-#include "main.moc"

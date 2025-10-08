@@ -44,19 +44,25 @@
     "4": "RESET_OBM",
     "5": "DATA_REQ"
   },
-  "CENTER_SLAVE_DECODE": {
-    "8": "CU_OR_OFF_CENT",
-    "9": "CU_OR_CENT",
-    "10": "OFF_CENT",
-    "11": "CENT",
-    "12": "RESET_OBM",
-    "13": "DATA_REQ"
+  "DISPLAY_MODE_SLAVE_DECODE": {
+    "32": "CU_OR_OFF_CENT",
+    "33": "CU_OR_CENT",
+    "34": "OFF_CENT",
+    "35": "CENT",
+    "36": "RESET_OBM",
+    "37": "DATA_REQ",
+    "38": "SYST_ALARM",
+    "39": "RANGE_RINGS"
   },
-  "DISPLAY_MODE_DECODE": {
-    "15": "RR",
-    "7": "OWN_CURS",
-    "6": "TM",
-    "14": "SYST_ALARM"
+  "DISPLAY_MODE_MASTER_DECODE": {
+    "24": "CU_OR_OFF_CENT",
+    "25": "CU_OR_CENT",
+    "26": "OFF_CENT",
+    "27": "CENT",
+    "28": "RESET_OBM",
+    "29": "DATA_REQ",
+    "30": "TRUE_MOTION",
+    "31": "OWN_CURSOR"
   },
   "QEK_DECODE": {
     "00000000": "QEK_NONE",

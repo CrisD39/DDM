@@ -14,15 +14,20 @@ FCDecodificator::FCDecodificator() {}
 void FCDecodificator::decode(const QByteArray &message)
 {
     currentBit = 0;
+    readJson();
+    inComingMessage = new QBitArray();
     *inComingMessage = byteArrayToBitArray(message);
 
     decomsg1();
+    decomsg2();
+    decomsg4();
 }
 
 
 // ====================== MENSAJE 1 ======================
 void FCDecodificator::decomsg1()
 {
+    qDebug()<<"decomsg1";
     // --- RANGE SCALE (bits 0-2) ---
     int word1 = WORD_SIZE * 0;
     currentBit = word1;
@@ -37,7 +42,7 @@ void FCDecodificator::decomsg1()
     if (rangeJson.contains(rangeBits)) {
         QString decodedRange = rangeJson[rangeBits].toString();
         this->range = decodedRange.toInt();
-        qDebug() << "[Decodificación] RANGE:" << rangeBits << "→" << decodedRange;
+        qDebug() << "[Decodificación] RANGE:" << rangeBits << ":" << decodedRange;
     }
 
     // --- DISPLAY SELECTION (bits 3-11) ---
@@ -48,9 +53,9 @@ void FCDecodificator::decomsg1()
             QString key = QString::number(currentBit);
             if (displayJson.contains(key)) {
                 QString decoded = displayJson[key].toString();
-                qDebug() << "[Decodificación] DISPLAY SELECTION bit" << currentBit << "→" << decoded;
+                qDebug() << "[Decodificación] DISPLAY SELECTION bit" << currentBit << ":" << decoded;
             }
-            decodedDisplaySelection.append(true);
+            decodedDisplaySelection.append(true); //aca tengo que ver que pongo
         } else {
             decodedDisplaySelection.append(false);
         }
@@ -67,7 +72,7 @@ void FCDecodificator::decomsg1()
             QString key = QString::number(currentBit);
             if (threatJson.contains(key)) {
                 QString decoded = threatJson[key].toString();
-                qDebug() << "[Decodificación] THREAT ASSESSMENT bit" << currentBit << "→" << decoded;
+                qDebug() << "[Decodificación] THREAT ASSESSMENT bit" << currentBit << ":" << decoded;
             }
             decodedThreatAssessment.append(true);
         } else {
@@ -83,18 +88,21 @@ void FCDecodificator::decomsg1()
 // ====================== MENSAJE 2 ======================
 void FCDecodificator::decomsg2()
 {
+    qDebug() << "DECOMSG 2 << ";
     int word2 = WORD_SIZE * 1;
     currentBit = word2;
 
     QVector<bool> decodedDisplayMode(16, false);
-    QJsonObject displayModeJson = jsonFile["DISPLAY_MODE_DECODE"].toObject();
+    QJsonObject displayModeJson = jsonFile["DISPLAY_MODE_MASTER_DECODE"].toObject();
 
     // Display Mode Izquierda
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i <= 7; i++) {
+        // qDebug()<<"estoy en el bit %i de la palabra 2\n"<<currentBit;
         bool bitVal = inComingMessage->testBit(currentBit);
         decodedDisplayMode[i] = bitVal;
         if (bitVal) {
-            QString key = QString::number(i);
+            // qDebug()<< "bit valido";
+            QString key = QString::number(currentBit);
             if (displayModeJson.contains(key)) {
                 QString decoded = displayModeJson[key].toString();
                 qDebug() << "[Decodificación] DISPLAY MODE IZQ bit" << i << "→" << decoded;
@@ -103,30 +111,12 @@ void FCDecodificator::decomsg2()
         currentBit++;
     }
 
-    // TM
-    if (inComingMessage->testBit(currentBit)) {
-        QString key = QString::number(17);
-        if (displayModeJson.contains(key)) {
-            qDebug() << "[Decodificación] TM →" << displayModeJson[key].toString();
-        }
-    }
-    currentBit++;
-
-    // OC
-    if (inComingMessage->testBit(currentBit)) {
-        QString key = QString::number(16);
-        if (displayModeJson.contains(key)) {
-            qDebug() << "[Decodificación] OC →" << displayModeJson[key].toString();
-        }
-    }
-    currentBit++;
-
     // Display Mode Derecha
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i <= 7; i++) {
         bool bitVal = inComingMessage->testBit(currentBit);
         decodedDisplayMode[8 + i] = bitVal;
         if (bitVal) {
-            QString key = QString::number(i);
+            QString key = QString::number(currentBit);
             if (displayModeJson.contains(key)) {
                 QString decoded = displayModeJson[key].toString();
                 qDebug() << "[Decodificación] DISPLAY MODE DER bit" << i << "→" << decoded;
@@ -163,13 +153,17 @@ void FCDecodificator::decomsg4()
         qDebug() << "[Decodificación] QEK Master desconocido:" << qekMasterBits;
     }
 
+    qDebug()<< "Ultimo bit de master: "<< currentBit;
     // QEK Slave
     QString qekSlaveBits;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i <= 8; i++) {
+        qDebug()<<"El bit actual es: "<< currentBit;
+        qDebug()<< "Tiene valor: "<< inComingMessage->testBit(currentBit);
         qekSlaveBits.append(inComingMessage->testBit(currentBit) ? '1' : '0');
         currentBit++;
     }
 
+    qDebug()<< "qekSlavebits es" <<qekSlaveBits;
     if (qekJson.contains(qekSlaveBits)) {
         QString decodedQEK = qekJson[qekSlaveBits].toString();
         quickEntryKeyboardSlave.clear();
