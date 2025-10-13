@@ -7,6 +7,7 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+#include <stdinreader.h>
 
 #include "CommandDispatcher.h"
 #include "CommandRegistry.h"
@@ -25,23 +26,6 @@
 #define ANSI_YELLOW  "\x1b[33m"
 #define ANSI_RESET   "\x1b[0m"
 
-class StdinReader : public QObject {
-    Q_OBJECT
-signals:
-    void lineRead(const QString& line);
-    void finished();
-public slots:
-    void readLoop() {
-        QTextStream in(stdin);
-        while (true) {
-            QString l = in.readLine();
-            if (l.isNull()) break;
-            emit lineRead(l);
-        }
-        emit finished();
-    }
-};
-
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -55,8 +39,6 @@ static void enableAnsiColorsOnWindows() {
         SetConsoleMode(hErr, mode);
     }
 }
-
-
 
 int main(int argc, char* argv[]) {
 
@@ -110,5 +92,3 @@ int main(int argc, char* argv[]) {
     ioThread.wait();
     return code;
 }
-
-#include "main.moc"

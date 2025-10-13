@@ -18,6 +18,10 @@ CommandResult CenterCommand::execute(const CommandInvocation& inv, CommandContex
     if (!takeNumber(args[0], x) || !takeNumber(args[1], y)) {
         return {false, "Coordenadas inválidas. Deben ser números (x y)."};
     }
+
+    if (x < -255 || x > 255 || y < -255 || y > 255) {
+        return {false, "Centro fuera de rango (-256 a 256)."};
+    }
     ctx.centerX = x;
     ctx.centerY = y;
     return {true, QString("OK center → (%1, %2)").arg(x,0,'f',3).arg(y,0,'f',3)};

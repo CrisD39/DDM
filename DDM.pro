@@ -1,44 +1,43 @@
-QT += core \
-    widgets network
+QT += core network
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
 
+INCLUDEPATH += Headers
+
 SOURCES += \
-    Sources/Encoderlpd.cpp \
-    Sources/main.cpp \
-    # Sources/fcdecodificator.cpp \
     Sources/CommandDispatcher.cpp \
     Sources/Commands/AddCommand.cpp \
-    Sources/Commands/DeleteCommand.cpp \
     Sources/Commands/CenterCommand.cpp \
+    Sources/Commands/DeleteCommand.cpp \
     Sources/Commands/ListCommand.cpp \
-    clientsocket.cpp \
-    configuration.cpp
+    Sources/EchoCommand.cpp \
+    Sources/Encoderlpd.cpp \
+    Sources/clientsocket.cpp \
+    Sources/configuration.cpp \
+    #Sources/fcdecodificator.cpp \
+    Sources/main.cpp \
+    Sources/stdinreader.cpp
 
 HEADERS += \
     Headers/BaseCommand.h \
-    Headers/EchoCommand.h \
-    Headers/IDecodificator.h \
-    # Headers/fcdecodificator.h \
-    Headers/ICommand.h \
     Headers/CommandContext.h \
-    Headers/Encoderlpd.h \
-    clientsocket.h \
-    Headers/CommandRegistry.h \
-    Headers/IInputParser.h \
     Headers/CommandParser.h \
-    Headers/ConsoleUtils.h \
-    Headers/ansi.h \
-    Headers/commanddispatcher.h \
+    Headers/CommandRegistry.h \
     Headers/Commands/AddCommand.h \
-    Headers/Commands/DeleteCommand.h \
     Headers/Commands/CenterCommand.h \
+    Headers/Commands/DeleteCommand.h \
     Headers/Commands/ListCommand.h \
-    configuration.h
+    Headers/ConsoleUtils.h \
+    Headers/Encoderlpd.h \
+    Headers/ICommand.h \
+    Headers/IDecodificator.h \
+    Headers/IInputParser.h \
+    Headers/ansi.h \
+    Headers/clientsocket.h \
+    Headers/commanddispatcher.h \
+    Headers/configuration.h \
+ \    #Headers/fcdecodificator.h
+    Headers/stdinreader.h
 
-RESOURCES += \
-    resources.qrc
-
-INCLUDEPATH += Headers                           
-                                                          
+RESOURCES += resources.qrc

@@ -10,6 +10,12 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include "configuration.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
 
 const QHostAddress Configuration::masterIpDhcNetwork("172.16.0.99");
 const QHostAddress Configuration::slaveIpDhcNetwork("172.16.0.101");

@@ -1,4 +1,7 @@
 #include "fcdecodificator.h"
+#include <QBitArray>
+#include <QJsonObject>
+#include <QJsonArray>
 
 
 #define WORD_SIZE 24
@@ -8,9 +11,10 @@ FCDecodificator::FCDecodificator() {}
 
 void FCDecodificator::decode(QByteArray message)
 {
-    // currentBit = 0;
-    // *inComingMessage = byteArrayToBitArray(message);
+    currentBit = 0;
+    *inComingMessage = byteArrayToBitArray(message);
 
+    // TODO: llama a tus rutinas reales (decomsg1..N) cuando estén listas
     // decomsg1();
 }
 
@@ -289,31 +293,32 @@ void FCDecodificator::decomsg1()
 
 
 
-QByteArray FCDecodificator::byteArrayToBitArray(const QByteArray bitArray)
-{
-    QBitArray bitArray(byteArray.size() * 8);
+ QBitArray FCDecodificator::byteArrayToBitArray(const QByteArray &byteArray)
+ {
+     QBitArray bits(byteArray.size() * 8);
+     for (int i = 0; i < bits.size(); ++i) {
+         const int byteIndex = i / 8;
+         const int bitIndex  = 7 - (i % 8);
+         const unsigned char b = static_cast<unsigned char>(byteArray[byteIndex]);
+         bits.setBit(i, (b >> bitIndex) & 0x1);
+     }
+     return bits;
+ }
 
-    for (int i = 0; i < byteArray.size(); ++i) {
-        for (int bit = 0; bit < 8; ++bit) {
-            bool value = (byteArray[i] >> (7 - bit)) & 1;
-            bitArray.setBit(i * 8 + bit, value);
-        }
-    }
-
-    return bitArray;
-}
-
-FCDecodificator::bitArrayToByteArray(const QBitArray bitArray)
-{
-    QByteArray byteArray((bitArray.size() + 7) / 8, 0); // Inicializa el QByteArray al tamaño necesario
-
-    // Itera sobre cada bit y usa operaciones de desplazamiento para obtener su valor
-    for (int i = 0; i < bitArray.size(); ++i) {
-        byteArray[i / 8] |= (bitArray.testBit(i) ? 1 : 0) << (7 - (i % 8));
-    }
-
-    return byteArray;
-}
+ QByteArray FCDecodificator::bitArrayToByteArray(const QBitArray &bits)
+ {
+     QByteArray bytes((bits.size() + 7) / 8, 0);
+     for (int i = 0; i < bits.size(); ++i) {
+         if (bits.testBit(i)) {
+             const int byteIndex = i / 8;
+             const int bitIndex  = 7 - (i % 8);
+             unsigned char v = static_cast<unsigned char>(bytes[byteIndex]);
+             v |= static_cast<unsigned char>(1u << bitIndex);
+             bytes[byteIndex] = static_cast<char>(v);
+         }
+     }
+     return bytes;
+ }
 
 void FCDecodificator::readJson()
 {

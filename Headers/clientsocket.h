@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "qudpsocket.h"
+#include <QUdpSocket>
 
 class clientSocket: public QObject
 {
