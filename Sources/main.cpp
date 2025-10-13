@@ -1,5 +1,7 @@
 #include "Encoderlpd.h"
+#include "Sources/dclconccontroller.h"
 #include "clientsocket.h"
+#include "fcdecodificator.h"
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QThread>
@@ -77,6 +79,8 @@ int main(int argc, char* argv[]) {
     encoderLPD *encoder = new encoderLPD();
 
     clientSocket *socket = new clientSocket(nullptr);
+    auto* decoder = new FCDecodificator();
+    auto* controller = new DclConcController(socket, decoder, &app);
 
     QTimer timer;
 
