@@ -156,7 +156,7 @@ void FCDecodificator::decomsg4()
     qDebug()<< "Ultimo bit de master: "<< currentBit;
     // QEK Slave
     QString qekSlaveBits;
-    for (int i = 0; i <= 8; i++) {
+    for (int i = 0; i < 8; i++) {
         qDebug()<<"El bit actual es: "<< currentBit;
         qDebug()<< "Tiene valor: "<< inComingMessage->testBit(currentBit);
         qekSlaveBits.append(inComingMessage->testBit(currentBit) ? '1' : '0');

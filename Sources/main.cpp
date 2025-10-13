@@ -1,162 +1,44 @@
-// #include "Encoderlpd.h"
-// #include "clientsocket.h"
-// #include <QCoreApplication>
-// #include <QTextStream>
-// #include <QThread>
-// #include <QObject>
-// #ifdef Q_OS_WIN
-// #include <windows.h>
-// #endif
-
-// #include "CommandDispatcher.h"
-// #include "CommandRegistry.h"
-// #include "CommandParser.h"
-// #include "Commands/AddCommand.h"
-// #include "Commands/DeleteCommand.h"
-// #include "Commands/CenterCommand.h"
-// #include "Commands/ListCommand.h"
-// #include "CommandContext.h"
-// #include "QTimer"
-// #ifdef Q_OS_WIN
-// #endif
-// #include <windows.h>
-
-
-// #define ANSI_YELLOW  "\x1b[33m"
-// #define ANSI_RESET   "\x1b[0m"
-
-// class StdinReader : public QObject {
-//     Q_OBJECT
-// signals:
-//     void lineRead(const QString& line);
-//     void finished();
-// public slots:
-//     void readLoop() {
-//         QTextStream in(stdin);
-//         while (true) {
-//             QString l = in.readLine();
-//             if (l.isNull()) break;
-//             emit lineRead(l);
-//         }
-//         emit finished();
-//     }
-// };
-
-// static void enableAnsiColorsOnWindows() {
-//     DWORD mode = 0;
-//     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-//     if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &mode)) {
-//         mode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
-//         SetConsoleMode(hOut, mode);
-//     }
-//     HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
-//     if (hErr != INVALID_HANDLE_VALUE && GetConsoleMode(hErr, &mode)) {
-//         mode |= 0x0004;
-//         SetConsoleMode(hErr, mode);
-//     }
-// }
-
-
-
-// int main(int argc, char* argv[]) {
-
-//     #ifdef Q_OS_WIN
-//         enableAnsiColorsOnWindows();
-//         SetConsoleCP(CP_UTF8);
-//         SetConsoleOutputCP(CP_UTF8);
-//     #endif
-
-//     QCoreApplication app(argc, argv);
-
-//     CommandContext ctx;
-//     CommandRegistry registry;
-//     CommandParser parser;
-
-//     // registrar comandos
-//     registry.registerCommand(QSharedPointer<ICommand>(new AddCommand()));
-//     registry.registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
-//     registry.registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
-//     registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-//     CommandDispatcher dispatcher(&registry, &parser, ctx);
-
-//     QThread ioThread;
-//     StdinReader reader;
-//     reader.moveToThread(&ioThread);
-
-//     QObject::connect(&ioThread, &QThread::started, &reader, &StdinReader::readLoop);
-//     QObject::connect(&reader, &StdinReader::lineRead, &dispatcher, &CommandDispatcher::onLine);
-//     QObject::connect(&dispatcher, &CommandDispatcher::quitRequested, &app, &QCoreApplication::quit);
-//     QObject::connect(&reader, &StdinReader::finished, &ioThread, &QThread::quit);
-
-//     QTextStream out(stdout);
-//     ctx.out << ANSI_YELLOW << "Consola lista (help | exit)" << ANSI_RESET << "\n";
-//     ctx.out.flush();
-
-//     encoderLPD *encoder = new encoderLPD();
-
-//     clientSocket *socket = new clientSocket(nullptr);
-
-//     QTimer timer;
-
-//     QObject::connect(&timer, &QTimer::timeout, &timer, [&ctx, encoder, socket]() {
-//         QByteArray message = encoder->buildFullMessage(ctx);
-//         socket->sendMessage(message);
-//     });
-
-//     timer.start(1000);
-
-//     ioThread.start();
-//     const int code = app.exec();
-//     ioThread.wait();
-//     return code;
-// }
-
-// #include "main.moc"
-
 #include <QCoreApplication>
-#include "fcdecodificator.h"
+#include <QByteArray>
+#include <QDebug>
+#include "FCDecodificator.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    // Instancia del decodificador
     FCDecodificator decoder;
 
-    // Simulamos el mensaje binario "0101001000010000"
-    // (16 bits = 2 bytes)
     QByteArray message;
 
-    // Primera línea
-    message.append(char(0b01010010)); // 0x52
-    message.append(char(0b00010000)); // 0x10
-    message.append(char(0b00000000)); // 0x00
-    message.append(char(0b10001000)); // 0x88
+    // --- Word 1: 0101 0010 0001 0000 0000 0000 ---
+    message.append(static_cast<char>(0b01010010)); // 0x52
+    message.append(static_cast<char>(0b00010000)); // 0x10
+    message.append(static_cast<char>(0b00000000)); // 0x00
 
-    // Segunda línea (todo ceros)
-    message.append(char(0b00000000)); // 0x00
-    message.append(char(0b00000000)); // 0x00
-    message.append(char(0b00000000)); // 0x00
-    message.append(char(0b00000000)); // 0x00
+    // --- Word 2: 1000 1000 0000 0000 0000 0000 ---
+    message.append(static_cast<char>(0b10001000)); // 0x88
+    message.append(static_cast<char>(0b00000000)); // 0x00
+    message.append(static_cast<char>(0b00000000)); // 0x00
 
-    // Tercera línea
-    message.append(char(0b00100101)); // 0x25
-    message.append(char(0b00101000)); // 0x28
-    message.append(char(0b00000000)); // 0x00
-    message.append(char(0b00000000)); // 0x00
+    // --- Word 3: 0000 0000 0000 0000 0000 0000 ---
+    message.append(static_cast<char>(0b00000000)); // 0x00
+    message.append(static_cast<char>(0b00000000)); // 0x00
+    message.append(static_cast<char>(0b00000000)); // 0x00
+
+
+    // --- Word 4: 0010 0101 0010 0110 0000 0000 ---
+    message.append(static_cast<char>(0b00100101)); // 0x25
+    message.append(static_cast<char>(0b00100110)); // 0x26
+    message.append(static_cast<char>(0b00000000)); // 0x00
 
     qDebug() << "Mensaje en hexadecimal:" << message.toHex(' ');
 
+    qDebug() << "Mensaje en binario:";
+    for (unsigned char c : message)
+        qDebug().noquote() << QString("%1").arg(c, 8, 2, QLatin1Char('0'));
 
-    qDebug() << "Mensaje en hexadecimal:" << message.toHex(' ');
-
-
-
-    qDebug() << "Mensaje a decodificar (binario):" << message.toHex(' ');
-
-    // Llamamos a decode() para procesarlo
     decoder.decode(message);
 
     return 0;
 }
-
