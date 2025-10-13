@@ -8,6 +8,7 @@
 #include <QVector>
 #include <QQueue>
 #include <QString>
+#include <QPair>
 
 struct RollingSteps {
     QByteArray first;
@@ -22,6 +23,8 @@ public:
     FCDecodificator();
     void decode(const QByteArray &message) override;
 
+signals:
+    void signalOBM(QPair<float,float> delta);
 private:
     // Métodos de decodificación por palabra
     void decomsg1();

@@ -26,10 +26,14 @@ int main(int argc, char *argv[])
     message.append(static_cast<char>(0b00000000)); // 0x00
     message.append(static_cast<char>(0b00000000)); // 0x00
 
-
     // --- Word 4: 0010 0101 0010 0110 0000 0000 ---
     message.append(static_cast<char>(0b00100101)); // 0x25
     message.append(static_cast<char>(0b00100110)); // 0x26
+    message.append(static_cast<char>(0b00000000)); // 0x00
+
+    // --- Word 5: 1110 0010 1000 0001 0000 0000 ---
+    message.append(static_cast<char>(0b11100010)); // 0xE2
+    message.append(static_cast<char>(0b10000001)); // 0x81
     message.append(static_cast<char>(0b00000000)); // 0x00
 
     qDebug() << "Mensaje en hexadecimal:" << message.toHex(' ');

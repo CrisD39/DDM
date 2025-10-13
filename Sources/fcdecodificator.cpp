@@ -21,6 +21,7 @@ void FCDecodificator::decode(const QByteArray &message)
     decomsg1();
     decomsg2();
     decomsg4();
+    decomsg5();
 }
 
 
@@ -176,7 +177,7 @@ void FCDecodificator::decomsg4()
 
 void FCDecodificator::decomsg5()
 {
-    int word5 = WORD_SIZE * 5;
+    int word5 = WORD_SIZE * 4;
     currentBit = word5;
 
     // --- ICM Izquierdo (bits 0–2 de la palabra 5) ---
@@ -257,7 +258,7 @@ void FCDecodificator::decomsg6()
     currentBit = word6;
 
     // --- Handwheel ΔΦ (bits 0–7 palabra 6) ---
-    int phiValue = 0;
+    float phiValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
             qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
@@ -274,7 +275,7 @@ void FCDecodificator::decomsg6()
     }
 
     // --- Handwheel Δρ (bits 8–15 palabra 6) ---
-    int rhoValue = 0;
+    int rhoValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
             qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
@@ -293,8 +294,14 @@ void FCDecodificator::decomsg6()
     this->handWheelPhiQueue = phiValue;
     this->handWheelRhoQueue = rhoValue;
 
+    QPair<float,float> deltasHandwhell;
+    deltasHandwhell.first = phiValue;
+    deltasHandwhell.second = rhoValue;
+
     qDebug() << "[Decodificación] Handwheel ΔΦ:" << phiValue
              << " Δρ:" << rhoValue;
+
+    emit signalOBM(deltasHandwhell);
 }
 
 
