@@ -1,4 +1,5 @@
 #include "OBMHandler.h"
+#include "qdebug.h"
 #include <cmath>
 
 OBMHandler::OBMHandler() {
@@ -17,6 +18,7 @@ void OBMHandler::updatePosition(QPair<float, float> newPosition)
 
     obmPosition.xPosition += deltaPositionX;
     obmPosition.yPosition += deltaPositionY;
+
 }
 
 QPair<float, float> OBMHandler::getPosition()
@@ -26,5 +28,8 @@ QPair<float, float> OBMHandler::getPosition()
 
 void OBMHandler::updateRange(int newRange)
 {
-    range = newRange;
+    if(newRange != range){
+        range = newRange;
+        qDebug() << "new Range for the boys" << range;
+    }
 }

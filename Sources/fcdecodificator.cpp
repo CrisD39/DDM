@@ -18,20 +18,21 @@ void FCDecodificator::decode(const QByteArray &message)
     inComingMessage = new QBitArray();
     *inComingMessage = byteArrayToBitArray(message);
 
-    decomsg1();
-    decomsg2();
-    decomsg4();
-    decomsg5();
+    qDebug() << "decoding";
+
+    decodeWord1();
+    decodeWord2();
+    //decodeWord3();
+    decodeWord4();
+    decodeWord5();
+    decodeWord6();
+    decodeWord7();
 }
 
 
-// ====================== MENSAJE 1 ======================
-void FCDecodificator::decomsg1()
+void FCDecodificator::decodeWord1()
 {
-    //qDebug()<<"decomsg1";
-    // --- RANGE SCALE (bits 0-2) ---
-    int word1 = WORD_SIZE * 0;
-    currentBit = word1;
+    currentBit = WORD_SIZE * 0;;
 
     QString rangeBits;
     for (int i = 0; i <= 2; ++i) {
@@ -42,8 +43,15 @@ void FCDecodificator::decomsg1()
     QJsonObject rangeJson = jsonFile["RANGE_SCALE_DECODE"].toObject();
     if (rangeJson.contains(rangeBits)) {
         QString decodedRange = rangeJson[rangeBits].toString();
-        this->range = decodedRange.toInt();
-        //qDebug() << "[Decodificación] RANGE:" << rangeBits << ":" << decodedRange;
+        const auto parts = decodedRange.split('_');
+        if (parts.size() >= 3) {
+            int lastRange = parts.at(1).toInt(); //juajua hackerman
+            if(lastRange != range){
+                this->range = lastRange;
+                qDebug() << range;
+                emit newRange(range);
+            }
+        }
     }
 
     // --- DISPLAY SELECTION (bits 3-11) ---
@@ -54,7 +62,6 @@ void FCDecodificator::decomsg1()
             QString key = QString::number(currentBit);
             if (displayJson.contains(key)) {
                 QString decoded = displayJson[key].toString();
-                //qDebug() << "[Decodificación] DISPLAY SELECTION bit" << currentBit << ":" << decoded;
             }
             decodedDisplaySelection.append(true); //aca tengo que ver que pongo
         } else {
@@ -73,7 +80,6 @@ void FCDecodificator::decomsg1()
             QString key = QString::number(currentBit);
             if (threatJson.contains(key)) {
                 QString decoded = threatJson[key].toString();
-                //qDebug() << "[Decodificación] THREAT ASSESSMENT bit" << currentBit << ":" << decoded;
             }
             decodedThreatAssessment.append(true);
         } else {
@@ -87,18 +93,15 @@ void FCDecodificator::decomsg1()
 
 
 // ====================== MENSAJE 2 ======================
-void FCDecodificator::decomsg2()
+void FCDecodificator::decodeWord2()
 {
-    //qDebug() << "DECOMSG 2 << ";
-    int word2 = WORD_SIZE * 1;
-    currentBit = word2;
+    currentBit = WORD_SIZE * 1;
 
     QVector<bool> decodedDisplayMode(16, false);
     QJsonObject displayModeJson = jsonFile["DISPLAY_MODE_MASTER_DECODE"].toObject();
 
     // Display Mode Izquierda
     for (int i = 0; i <= 7; i++) {
-        // qDebug()<<"estoy en el bit %i de la palabra 2\n"<<currentBit;
         bool bitVal = inComingMessage->testBit(currentBit);
         decodedDisplayMode[i] = bitVal;
         if (bitVal) {
@@ -130,12 +133,11 @@ void FCDecodificator::decomsg2()
 }
 
 // ====================== MENSAJE 4 ======================
-void FCDecodificator::decomsg4()
+void FCDecodificator::decodeWord4()
 {
     int word4 = WORD_SIZE * 3;
     currentBit = word4;
 
-    // QEK Master
     QString qekMasterBits;
     for (int i = 0; i < 8; i++) {
         qekMasterBits.append(inComingMessage->testBit(currentBit) ? '1' : '0');
@@ -154,7 +156,6 @@ void FCDecodificator::decomsg4()
         //qDebug() << "[Decodificación] QEK Master desconocido:" << qekMasterBits;
     }
 
-    qDebug()<< "Ultimo bit de master: "<< currentBit;
     // QEK Slave
     QString qekSlaveBits;
     for (int i = 0; i < 8; i++) {
@@ -164,7 +165,6 @@ void FCDecodificator::decomsg4()
         currentBit++;
     }
 
-    qDebug()<< "qekSlavebits es" <<qekSlaveBits;
     if (qekJson.contains(qekSlaveBits)) {
         QString decodedQEK = qekJson[qekSlaveBits].toString();
         quickEntryKeyboardSlave.clear();
@@ -175,7 +175,7 @@ void FCDecodificator::decomsg4()
 }
 
 
-void FCDecodificator::decomsg5()
+void FCDecodificator::decodeWord5()
 {
     int word5 = WORD_SIZE * 4;
     currentBit = word5;
@@ -197,7 +197,7 @@ void FCDecodificator::decomsg5()
         }
         //qDebug() << "[Decodificación] ICM Izquierdo:" << icmMasterBits << "→" << decodedICM;
     } else {
-        qWarning() << "[Decodificación] ICM Izquierdo desconocido:" << icmMasterBits;
+        //qWarning() << "[Decodificación] ICM Izquierdo desconocido:" << icmMasterBits;
     }
 
     currentBit++; // hay un 0 en el bit 3
@@ -215,7 +215,7 @@ void FCDecodificator::decomsg5()
         this->overlayMaster = decodedOverlay;
         //qDebug() << "[Decodificación] Overlay Izquierdo:" << overlayMasterBits << "→" << decodedOverlay;
     } else {
-        qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
+        //qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
     }
 
     // --- ICM Derecho (bits 8–10 de la palabra 5) ---
@@ -230,7 +230,7 @@ void FCDecodificator::decomsg5()
         this->icmSlave = decodedICM;
         //qDebug() << "[Decodificación] ICM Derecho:" << icmSlaveBits << "→" << decodedICM;
     } else {
-        qWarning() << "[Decodificación] ICM Derecho desconocido:" << icmSlaveBits;
+        //qWarning() << "[Decodificación] ICM Derecho desconocido:" << icmSlaveBits;
     }
 
     currentBit++; // salto bit 11
@@ -247,11 +247,11 @@ void FCDecodificator::decomsg5()
         this->overlaySlave = decodedOverlay;
         //qDebug() << "[Decodificación] Overlay Derecho:" << overlaySlaveBits << "→" << decodedOverlay;
     } else {
-        qWarning() << "[Decodificación] Overlay Derecho desconocido:" << overlaySlaveBits;
+        //qWarning() << "[Decodificación] Overlay Derecho desconocido:" << overlaySlaveBits;
     }
 }
 
-void FCDecodificator::decomsg6()
+void FCDecodificator::decodeWord6()
 {
     // La palabra 6 empieza en el bit 24 * 5 = 120
     int word6 = WORD_SIZE * 5;  // Si las palabras van de 0–8, mantener 5; si van de 1–9, cambiar a 6
@@ -305,7 +305,7 @@ void FCDecodificator::decomsg6()
 }
 
 
-void FCDecodificator::decomsg7()
+void FCDecodificator::decodeWord7()
 {
     // Palabra 7 → desplazamiento base 24 * 6 = 144
     int word7 = WORD_SIZE * 6;
@@ -323,6 +323,7 @@ void FCDecodificator::decomsg7()
         currentBit++;
     }
 
+    qDebug() << deltaX;
     // --- Rolling Ball ΔY (bits 8–15 palabra 7) ---
     int deltaY = 0;
     for (int i = 0; i < 8; ++i) {
@@ -339,13 +340,17 @@ void FCDecodificator::decomsg7()
     RollingSteps step;
     step.first = QByteArray(1, static_cast<char>(deltaX));
     step.second = QByteArray(1, static_cast<char>(deltaY));
+
+    qDebug() << step.first;
+
+    emit newRollingBall(QPair(deltaX,deltaY));
     // this->rollingBallMaster.enqueue(step);
 
     //qDebug() << "[Decodificación] Rolling Ball Master ΔX:" << deltaX
     //         << " ΔY:" << deltaY;
 }
 
-void FCDecodificator::decomsg8()
+void FCDecodificator::decodeWord8()
 {
     // Palabra 8 → desplazamiento base 24 * 7 = 168
     int word8 = WORD_SIZE * 7;

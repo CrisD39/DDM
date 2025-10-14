@@ -1,4 +1,5 @@
 #include "Encoderlpd.h"
+#include "OBMHandler.h"
 #include "Sources/dclconccontroller.h"
 #include "clientsocket.h"
 #include "fcdecodificator.h"
@@ -80,7 +81,12 @@ int main(int argc, char* argv[]) {
 
     clientSocket *socket = new clientSocket(nullptr);
     auto* decoder = new FCDecodificator();
+    auto* obmHandler = new OBMHandler();
     auto* controller = new DclConcController(socket, decoder, &app);
+
+    QObject::connect(decoder, &FCDecodificator::newRange, obmHandler, &OBMHandler::updateRange);
+    QObject::connect(decoder, &FCDecodificator::newRollingBall, obmHandler, &OBMHandler::updatePosition);
+    encoder->setOBMHandler(obmHandler);
 
     QTimer timer;
 

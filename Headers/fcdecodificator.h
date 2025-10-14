@@ -24,16 +24,19 @@ public:
 
 signals:
     void signalOBM(QPair<float,float> delta);
+    void newRollingBall(QPair<float,float>);
+    void newRange(int);
+
 private:
     // Métodos de decodificación por palabra
-    void decomsg1();
-    void decomsg2();
-    void decomsg3();
-    void decomsg4();
-    void decomsg5();
-    void decomsg6();
-    void decomsg7();
-    void decomsg8();
+    void decodeWord1();
+    void decodeWord2();
+    void decodeWord3();
+    void decodeWord4();
+    void decodeWord5();
+    void decodeWord6();
+    void decodeWord7();
+    void decodeWord8();
 
     // Utilidades internas
     void readJson();

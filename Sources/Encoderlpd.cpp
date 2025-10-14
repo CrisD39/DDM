@@ -31,7 +31,7 @@ QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track &track) const {
     return {0x1D, 0xE0}; // default Unknown-s
 }
 
-QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits) {
+QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, bool PV, bool LS) {
     QByteArray bytes;
 
     int32_t scaled = static_cast<int32_t>(qRound(value * 256.0));
@@ -50,6 +50,10 @@ QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits) {
     switch (idBits & 0x0F) {
     case AB2_ID_X:
         controlByte = BIT_V;
+        if(PV)
+            controlByte |= BIT_PV;
+        if(LS)
+            controlByte |= BIT_LS;
         break;
     case AB1_ID_X:
         controlByte = BIT_V;
@@ -103,6 +107,17 @@ QByteArray encoderLPD::buildAB2Message(const Track &track) {
     return buffer;
 }
 
+QByteArray encoderLPD::buildOBM()
+{
+    QByteArray buffer;
+    buffer.append(encodeCoordinate(obmHandler->getPosition().first, AB2_ID_X, true, true, true));
+    buffer.append(encodeCoordinate(obmHandler->getPosition().second, AB2_ID_Y, true, true, true));
+    buffer.append(static_cast<char>(0x0F));
+    buffer.append(static_cast<char>(0x00));
+    buffer.append(static_cast<char>(EOMM));
+    return buffer;
+}
+
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     QByteArray bigBuffer;
 
@@ -113,6 +128,9 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
 
     bigBuffer.append(encodeCoordinate(ctx.centerX, AB1_ID_X)); // V=1 y ID=1001
     bigBuffer.append(encodeCoordinate(ctx.centerY, AB1_ID_Y)); // ID=1011
+
+    bigBuffer.append(reinterpret_cast<const char*>(INVALID_OWNSHIP), sizeof(INVALID_OWNSHIP));
+    bigBuffer.append(buildOBM());
 
     for (const auto &track : ctx.tracks) {
         bigBuffer.append(buildAB2Message(track));
@@ -133,3 +151,5 @@ QByteArray encoderLPD::negateData(const QByteArray &data) {
         b = ~b;
     return invertedData;
 }
+
+

@@ -53,7 +53,7 @@ void DclConcController::onDatagram(const QByteArray& datagram)
     if (datagram.size() > 3) {
         QByteArray payload = datagram.mid(3);
         payload = negateData(payload);
-        qDebug() << payload.toHex(' ');
+        //qDebug() << payload.toHex(' ');
         m_decoder->decode(payload);
     }
 }
