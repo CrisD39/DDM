@@ -44,11 +44,11 @@ static void enableAnsiColorsOnWindows() {
 
 int main(int argc, char* argv[]) {
 
-    #ifdef Q_OS_WIN
-        enableAnsiColorsOnWindows();
-        SetConsoleCP(CP_UTF8);
-        SetConsoleOutputCP(CP_UTF8);
-    #endif
+#ifdef Q_OS_WIN
+    enableAnsiColorsOnWindows();
+    SetConsoleCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
+#endif
 
     QCoreApplication app(argc, argv);
 

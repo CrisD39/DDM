@@ -8,6 +8,7 @@ INCLUDEPATH += Headers
 SOURCES += \
     Sources/Encoderlpd.cpp \
     Sources/dclconccontroller.cpp \
+    Sources/OBMHandler.cpp \
     Sources/main.cpp \
     Sources/fcdecodificator.cpp \
     Sources/CommandDispatcher.cpp \
@@ -21,8 +22,10 @@ SOURCES += \
 
 HEADERS += \
     Headers/BaseCommand.h \
+    Headers/Commands/IOBMHandler.h \
     Headers/EchoCommand.h \
     Headers/IDecodificator.h \
+    Headers/OBMHandler.h \
     Headers/fcdecodificator.h \
     Headers/ICommand.h \
     Headers/CommandContext.h \
