@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
         socket->sendMessage(message);
     });
 
-    timer.start(1000);
+    timer.start(80);
 
     ioThread.start();
     const int code = app.exec();

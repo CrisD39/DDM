@@ -18,8 +18,6 @@ void FCDecodificator::decode(const QByteArray &message)
     inComingMessage = new QBitArray();
     *inComingMessage = byteArrayToBitArray(message);
 
-    qDebug() << "decoding";
-
     decodeWord1();
     decodeWord2();
     //decodeWord3();
@@ -48,7 +46,7 @@ void FCDecodificator::decodeWord1()
             int lastRange = parts.at(1).toInt(); //juajua hackerman
             if(lastRange != range){
                 this->range = lastRange;
-                qDebug() << range;
+                //qDebug() << range;
                 emit newRange(range);
             }
         }
@@ -305,49 +303,41 @@ void FCDecodificator::decodeWord6()
 }
 
 
+static inline quint32 readBitsMSB(const QBitArray* bits, int start, int n) {
+    quint32 v = 0;
+    for (int i = 0; i < n; ++i) {
+        if (start + i >= bits->size()) break;
+        v = (v << 1) | (bits->testBit(start + i) ? 1u : 0u);
+    }
+    return v;
+}
+
+static inline qint32 signExtend(quint32 x, unsigned bits) {
+    const quint32 sign = 1u << (bits - 1);
+    x &= (sign << 1) - 1;              // enmascara a 'bits' bits
+    return static_cast<qint32>((x ^ sign) - sign);
+}
+
 void FCDecodificator::decodeWord7()
 {
     // Palabra 7 → desplazamiento base 24 * 6 = 144
-    int word7 = WORD_SIZE * 6;
-    currentBit = word7;
+    const int word7 = WORD_SIZE * 6;   // WORD_SIZE=24
+    int bit = word7;
 
-    // --- Rolling Ball ΔX (bits 0–7 palabra 7) ---
-    int deltaX = 0;
-    for (int i = 0; i < 8; ++i) {
-        if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
-            break;
-        }
-        bool bit = inComingMessage->testBit(currentBit);
-        deltaX = (deltaX << 1) | (bit ? 1 : 0);
-        currentBit++;
-    }
+    // Lee 8 bits MSB-first y hace sign-extend (int8)
+    const quint32 rawDx = readBitsMSB(inComingMessage, bit, 8); bit += 8;
+    const quint32 rawDy = readBitsMSB(inComingMessage, bit, 8); bit += 8;
 
-    qDebug() << deltaX;
-    // --- Rolling Ball ΔY (bits 8–15 palabra 7) ---
-    int deltaY = 0;
-    for (int i = 0; i < 8; ++i) {
-        if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
-            break;
-        }
-        bool bit = inComingMessage->testBit(currentBit);
-        deltaY = (deltaY << 1) | (bit ? 1 : 0);
-        currentBit++;
-    }
+    const qint32 dx = signExtend(rawDx, 8);   // p.ej. 0xEA (234) -> -22
+    const qint32 dy = signExtend(rawDy, 8);
 
-    // Guardamos los desplazamientos en la cola RollingBall
+    // Si querés guardar los bytes crudos (tal cual vinieron) en la cola:
     RollingSteps step;
-    step.first = QByteArray(1, static_cast<char>(deltaX));
-    step.second = QByteArray(1, static_cast<char>(deltaY));
+    step.first  = QByteArray(1, static_cast<char>(static_cast<quint8>(rawDx)));
+    step.second = QByteArray(1, static_cast<char>(static_cast<quint8>(rawDy)));
 
-    qDebug() << step.first;
-
-    emit newRollingBall(QPair(deltaX,deltaY));
-    // this->rollingBallMaster.enqueue(step);
-
-    //qDebug() << "[Decodificación] Rolling Ball Master ΔX:" << deltaX
-    //         << " ΔY:" << deltaY;
+    // Emite los valores ya con signo correcto
+    emit newRollingBall(QPair<int,int>(dx, dy));
 }
 
 void FCDecodificator::decodeWord8()

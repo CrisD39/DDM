@@ -13,8 +13,8 @@ void OBMHandler::updatePosition(QPair<float, float> newPosition)
     float valorY = newPosition.second / 64.0f;
 
     // Mantener el signo en ambos ejes
-    float deltaPositionX = std::copysign(std::pow((std::abs(valorX)),2), valorX) * range;
-    float deltaPositionY = std::copysign(std::pow((std::abs(valorY)),2), valorY) * range;
+    float deltaPositionX = valorX * std::abs(valorX) * range;
+    float deltaPositionY = valorY * std::abs(valorY) * range;
 
     obmPosition.xPosition += deltaPositionX;
     obmPosition.yPosition += deltaPositionY;
