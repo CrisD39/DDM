@@ -154,7 +154,7 @@ void FCDecodificator::decomsg4()
         //qDebug() << "[Decodificación] QEK Master desconocido:" << qekMasterBits;
     }
 
-    qDebug()<< "Ultimo bit de master: "<< currentBit;
+    //()<< "Ultimo bit de master: "<< currentBit;
     // QEK Slave
     QString qekSlaveBits;
     for (int i = 0; i < 8; i++) {
@@ -164,7 +164,7 @@ void FCDecodificator::decomsg4()
         currentBit++;
     }
 
-    qDebug()<< "qekSlavebits es" <<qekSlaveBits;
+    //qDebug()<< "qekSlavebits es" <<qekSlaveBits;
     if (qekJson.contains(qekSlaveBits)) {
         QString decodedQEK = qekJson[qekSlaveBits].toString();
         quickEntryKeyboardSlave.clear();
@@ -197,7 +197,7 @@ void FCDecodificator::decomsg5()
         }
         //qDebug() << "[Decodificación] ICM Izquierdo:" << icmMasterBits << "→" << decodedICM;
     } else {
-        qWarning() << "[Decodificación] ICM Izquierdo desconocido:" << icmMasterBits;
+        //qWarning() << "[Decodificación] ICM Izquierdo desconocido:" << icmMasterBits;
     }
 
     currentBit++; // hay un 0 en el bit 3
@@ -215,7 +215,7 @@ void FCDecodificator::decomsg5()
         this->overlayMaster = decodedOverlay;
         //qDebug() << "[Decodificación] Overlay Izquierdo:" << overlayMasterBits << "→" << decodedOverlay;
     } else {
-        qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
+        //qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
     }
 
     // --- ICM Derecho (bits 8–10 de la palabra 5) ---
@@ -230,7 +230,7 @@ void FCDecodificator::decomsg5()
         this->icmSlave = decodedICM;
         //qDebug() << "[Decodificación] ICM Derecho:" << icmSlaveBits << "→" << decodedICM;
     } else {
-        qWarning() << "[Decodificación] ICM Derecho desconocido:" << icmSlaveBits;
+        //qWarning() << "[Decodificación] ICM Derecho desconocido:" << icmSlaveBits;
     }
 
     currentBit++; // salto bit 11
@@ -247,7 +247,7 @@ void FCDecodificator::decomsg5()
         this->overlaySlave = decodedOverlay;
         //qDebug() << "[Decodificación] Overlay Derecho:" << overlaySlaveBits << "→" << decodedOverlay;
     } else {
-        qWarning() << "[Decodificación] Overlay Derecho desconocido:" << overlaySlaveBits;
+        //qWarning() << "[Decodificación] Overlay Derecho desconocido:" << overlaySlaveBits;
     }
 }
 
@@ -261,7 +261,7 @@ void FCDecodificator::decomsg6()
     float phiValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -278,7 +278,7 @@ void FCDecodificator::decomsg6()
     int rhoValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -315,7 +315,7 @@ void FCDecodificator::decomsg7()
     int deltaX = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -327,7 +327,7 @@ void FCDecodificator::decomsg7()
     int deltaY = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -355,7 +355,7 @@ void FCDecodificator::decomsg8()
     int deltaX = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -367,7 +367,7 @@ void FCDecodificator::decomsg8()
     int deltaY = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -421,9 +421,9 @@ void FCDecodificator::decomsg8()
          if (jsonError.error == QJsonParseError::NoError && document.isObject()) {
              jsonFile = document.object();
          } else {
-             qWarning() << "Error al leer JSON:" << jsonError.errorString();
+             //qWarning() << "Error al leer JSON:" << jsonError.errorString();
          }
      } else {
-         qWarning() << "No se pudo abrir el archivo JSON:" << jsonFilePath;
+         //qWarning() << "No se pudo abrir el archivo JSON:" << jsonFilePath;
      }
  }

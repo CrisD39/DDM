@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
     registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
     CommandDispatcher dispatcher(&registry, &parser, ctx);
 
+
     QThread ioThread;
     StdinReader reader;
     reader.moveToThread(&ioThread);
@@ -88,6 +89,8 @@ int main(int argc, char* argv[]) {
         QByteArray message = encoder->buildFullMessage(ctx);
         socket->sendMessage(message);
     });
+
+
 
     timer.start(1000);
 

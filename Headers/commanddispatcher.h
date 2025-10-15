@@ -30,4 +30,5 @@ private:
     CommandRegistry* reg_;
     IInputParser*    parser_;
     CommandContext&  ctx_;
+    QString qekPendingDomainOpt_;;
 };
