@@ -26,6 +26,8 @@ signals:
     void signalOBM(QPair<float,float> delta);
     void newRollingBall(QPair<float,float>);
     void newRange(int);
+    void newQEK(QString);
+    void newOverlay(QString);
 
 private:
     // Métodos de decodificación por palabra
@@ -62,7 +64,7 @@ private:
     QVector<bool> quickEntryKeyboardMaster;
     QVector<bool> centerMaster;
     QVector<bool> icmMaster;
-    QString overlayMaster;
+    QString overlayMaster = "0";
     QString mikMaster;
 
 

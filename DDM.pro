@@ -6,6 +6,8 @@ TARGET = DDM
 INCLUDEPATH += Headers
 
 SOURCES += \
+    Headers/overlayhandler.cpp \
+    Headers/spc.cpp \
     Sources/Encoderlpd.cpp \
     Sources/dclconccontroller.cpp \
     Sources/OBMHandler.cpp \
@@ -42,6 +44,8 @@ HEADERS += \
     Headers/clientsocket.h \
     Headers/commanddispatcher.h \
     Headers/configuration.h \
+    Headers/overlayhandler.h \
+    Headers/spc.h \
     Headers/stdinreader.h \
     Sources/dclconccontroller.h
 

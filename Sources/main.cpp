@@ -3,6 +3,7 @@
 #include "Sources/dclconccontroller.h"
 #include "clientsocket.h"
 #include "fcdecodificator.h"
+#include "overlayhandler.h"
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QThread>
@@ -85,9 +86,20 @@ int main(int argc, char* argv[]) {
     auto* obmHandler = new OBMHandler();
     auto* controller = new DclConcController(socket, decoder, &app);
 
+    // en main.cpp (después de crear 'decoder')
+    auto* overlayHandler = new OverlayHandler();
+    overlayHandler->setContext(&ctx);
+    overlayHandler->setOBMHandler(obmHandler);
+
+    // Conecta señales que emite el decoder
+    QObject::connect(decoder, &FCDecodificator::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
+    QObject::connect(decoder, &FCDecodificator::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
+
+
     QObject::connect(decoder, &FCDecodificator::newRange, obmHandler, &OBMHandler::updateRange);
     QObject::connect(decoder, &FCDecodificator::newRollingBall, obmHandler, &OBMHandler::updatePosition);
     encoder->setOBMHandler(obmHandler);
+
 
     QTimer timer;
 
@@ -96,7 +108,7 @@ int main(int argc, char* argv[]) {
         socket->sendMessage(message);
     });
 
-    timer.start(80);
+    timer.start(40);
 
     ioThread.start();
     const int code = app.exec();

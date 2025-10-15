@@ -13,6 +13,8 @@ public:
     void updatePosition(QPair<float, float> newPosition) override;
     QPair<float, float> getPosition() override;
     void updateRange(int newRange) override;
+signals:
+    void newOBMPosition();
 };
 
 #endif // OBMHANDLER_H

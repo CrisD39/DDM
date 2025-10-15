@@ -18,7 +18,7 @@ DclConcController::DclConcController(clientSocket* socket,
             this, &DclConcController::onDatagram);
 
     // Timer a 100 ms para enviar PEDIDO_DCL_CONC
-    m_timer.setInterval(1000);
+    m_timer.setInterval(50);
     connect(&m_timer, &QTimer::timeout, this, &DclConcController::askForConcentrator);
     m_timer.start();
 }

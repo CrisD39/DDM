@@ -142,14 +142,18 @@ void FCDecodificator::decodeWord4()
         currentBit++;
     }
 
+    //QEK Master
     QJsonObject qekJson = jsonFile["QEK_DECODE"].toObject();
     if (qekJson.contains(qekMasterBits)) {
         QString decodedQEK = qekJson[qekMasterBits].toString();
-        quickEntryKeyboardMaster.clear();
-        for (QChar bit : qekMasterBits) {
-            quickEntryKeyboardMaster.append(bit == '1');
+        if(!decodedQEK.contains("QEK_NONE")){
+            quickEntryKeyboardMaster.clear();
+            for (QChar bit : qekMasterBits) {
+                quickEntryKeyboardMaster.append(bit == '1');
+            }
+            qDebug() << "[Decodificación] QEK Master:" << qekMasterBits << "→" << decodedQEK;
+            emit newQEK(decodedQEK);
         }
-        //qDebug() << "[Decodificación] QEK Master:" << qekMasterBits << "→" << decodedQEK;
     } else {
         //qDebug() << "[Decodificación] QEK Master desconocido:" << qekMasterBits;
     }
@@ -210,10 +214,14 @@ void FCDecodificator::decodeWord5()
     QJsonObject overlayJson = jsonFile["OVERLAY_DECODE"].toObject();
     if (overlayJson.contains(overlayMasterBits)) {
         QString decodedOverlay = overlayJson[overlayMasterBits].toString();
-        this->overlayMaster = decodedOverlay;
-        //qDebug() << "[Decodificación] Overlay Izquierdo:" << overlayMasterBits << "→" << decodedOverlay;
+        if(decodedOverlay.compare(this->overlayMaster) != 0){
+            this->overlayMaster = decodedOverlay;
+            emit newOverlay(overlayMaster);
+        }
+
+
     } else {
-        //qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
+        qWarning() << "[Decodificación] Overlay Izquierdo desconocido:" << overlayMasterBits;
     }
 
     // --- ICM Derecho (bits 8–10 de la palabra 5) ---
