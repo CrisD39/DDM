@@ -32,27 +32,27 @@ void Configuration::loadConfiguration() {
     // Lee el archivo JSON con la información de los overlays
     QFile file(":/json/json/overlay.json");
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error No se pudo abrir el archivo de configuración de overlay.";
+        //qWarning() << "Error No se pudo abrir el archivo de configuración de overlay.";
     }
 
     // Lee el archivo JSON con la información de los botones
     QString JsonFilePath = ":/json/json/properties.json";
     QFile File(JsonFilePath);
     if (!File.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error Hubo un error, no se abrió el archivo de propiedades";
+        //qWarning() << "Error Hubo un error, no se abrió el archivo de propiedades";
     }
     QByteArray archivo = file.readAll();
     QJsonDocument document = QJsonDocument::fromJson(archivo);
     file.close();
 
     if (!document.isObject()) {
-        qWarning("El documento JSON no es un objeto.");
+        //qWarning("El documento JSON no es un objeto.");
         return;
     }
     QJsonObject OverlayJson = document.object();
 
     if (!OverlayJson.contains("overlay") || !OverlayJson["overlay"].isArray()) {
-        qWarning("El objeto JSON no contiene un array 'overlay'.");
+        //qWarning("El objeto JSON no contiene un array 'overlay'.");
         return;
     }
     jsonArray = OverlayJson["overlay"].toArray();

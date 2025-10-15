@@ -32,7 +32,7 @@ void DclConcController::onDatagram(const QByteArray& datagram)
 {
     // Necesitamos al menos la primera palabra (3 bytes) para extraer secuencia
     if (datagram.size() < 3) {
-        qWarning() << "[DCL_CONC] Datagram demasiado corto";
+        //qWarning() << "[DCL_CONC] Datagram demasiado corto";
         return;
     }
 

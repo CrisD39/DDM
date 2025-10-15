@@ -259,7 +259,7 @@ void FCDecodificator::decodeWord6()
     float phiValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -276,7 +276,7 @@ void FCDecodificator::decodeWord6()
     int rhoValue = 0.0f;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -350,7 +350,7 @@ void FCDecodificator::decodeWord8()
     int deltaX = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔX (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -362,7 +362,7 @@ void FCDecodificator::decodeWord8()
     int deltaY = 0;
     for (int i = 0; i < 8; ++i) {
         if (currentBit >= inComingMessage->size()) {
-            qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
+            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔY (bit" << currentBit << ")";
             break;
         }
         bool bit = inComingMessage->testBit(currentBit);
@@ -416,9 +416,9 @@ void FCDecodificator::decodeWord8()
          if (jsonError.error == QJsonParseError::NoError && document.isObject()) {
              jsonFile = document.object();
          } else {
-             qWarning() << "Error al leer JSON:" << jsonError.errorString();
+             //qWarning() << "Error al leer JSON:" << jsonError.errorString();
          }
      } else {
-         qWarning() << "No se pudo abrir el archivo JSON:" << jsonFilePath;
+         //qWarning() << "No se pudo abrir el archivo JSON:" << jsonFilePath;
      }
  }

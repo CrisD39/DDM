@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
     registry.registerCommand(QSharedPointer<ICommand>(new ListCommand()));
     CommandDispatcher dispatcher(&registry, &parser, ctx);
 
+
     QThread ioThread;
     StdinReader reader;
     reader.moveToThread(&ioThread);
