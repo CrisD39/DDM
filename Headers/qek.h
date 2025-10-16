@@ -62,11 +62,12 @@ public:
     virtual void execute56() {}
     virtual void execute57() {}
 
-    void addSurfaceTrack(){
+//quick
+    void addTrack(QString identity){
         Track tr;
         tr.id        = ctx->nextTrackId++;
         tr.type      = TrackType::Unknown;
-        tr.identity  = "-s";
+        tr.identity  = identity;
         tr.x         = obmHandler->getPosition().first;
         tr.y         = obmHandler->getPosition().second;
 

@@ -33,6 +33,7 @@ HEADERS += \
     Headers/CommandContext.h \
     Headers/CommandParser.h \
     Headers/CommandRegistry.h \
+    Headers/qek.h \
     Headers/Commands/AddCommand.h \
     Headers/Commands/CenterCommand.h \
     Headers/Commands/DeleteCommand.h \
