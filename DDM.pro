@@ -3,51 +3,65 @@ CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
 
-INCLUDEPATH += Headers
+RESOURCES += resources.qrc
 
-SOURCES += \
-    Headers/overlayhandler.cpp \
-    Headers/spc.cpp \
-    Sources/Encoderlpd.cpp \
-    Sources/dclconccontroller.cpp \
-    Sources/OBMHandler.cpp \
-    Sources/main.cpp \
-    Sources/fcdecodificator.cpp \
-    Sources/CommandDispatcher.cpp \
-    Sources/Commands/AddCommand.cpp \
-    Sources/Commands/CenterCommand.cpp \
-    Sources/Commands/DeleteCommand.cpp \
-    Sources/Commands/ListCommand.cpp \
-    Sources/clientsocket.cpp \
-    Sources/configuration.cpp \
-    Sources/stdinreader.cpp
+INCLUDEPATH += \
+    src/ \
+    src/controller/ \
+    src/controller/commands/ \
+    src/model/ \
+    src/model/decoders/ \
+    src/model/network/ \
+    src/model/obm/ \
+    src/model/overlays/ \
+    src/model/utils/ \
+    src/model/enums/ \
+    src/view/ \
+
 
 HEADERS += \
-    Headers/BaseCommand.h \
-    Headers/Commands/IOBMHandler.h \
-    Headers/EchoCommand.h \
-    Headers/IDecodificator.h \
-    Headers/OBMHandler.h \
-    Headers/fcdecodificator.h \
-    Headers/ICommand.h \
-    Headers/CommandContext.h \
-    Headers/CommandParser.h \
-    Headers/CommandRegistry.h \
-    Headers/qek.h \
-    Headers/Commands/AddCommand.h \
-    Headers/Commands/CenterCommand.h \
-    Headers/Commands/DeleteCommand.h \
-    Headers/Commands/ListCommand.h \
-    Headers/ConsoleUtils.h \
-    Headers/Encoderlpd.h \
-    Headers/IInputParser.h \
-    Headers/ansi.h \
-    Headers/clientsocket.h \
-    Headers/commanddispatcher.h \
-    Headers/configuration.h \
-    Headers/overlayhandler.h \
-    Headers/spc.h \
-    Headers/stdinreader.h \
-    Sources/dclconccontroller.h
+    src/controller/commandRegistry.h \
+    src/controller/commanddispatcher.h \
+    src/controller/commands/addCommand.h \
+    src/controller/commands/centerCommand.h \
+    src/controller/commands/deleteCommand.h \
+    src/controller/commands/iCommand.h \
+    src/controller/commands/listCommand.h \
+    src/controller/dclConcController.h \
+    src/controller/overlayHandler.h \
+    src/model/commandContext.h \
+    src/model/decoders/concDecoder.h \
+    src/model/decoders/iDecoder.h \
+    src/model/decoders/lpdEncoder.h \
+    src/model/enums/enums.h \
+    src/model/network/clientSocket.h \
+    src/model/obm/iOBMHandler.h \
+    src/model/obm/obmHandler.h \
+    src/model/overlays/spc.h \
+    src/model/qek.h \
+    src/model/utils/configuration.h \
+    src/model/entities/track.h \
+    src/model/utils/consoleUtils.h \
+    src/view/CommandParser.h \
+    src/view/ansi.h \
+    src/view/iInputParser.h \
+    src/view/stdinreader.h
 
-RESOURCES += resources.qrc
+SOURCES += \
+    src/controller/commandDispatcher.cpp \
+    src/controller/commands/addCommand.cpp \
+    src/controller/commands/centerCommand.cpp \
+    src/controller/commands/deleteCommand.cpp \
+    src/controller/commands/listCommand.cpp \
+    src/controller/dclConcController.cpp \
+    src/controller/overlayHandler.cpp \
+    src/main.cpp \
+    src/model/decoders/concDecoder.cpp \
+    src/model/decoders/lpdEncoder.cpp \
+    src/model/network/clientSocket.cpp \
+    src/model/obm/obmHandler.cpp \
+    src/model/overlays/spc.cpp \
+    src/model/entities/track.cpp \
+    src/model/utils/configuration.cpp \
+    src/view/stdinreader.cpp
+
