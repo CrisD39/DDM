@@ -6,20 +6,19 @@
 class Track {
 public:
     Track() = default;
-    Track(int id, Type type, const QString& identity, double x, double y);
+    Track(int id, Type type, Identity identity, double x, double y);
 
     // Getters
     int id() const;
-    Track type() const;
-    const QString& identity() const;
+    Type type() const;
+    Identity identity() const;
     double x() const;
     double y() const;
 
     // Setters (sin noexcept)
     void setId(int id);
-    void setType(Track type);
-    void setIdentity(const QString& identity);
-    void setIdentity(QString&& identity); // overload move
+    void setType(Type type);
+    void setIdentity(Identity identity);
     void setX(double x);
     void setY(double y);
 
