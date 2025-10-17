@@ -1,25 +1,67 @@
-QT = core
+QT += core network
+CONFIG += console c++17
+TEMPLATE = app
+TARGET = DDM
 
-CONFIG += c++17 cmdline
+RESOURCES += resources.qrc
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+INCLUDEPATH += \
+    src/ \
+    src/controller/ \
+    src/controller/commands/ \
+    src/model/ \
+    src/model/decoders/ \
+    src/model/network/ \
+    src/model/obm/ \
+    src/model/overlays/ \
+    src/model/utils/ \
+    src/model/enums/ \
+    src/view/ \
 
-SOURCES += \
-        CommandDispatcher.cpp \
-        main.cpp
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    BaseCommand.h \
-    CommandContext.h \
-    CommandParser.h \
-    CommandRegistry.h \
-    EchoCommand.h \
-    ICommand.h \
-    IInputParser.h
+    src/controller/commandRegistry.h \
+    src/controller/commanddispatcher.h \
+    src/controller/commands/addCommand.h \
+    src/controller/commands/centerCommand.h \
+    src/controller/commands/deleteCommand.h \
+    src/controller/commands/iCommand.h \
+    src/controller/commands/listCommand.h \
+    src/controller/dclConcController.h \
+    src/controller/overlayHandler.h \
+    src/model/commandContext.h \
+    src/model/decoders/concDecoder.h \
+    src/model/decoders/iDecoder.h \
+    src/model/decoders/lpdEncoder.h \
+    src/model/enums/enums.h \
+    src/model/network/clientSocket.h \
+    src/model/obm/iOBMHandler.h \
+    src/model/obm/obmHandler.h \
+    src/model/overlays/spc.h \
+    src/model/qek.h \
+    src/model/utils/configuration.h \
+    src/model/entities/track.h \
+    src/model/utils/consoleUtils.h \
+    src/view/CommandParser.h \
+    src/view/ansi.h \
+    src/view/iInputParser.h \
+    src/view/stdinreader.h
+
+SOURCES += \
+    src/controller/commandDispatcher.cpp \
+    src/controller/commands/addCommand.cpp \
+    src/controller/commands/centerCommand.cpp \
+    src/controller/commands/deleteCommand.cpp \
+    src/controller/commands/listCommand.cpp \
+    src/controller/dclConcController.cpp \
+    src/controller/overlayHandler.cpp \
+    src/main.cpp \
+    src/model/decoders/concDecoder.cpp \
+    src/model/decoders/lpdEncoder.cpp \
+    src/model/network/clientSocket.cpp \
+    src/model/obm/obmHandler.cpp \
+    src/model/overlays/spc.cpp \
+    src/model/entities/track.cpp \
+    src/model/utils/configuration.cpp \
+    src/view/stdinreader.cpp
+
