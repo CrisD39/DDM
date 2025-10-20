@@ -10,22 +10,22 @@ encoderLPD::encoderLPD() {}
 
 
 QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track &track) const {
-    using TT = TrackType;
 
     // Definimos todas las combinaciones conocidas
-    static const QMap<QPair<TT, QString>, QPair<uint8_t, uint8_t>> map = {
-                                                                          {{TT::Friendly, "s"}, {0x1E, 0x00}},
-                                                                          {{TT::Friendly, "a"}, {0x02, 0x00}},
-                                                                          {{TT::Friendly, "b"}, {0x1A, 0x00}},
-                                                                          {{TT::Enemy,    "s"}, {0x1F, 0x00}},
-                                                                          {{TT::Enemy,    "a"}, {0x03, 0x00}},
-                                                                          {{TT::Enemy,    "b"}, {0x1B, 0x00}},
-                                                                          {{TT::Unknown,  "s"}, {0x1D, 0xE0}},
-                                                                          {{TT::Unknown,  "a"}, {0x01, 0xE0}},
-                                                                          {{TT::Unknown,  "b"}, {0x19, 0xE0}},
-                                                                          };
+    static const QMap<QPair<Identity, QString>, QPair<uint8_t, uint8_t>> map = {
+      {{Identity::ConfFriend,   "s"}, {0x1E, 0x00}},
+      {{Identity::ConfFriend,   "a"}, {0x02, 0x00}},
+      {{Identity::ConfFriend,   "b"}, {0x1A, 0x00}},
+      {{Identity::ConfHostile,  "s"}, {0x1F, 0x00}},
+      {{Identity::ConfHostile,  "a"}, {0x03, 0x00}},
+      {{Identity::ConfHostile,  "b"}, {0x1B, 0x00}},
+      {{Identity::EvalUnknown,  "s"}, {0x1D, 0xE0}},
+      {{Identity::EvalUnknown,  "a"}, {0x01, 0xE0}},
+      {{Identity::EvalUnknown,  "b"}, {0x19, 0xE0}},
+      };
 
-    QPair<TT, QString> key(track.type, track.identity.toLower());
+    QPair<Identity, QString> key(track.getIdentity(), TrackData::toQString(track.getIdentity()).toLower());
+
     if (map.contains(key))
         return map.value(key);
     return {0x1D, 0xE0}; // default Unknown-s
@@ -87,7 +87,7 @@ QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
     bytes.append(static_cast<char>(0x00));
     bytes.append(static_cast<char>(0x00));
 
-    QString octalId = QString("%1").arg(track.id, 4, 8, QChar('0'));
+    QString octalId = QString("%1").arg(track.getId(), 4, 8, QChar('0'));
     for (QChar c : octalId) {
         bytes.append(static_cast<char>(c.toLatin1()));
     }
@@ -101,8 +101,8 @@ QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
 
 QByteArray encoderLPD::buildAB2Message(const Track &track) {
     QByteArray buffer;
-    buffer.append(encodeCoordinate(track.x, AB2_ID_X));
-    buffer.append(encodeCoordinate(track.y, AB2_ID_Y));
+    buffer.append(encodeCoordinate(track.getX(), AB2_ID_X));
+    buffer.append(encodeCoordinate(track.getY(), AB2_ID_Y));
     buffer.append(buildSymbolBytes(track));
     return buffer;
 }

@@ -11,7 +11,7 @@ CommandResult DeleteCommand::execute(const CommandInvocation& inv, CommandContex
     if (!ok) return {false, "ID inválido"};
 
     for (int i=0; i<ctx.tracks.size(); ++i) {
-        if (ctx.tracks[i].id == id) {
+        if (ctx.tracks[i].getId() == id) {
             ctx.tracks.removeAt(i);
             return {true, QString("OK delete → id=%1").arg(id)};
         }

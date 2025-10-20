@@ -7,17 +7,9 @@
 #include <QStringConverter>   // Qt 6.x
 #include <QList>
 #include <QString>
+#include "entities/track.h"
 
 // Dominio de tracks
-
-
-struct Track {
-    int id = 0;
-    TrackType type = TrackType::Unknown;
-    QString identity; // de flags -s|-a|-b (opcional)
-    double x = 0.0;
-    double y = 0.0;
-};
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {

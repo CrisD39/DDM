@@ -2,7 +2,7 @@
 #include "spc.h"
 #include <QDebug>
 
-void SPC::execute20() { addTrack("-s");}
+void SPC::execute20() { addTrack(Type::Surface);}
 void SPC::execute21() {}
 void SPC::execute22() {}
 void SPC::execute23() {}

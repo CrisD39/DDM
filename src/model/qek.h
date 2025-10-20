@@ -5,6 +5,10 @@
 #include <QString>
 #include <QDebug>
 
+using Type      = TrackData::Type;
+using Identity  = TrackData::Identity;
+using TrackMode = TrackData::TrackMode;
+
 enum class Qek : int {
     QEK_20 = 20,  QEK_21 = 21,  QEK_22 = 22,  QEK_23 = 23,  QEK_24 = 24,  QEK_25 = 25,  QEK_26 = 26,  QEK_27 = 27,
     QEK_30 = 30,  QEK_31 = 31,  QEK_32 = 32,  QEK_33 = 33,  QEK_34 = 34,  QEK_35 = 35,  QEK_36 = 36,  QEK_37 = 37,
@@ -63,15 +67,15 @@ public:
     virtual void execute57() {}
 
 //quick
-    void addTrack(QString identity){
-        Track tr;
-        tr.id        = ctx->nextTrackId++;
-        tr.type      = TrackType::Unknown;
-        tr.identity  = identity;
-        tr.x         = obmHandler->getPosition().first;
-        tr.y         = obmHandler->getPosition().second;
-
-        ctx->tracks.append(tr);
+    void addTrack(Type type){
+        Track track(
+            ctx->nextTrackId++,
+            type,
+            Identity::EvalUnknown,
+            obmHandler->getPosition().first,
+            obmHandler->getPosition().second
+            );
+        ctx->tracks.append(track);
     }
 
     void setContext(CommandContext * ctx){this->ctx = ctx;}

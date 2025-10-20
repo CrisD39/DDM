@@ -8,6 +8,10 @@
 #include <QPair>
 #include <QMap>
 
+using Type      = TrackData::Type;
+using Identity  = TrackData::Identity;
+using TrackMode = TrackData::TrackMode;
+
 class encoderLPD : public QObject
 {
     Q_OBJECT

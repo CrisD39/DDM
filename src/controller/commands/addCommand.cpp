@@ -3,15 +3,7 @@
     y coordenadas `<x> <y>`; actualiza `ctx.tracks`.
 */
 #include "Commands/addCommand.h"
-
-
-static inline QString typeToString(TrackType t) {
-    switch (t) {
-    case TrackType::Friendly: return "friendly";
-    case TrackType::Enemy:    return "enemy";
-    default:                  return "unknown";
-    }
-}
+#include "enums.h"
 
 
 static bool takeNumber(const QString& s, double& out) {
@@ -29,7 +21,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     int idx = 0;
     QString identity;          // -s | -a | -b (opcional)
     bool hasType = false;      // -f | -e | -u (obligatorio)
-    TrackType t = TrackType::Unknown;
+    Track* track = new Track();
 
     // ---------- PARSEO DE FLAGS ----------
     while (idx < args.size()) {
@@ -45,19 +37,20 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         }
 
         const QString f = tok.toLower();
-
-        if (f == "-s" || f == "-a" || f == "-b") {
-            identity = f.mid(1);   // "s" | "a" | "b"
-            ++idx;
-            continue;
-        }
+        
+        if (f == "s")
+            track->setType(Type::Surface);
+        else if(f == "-a")
+            track->setType(Type::Air);
+        else if(f == "-b")
+            track->setType(Type::Subsurface);
 
         if (f == "-f" || f == "-e" || f == "-u") {
             if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
             hasType = true;
-            if (f == "-f")      t = TrackType::Friendly;
-            else if (f == "-e") t = TrackType::Enemy;
-            else                t = TrackType::Unknown;
+            if (f == "-f")      track->setIdentity(Identity::ConfFriend);
+            else if (f == "-e") track->setIdentity(Identity::ConfHostile);
+            else                track->setIdentity(Identity::EvalUnknown);
             ++idx;
             continue;
         }
@@ -90,21 +83,17 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     }
 
     // ---------- ALTA DEL TRACK ----------
-    Track tr;
-    tr.id        = ctx.nextTrackId++;
-    tr.type      = t;
-    tr.identity  = identity;    // puede ser vacío
-    tr.x         = x;
-    tr.y         = y;
+    track->setId(ctx.nextTrackId++);;
+    track->setX(x);
+    track->setY(y);
 
-    ctx.tracks.append(tr);
+    ctx.tracks.append(*track);
 
-    const QString identStr = tr.identity.isEmpty() ? "-" : tr.identity;
     return { true,
             QString("OK add → id=%1 ident=%3 type=%2 x=%4 y=%5")
-                .arg(tr.id)
-                .arg(typeToString(tr.type))
-                .arg(identStr)
-                .arg(tr.x, 0, 'f', 3)
-                .arg(tr.y, 0, 'f', 3) };
+                .arg(track->getId())
+                .arg(TrackData::toQString(track->getType()))
+                .arg(TrackData::toQString(track->getIdentity()))
+                .arg(track->getX(), 0, 'f', 3)
+                .arg(track->getY(), 0, 'f', 3) };
 }
