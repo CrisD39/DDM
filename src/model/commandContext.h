@@ -8,7 +8,7 @@
 #include <QList>
 #include <QString>
 #include "entities/track.h"
-
+#include "entities/cursorEntity.h"
 // Dominio de tracks
 
 struct CommandContext {
@@ -30,7 +30,12 @@ struct CommandContext {
     QList<Track> tracks;
     int nextTrackId = 1;
 
+    QList<CursorEntity> cursors;
+    int nextCursorId = 1;
+
     // "center" global
     double centerX = 0.0;
     double centerY = 0.0;
+
 };
+

@@ -8,6 +8,35 @@
 
 encoderLPD::encoderLPD() {}
 
+QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
+    QByteArray bigBuffer;
+
+    bigBuffer.append(static_cast<char>(HEADER_BYTES[0]));
+    bigBuffer.append(static_cast<char>(HEADER_BYTES[1]));
+    int palabrasTracks = (ctx.tracks.size() * 6) + 2 + 9;
+    bigBuffer.append(static_cast<char>(palabrasTracks & 0xFF));
+
+    //center
+
+    bigBuffer.append(encodeCoordinate(ctx.centerX, AB1_ID_X)); // V=1 y ID=1001
+    bigBuffer.append(encodeCoordinate(ctx.centerY, AB1_ID_Y)); // ID=1011
+
+
+    bigBuffer.append(reinterpret_cast<const char*>(INVALID_OWNSHIP), sizeof(INVALID_OWNSHIP));
+    bigBuffer.append(buildOBM());
+
+    for (const auto &track : ctx.tracks) {
+        bigBuffer.append(buildAB2Message(track));
+    }
+
+    bigBuffer.append(reinterpret_cast<const char*>(PADDING_BYTES), sizeof(PADDING_BYTES));
+
+    QByteArray header = bigBuffer.left(3);
+    QByteArray rest   = bigBuffer.mid(3);
+    rest = negateData(rest);
+
+    return header + rest;
+}
 
 QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track &track) const {
 
@@ -116,33 +145,6 @@ QByteArray encoderLPD::buildOBM()
     buffer.append(static_cast<char>(0x00));
     buffer.append(static_cast<char>(EOMM));
     return buffer;
-}
-
-QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
-    QByteArray bigBuffer;
-
-    bigBuffer.append(static_cast<char>(HEADER_BYTES[0]));
-    bigBuffer.append(static_cast<char>(HEADER_BYTES[1]));
-    int palabrasTracks = (ctx.tracks.size() * 6) + 2 + 9;
-    bigBuffer.append(static_cast<char>(palabrasTracks & 0xFF));
-
-    bigBuffer.append(encodeCoordinate(ctx.centerX, AB1_ID_X)); // V=1 y ID=1001
-    bigBuffer.append(encodeCoordinate(ctx.centerY, AB1_ID_Y)); // ID=1011
-
-    bigBuffer.append(reinterpret_cast<const char*>(INVALID_OWNSHIP), sizeof(INVALID_OWNSHIP));
-    bigBuffer.append(buildOBM());
-
-    for (const auto &track : ctx.tracks) {
-        bigBuffer.append(buildAB2Message(track));
-    }
-
-    bigBuffer.append(reinterpret_cast<const char*>(PADDING_BYTES), sizeof(PADDING_BYTES));
-
-    QByteArray header = bigBuffer.left(3);
-    QByteArray rest   = bigBuffer.mid(3);
-    rest = negateData(rest);
-
-    return header + rest;
 }
 
 QByteArray encoderLPD::negateData(const QByteArray &data) {

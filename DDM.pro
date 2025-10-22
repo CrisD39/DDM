@@ -33,6 +33,7 @@ HEADERS += \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
+    src/model/entities/cursorEntity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/obm/iOBMHandler.h \
@@ -58,6 +59,7 @@ SOURCES += \
     src/main.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
+    src/model/entities/cursorEntity.cpp \
     src/model/network/clientSocket.cpp \
     src/model/obm/obmHandler.cpp \
     src/model/overlays/spc.cpp \
