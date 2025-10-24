@@ -42,9 +42,9 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         // Identidad: -s | -a | -b
         if (f == "-s" || f == "-a" || f == "-b") {
             hasIdent = true;
-            if      (f == "-s") ident = Identity::ConfFriend;
-            else if (f == "-a") ident = Identity::ConfHostile;
-            else                ident = Identity::EvalUnknown;
+            if      (f == "-s") type = Type::Surface;
+            else if (f == "-a") type = Type::Air;
+            else                type = Type::Subsurface;
             ++idx;
             continue;
         }
@@ -53,9 +53,9 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         if (f == "-f" || f == "-e" || f == "-u") {
             if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
             hasType = true;
-            if      (f == "-f") type = Type::Surface;
-            else if (f == "-e") type = Type::Air;
-            else                type = Type::Subsurface;
+            if      (f == "-f") ident = Identity::ConfFriend;
+            else if (f == "-e") ident = Identity::ConfHostile;
+            else                ident = Identity::EvalUnknown;
             ++idx;
             continue;
         }
