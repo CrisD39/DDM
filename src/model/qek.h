@@ -66,16 +66,50 @@ public:
     virtual void execute56() {}
     virtual void execute57() {}
 
-//quick
-    void addTrack(Type type){
-        Track track(
-            ctx->nextTrackId++,
-            type,
-            Identity::EvalUnknown,
-            obmHandler->getPosition().first,
-            obmHandler->getPosition().second
+    //quick
+    void addTrack(Type type, TrackMode mode) {
+        const auto pos = obmHandler->getPosition(); // QPair<float,float>
+        ctx->emplaceTrackFront(
+            ctx->nextTrackId++,     // id
+            type,                   // type
+            Identity::Pending,      // identidad inicial
+            mode,                   // modo
+            pos.first,              // x
+            pos.second              // y
             );
-        ctx->tracks.append(track);
+    }
+
+    bool wipeTrack() {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if (!t) return false;
+
+        const int id = t->getId();
+        const bool ok = ctx->eraseTrackById(id);
+        if (!ok) {
+            qWarning() << "QEK::wipeTrack: no se pudo borrar id=" << id;
+        }
+        return ok;
+    }
+
+    bool assignTrackMode(TrackMode mode) {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx); // busca (más nuevo primero)
+        if (!t) return false;
+
+        t->setTrackMode(mode);  // setter existente en Track
+        return true;
+    }
+
+    bool changeIdentity(Identity identity) {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if (!t) return false;           // no hay track cerca
+        t->setIdentity(identity);       // setter expuesto por Track
+        return true;
     }
 
     void setContext(CommandContext * ctx){this->ctx = ctx;}

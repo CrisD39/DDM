@@ -33,3 +33,24 @@ void OBMHandler::updateRange(int newRange)
         qDebug() << "new Range for the boys" << range;
     }
 }
+
+Track* OBMHandler::OBMAssociationProcess(CommandContext* ctx) {
+    if (!ctx) return nullptr;
+
+    auto& tracks = ctx->getTracks();
+    for (Track& tr : tracks) {
+        const double d = getDistanceFromTrack(tr);
+        if (d < 0.02) {
+            return &tr;
+        }
+    }
+    return nullptr;
+}
+
+
+double OBMHandler::getDistanceFromTrack(const Track& t) const {
+    const double dx = static_cast<double>(obmPosition.xPosition) - t.getX();
+    const double dy = static_cast<double>(obmPosition.yPosition) - t.getY();
+    const double d  = std::hypot(dx, dy);
+    return d / static_cast<double>(range);
+}

@@ -2,7 +2,7 @@
     Comando `add`: crea un `Track` con flags `-s|-a|-b` (identidad) y `-f|-e|-u` (tipo),
     y coordenadas `<x> <y>`; actualiza `ctx.tracks`.
 */
-#include "Commands/addCommand.h"
+#include "commands/addCommand.h"
 #include "enums.h"
 
 
@@ -19,50 +19,44 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     }
 
     int idx = 0;
-    QString identity;          // -s | -a | -b (opcional)
-    bool hasType = false;      // -f | -e | -u (obligatorio)
-    Track* track = new Track();
+    bool hasType = false;       // -f | -e | -u (obligatorio, TIPO)
+    bool hasIdent = false;      // -s | -a | -b (opcional, IDENTIDAD)
+    Type type = Type::Surface;  // default si querés otro, cámbialo
+    Identity ident = Identity::Pending;
+
+    auto isNumericToken = [](const QString& tok) {
+        return tok.startsWith('-') && tok.size() > 1 && (tok[1].isDigit() || tok[1] == '.');
+    };
 
 
     // ---------- PARSEO DE FLAGS ----------
     while (idx < args.size()) {
         const QString tok = args[idx];
-
-        // número negativo (p.ej. "-50" o "-12.3") => NO es flag
-        if (tok.startsWith('-') && tok.size() > 1 && (tok[1].isDigit() || tok[1] == '.')) {
-            break;
-        }
-        // si no empieza con '-', terminó la sección de flags
-        if (!tok.startsWith('-')) {
-            break;
-        }
+        if (isNumericToken(tok) || !tok.startsWith('-')) break;
 
         const QString f = tok.toLower();
 
-        if (f == "-s"){
-            track->setType(Type::Surface);
-            ++idx;
-            continue;
-        } else if(f == "-a") {
-            track->setType(Type::Air);
-            ++idx;
-            continue;
-        } else if(f == "-b") {
-            track->setType(Type::Subsurface);
-            ++idx;
-            continue;
-        }
-        if (f == "-f" || f == "-e" || f == "-u") {
-            if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
-            hasType = true;
-            if (f == "-f")      track->setIdentity(Identity::ConfFriend);
-            else if (f == "-e") track->setIdentity(Identity::ConfHostile);
-            else                track->setIdentity(Identity::EvalUnknown);
+        // Identidad: -s | -a | -b
+        if (f == "-s" || f == "-a" || f == "-b") {
+            hasIdent = true;
+            if      (f == "-s") ident = Identity::ConfFriend;
+            else if (f == "-a") ident = Identity::ConfHostile;
+            else                ident = Identity::EvalUnknown;
             ++idx;
             continue;
         }
 
-        // Flag desconocida
+        // Tipo: -f | -e | -u
+        if (f == "-f" || f == "-e" || f == "-u") {
+            if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
+            hasType = true;
+            if      (f == "-f") type = Type::Surface;
+            else if (f == "-e") type = Type::Air;
+            else                type = Type::Subsurface;
+            ++idx;
+            continue;
+        }
+
         return {false, QString("Flag no soportada: %1").arg(tok)};
     }
 
@@ -79,38 +73,34 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         return {false, "Coordenadas inválidas. Deben ser números (x y)."};
     }
     idx += 2;
-
-    // (si te quedan tokens extras, lo marcamos)
     if (idx < args.size()) {
         return {false, "Argumentos de más. Uso: " + usage()};
     }
-
     if (x < -255 || x > 255 || y < -255 || y > 255) {
-        return {false, QString("Coordenadas fuera de rango. Deben estar entre -256 y 256.")};
+        return {false, "Coordenadas fuera de rango. Deben estar entre -256 y 256."};
     }
 
-    int newId;
-    if (!ctx.freeIds.isEmpty()) {
-        // política: reutilizar el MENOR ID libre primero (predecible)
-        std::sort(ctx.freeIds.begin(), ctx.freeIds.end());
-        newId = ctx.freeIds.takeFirst();
-    } else {
-        newId = ctx.nextTrackId++;
-    }
+    // ---------- ALTA DEL TRACK (in-place al frente, O(1)) ----------
+    const int id = ctx.nextTrackId++;
+    Track& t = ctx.emplaceTrackFront(
+        id,
+        type,
+        ident,          // Identity (si no vino flag, queda lo que seteaste como default)
+        TrackMode::Auto, // si en tu diseño viene de otro lado, reemplazalo
+        x,
+        y
+        );
 
+    // (si necesitás tocar algo más del track, podés hacerlo ahora con 't')
 
-    // ---------- ALTA DEL TRACK ----------
-    track->setId(ctx.nextTrackId++);;
-    track->setX(x);
-    track->setY(y);
-
-    ctx.tracks.append(*track);
-
-    return { true,
-            QString("OK add → id=%1 ident=%3 type=%2 x=%4 y=%5")
-                .arg(track->getId())
-                .arg(TrackData::toQString(track->getType()))
-                .arg(TrackData::toQString(track->getIdentity()))
-                .arg(track->getX(), 0, 'f', 3)
-                .arg(track->getY(), 0, 'f', 3) };
+    return {
+        true,
+        QString("OK add → id=%1 ident=%3 type=%2 x=%4 y=%5")
+            .arg(t.getId())
+            .arg(TrackData::toQString(t.getType()))
+            .arg(TrackData::toQString(t.getIdentity()))
+            .arg(t.getX(), 0, 'f', 3)
+            .arg(t.getY(), 0, 'f', 3)
+    };
 }
+
