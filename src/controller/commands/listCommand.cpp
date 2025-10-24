@@ -6,16 +6,15 @@
 
 CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
-    if (ctx.tracks.isEmpty()) return {true, "(sin tracks)"};
+
+    const auto& tracks = ctx.getTracks();
+    if (tracks.empty()) return {true, "(sin tracks)"};
 
     QString out;
     out += "ID  | TYPE     | IDENT |      X   |      Y\n";
     out += "----+----------+-------+----------+----------\n";
 
-    for (const auto& track : ctx.tracks) {
-        // const QString typeStr = enumToQString(t.getType()); // <- sin switch
-        // const QString ident   = (t.getIdentity().isEmpty() ? "-" : t.identity);
-
+    for (const Track& track : tracks) {  // más nuevos primero (push_front)
         out += QString("%1 | %2 | %3 | %4 | %5\n")
                    .arg(track.getId(), 3)
                    .arg(TrackData::toQString(track.getType()).left(8).leftJustified(8, ' '))
@@ -24,6 +23,7 @@ CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext&
                    .arg(QString::number(track.getY(), 'f', 3).rightJustified(8, ' '));
     }
 
-    out.chop(1);
+    out.chop(1); // quitar el último '\n'
     return {true, out};
 }
+

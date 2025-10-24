@@ -18,7 +18,6 @@ class encoderLPD : public QObject
 public:
     explicit encoderLPD();
     QByteArray buildFullMessage(const CommandContext &ctx);
-
     void setOBMHandler(OBMHandler* oh){this->obmHandler = oh;}
 
 private:
@@ -26,6 +25,7 @@ private:
     QByteArray encodeCoordinate(double value, uint8_t idBits, bool AP = true, bool PV = false, bool LS = false);
     QByteArray buildSymbolBytes(const Track &track) const;
     QPair<uint8_t, uint8_t> symbolFor(const Track &track) const;
+    uint8_t trackModeFor(const Track &track) const;
     QByteArray negateData(const QByteArray &data);
 
     OBMHandler *obmHandler;
