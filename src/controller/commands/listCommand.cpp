@@ -1,29 +1,69 @@
 /*
-    Comando `list`/`ls`: imprime tabla con `id`, `type`, `ident`, `x`, `y` de los tracks existentes.
+    Comando `list`: muestra la lista de `Track` actuales con formato tabular.
+    Incluye cabecera, separadores y columnas con ancho fijo definido por constantes.
 */
-#include "Commands/listCommand.h"
-#include "enums.h"         // Q_NAMESPACE + enum class Type {...}
+
+#include "commands/listCommand.h"
+#include "enums.h"
+#include "entities/track.h"
+#include <QString>
+#include <QTextStream>
+#include <iomanip>
 
 CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
 
-    const auto& tracks = ctx.getTracks();
-    if (tracks.empty()) return {true, "(sin tracks)"};
+    const auto& tracks = ctx.tracks;
 
-    QString out;
-    out += "ID  | TYPE     | IDENT |      X   |      Y\n";
-    out += "----+----------+-------+----------+----------\n";
-
-    for (const Track& track : tracks) {  // más nuevos primero (push_front)
-        out += QString("%1 | %2 | %3 | %4 | %5\n")
-                   .arg(track.getId(), 3)
-                   .arg(TrackData::toQString(track.getType()).left(8).leftJustified(8, ' '))
-                   .arg(TrackData::toQString(track.getIdentity()).left(5).leftJustified(5, ' '))
-                   .arg(QString::number(track.getX(), 'f', 3).rightJustified(8, ' '))
-                   .arg(QString::number(track.getY(), 'f', 3).rightJustified(8, ' '));
+    if (tracks.empty()) {
+        return {true, "No hay tracks cargados."};
     }
 
-    out.chop(1); // quitar el último '\n'
-    return {true, out};
-}
+    // ======= CONFIGURACIÓN DE COLUMNAS =======
+    const int W_ID     = 4;
+    const int W_TYPE   = 12;
+    const int W_IDENT  = 10;
+    const int W_COORD  = 12;
 
+    // ======= IMPRESIÓN DE ENCABEZADO =======
+    ctx.out << QString("+%1+%2+%3+%4+%5+\n")
+                   .arg(QString(W_ID,     '-'))
+                   .arg(QString(W_TYPE,   '-'))
+                   .arg(QString(W_IDENT,  '-'))
+                   .arg(QString(W_COORD,  '-'))
+                   .arg(QString(W_COORD,  '-'));
+
+    ctx.out << QString("|%1|%2|%3|%4|%5|\n")
+                   .arg(" ID",    W_ID,   ' ')
+                   .arg(" TYPE",  W_TYPE, ' ')
+                   .arg(" IDENT", W_IDENT,' ')
+                   .arg(" X",     W_COORD,' ')
+                   .arg(" Y",     W_COORD,' ');
+
+    ctx.out << QString("+%1+%2+%3+%4+%5+\n")
+                   .arg(QString(W_ID,     '-'))
+                   .arg(QString(W_TYPE,   '-'))
+                   .arg(QString(W_IDENT,  '-'))
+                   .arg(QString(W_COORD,  '-'))
+                   .arg(QString(W_COORD,  '-'));
+
+    // ======= IMPRESIÓN DE CADA TRACK =======
+    for (const Track& t : tracks) {
+        ctx.out << QString("|%1|%2|%3|%4|%5|\n")
+        .arg(QString(" %1").arg(t.getId()),                   W_ID,   ' ')
+            .arg(QString(" %1").arg(TrackData::toQString(t.getType())),   W_TYPE, ' ')
+            .arg(QString(" %1").arg(TrackData::toQString(t.getIdentity())),W_IDENT,' ')
+            .arg(QString(" %1").arg(t.getX(), 0, 'f', 3),          W_COORD,' ')
+            .arg(QString(" %1").arg(t.getY(), 0, 'f', 3),          W_COORD,' ');
+    }
+
+    // ======= PIE DE TABLA =======
+    ctx.out << QString("+%1+%2+%3+%4+%5+\n")
+                   .arg(QString(W_ID,     '-'))
+                   .arg(QString(W_TYPE,   '-'))
+                   .arg(QString(W_IDENT,  '-'))
+                   .arg(QString(W_COORD,  '-'))
+                   .arg(QString(W_COORD,  '-'));
+
+    return {true, ""};
+}

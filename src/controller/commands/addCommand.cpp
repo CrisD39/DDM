@@ -4,7 +4,7 @@
 */
 #include "commands/addCommand.h"
 #include "enums.h"
-
+#include <algorithm> // por las dudas, aunque no lo usemos acá
 
 static bool takeNumber(const QString& s, double& out) {
     bool ok = false; double v = s.toDouble(&ok);
@@ -21,13 +21,16 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     int idx = 0;
     bool hasType = false;       // -f | -e | -u (obligatorio, TIPO)
     bool hasIdent = false;      // -s | -a | -b (opcional, IDENTIDAD)
-    Type type = Type::Surface;  // default si querés otro, cámbialo
-    Identity ident = Identity::Pending;
+    Type type = Type::Surface;          // default
+    Identity ident = Identity::Pending; // default
 
     auto isNumericToken = [](const QString& tok) {
-        return tok.startsWith('-') && tok.size() > 1 && (tok[1].isDigit() || tok[1] == '.');
+        // Token numérico permite "-12", "-12.3", "12", "12.3", ".5", "-.5"
+        bool digitLike = (!tok.isEmpty() && (tok[0].isDigit() || tok[0] == '-' || tok[0] == '.'));
+        if (!digitLike) return false;
+        bool okX=false; tok.toDouble(&okX);
+        return okX;
     };
-
 
     // ---------- PARSEO DE FLAGS ----------
     while (idx < args.size()) {
@@ -76,22 +79,21 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     if (idx < args.size()) {
         return {false, "Argumentos de más. Uso: " + usage()};
     }
-    if (x < -255 || x > 255 || y < -255 || y > 255) {
+    if (x < -256 || x > 256 || y < -256 || y > 256) {
         return {false, "Coordenadas fuera de rango. Deben estar entre -256 y 256."};
     }
 
-    // ---------- ALTA DEL TRACK (in-place al frente, O(1)) ----------
-    const int id = ctx.nextTrackId++;
+    // ---------- ALTA DEL TRACK ----------
+    const int id = ctx.acquireId();   // toma menor ID libre o nextTrackId
+
     Track& t = ctx.emplaceTrackFront(
         id,
         type,
-        ident,          // Identity (si no vino flag, queda lo que seteaste como default)
-        TrackMode::Auto, // si en tu diseño viene de otro lado, reemplazalo
+        ident,            // si no vino flag, queda el default
+        TrackMode::Auto,  // ajustá si tu diseño lo define distinto
         x,
         y
         );
-
-    // (si necesitás tocar algo más del track, podés hacerlo ahora con 't')
 
     return {
         true,
@@ -103,4 +105,3 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
             .arg(t.getY(), 0, 'f', 3)
     };
 }
-

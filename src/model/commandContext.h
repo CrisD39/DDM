@@ -3,7 +3,8 @@
 #include <QStringConverter>
 #include <QString>
 #include <QPointF>
-#include <deque>        // ← usamos deque para push_front O(1)
+#include <deque>        // usamos deque para push_front O(1)
+#include <set>          // pool de IDs libres ordenado (menor primero)
 #include "entities/track.h"
 
 struct CommandContext {
@@ -12,17 +13,24 @@ struct CommandContext {
         err.setEncoding(QStringConverter::Utf8);
     }
 
+
     QTextStream out;
     QTextStream err;
+
+
     QString     lastCommandLine;
     quint64     lastCommandHash = 0;
     int         commandCounter  = 1;
 
-    std::deque<Track> tracks;
+    // Datos de tracks
+    std::deque<Track> tracks;   // almacenamiento principal
     int               nextTrackId = 1;
+    std::set<int>     freeIds;
+
 
     double centerX = 0.0;
     double centerY = 0.0;
+
 
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
@@ -56,4 +64,26 @@ struct CommandContext {
         return false;
     }
 
+    // Toma el menor ID libre si existe si no, usa nextTrackId y lo incrementa
+    inline int acquireId() {
+        if (!freeIds.empty()) {
+            int id = *freeIds.begin();
+            freeIds.erase(freeIds.begin());
+            return id;
+        }
+        return nextTrackId++;
+    }
+
+    inline void releaseId(int id) {
+        if (id == nextTrackId - 1) {            nextTrackId--;
+            while (!freeIds.empty()) {
+                auto it = freeIds.find(nextTrackId - 1);
+                if (it == freeIds.end()) break;
+                freeIds.erase(it);
+                nextTrackId--;
+            }
+        } else {
+            freeIds.insert(id);
+        }
+    }
 };
