@@ -28,6 +28,7 @@ struct CommandContext {
 
     // Estado del dominio
     QList<Track> tracks;
+    QVector<int> freeIds;
     int nextTrackId = 1;
 
     // "center" global

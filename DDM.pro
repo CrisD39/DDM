@@ -20,8 +20,8 @@ INCLUDEPATH += \
 
 
 HEADERS += \
+    src/controller/commandDispatcher.h \
     src/controller/commandRegistry.h \
-    src/controller/commanddispatcher.h \
     src/controller/commands/addCommand.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \

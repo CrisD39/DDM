@@ -23,6 +23,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     bool hasType = false;      // -f | -e | -u (obligatorio)
     Track* track = new Track();
 
+
     // ---------- PARSEO DE FLAGS ----------
     while (idx < args.size()) {
         const QString tok = args[idx];
@@ -37,14 +38,20 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         }
 
         const QString f = tok.toLower();
-        
-        if (f == "s")
-            track->setType(Type::Surface);
-        else if(f == "-a")
-            track->setType(Type::Air);
-        else if(f == "-b")
-            track->setType(Type::Subsurface);
 
+        if (f == "-s"){
+            track->setType(Type::Surface);
+            ++idx;
+            continue;
+        } else if(f == "-a") {
+            track->setType(Type::Air);
+            ++idx;
+            continue;
+        } else if(f == "-b") {
+            track->setType(Type::Subsurface);
+            ++idx;
+            continue;
+        }
         if (f == "-f" || f == "-e" || f == "-u") {
             if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
             hasType = true;
@@ -81,6 +88,16 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     if (x < -255 || x > 255 || y < -255 || y > 255) {
         return {false, QString("Coordenadas fuera de rango. Deben estar entre -256 y 256.")};
     }
+
+    int newId;
+    if (!ctx.freeIds.isEmpty()) {
+        // política: reutilizar el MENOR ID libre primero (predecible)
+        std::sort(ctx.freeIds.begin(), ctx.freeIds.end());
+        newId = ctx.freeIds.takeFirst();
+    } else {
+        newId = ctx.nextTrackId++;
+    }
+
 
     // ---------- ALTA DEL TRACK ----------
     track->setId(ctx.nextTrackId++);;

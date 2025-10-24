@@ -13,8 +13,17 @@ CommandResult DeleteCommand::execute(const CommandInvocation& inv, CommandContex
     for (int i=0; i<ctx.tracks.size(); ++i) {
         if (ctx.tracks[i].getId() == id) {
             ctx.tracks.removeAt(i);
+
+            // Si borro el último ID asignado y no hay huecos, achico el contador
+            if (id == ctx.nextTrackId - 1 && ctx.freeIds.isEmpty()) {
+                ctx.nextTrackId--;
+            } else {
+                ctx.freeIds.append(id); // guardo para reutilizar
+            }
+
             return {true, QString("OK delete → id=%1").arg(id)};
         }
     }
     return {false, QString("No existe el track id=%1").arg(id)};
 }
+

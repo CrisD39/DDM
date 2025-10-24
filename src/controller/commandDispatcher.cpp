@@ -37,7 +37,7 @@ void CommandDispatcher::onLine(const QString& line) {
         ctx_.commandCounter++;
     };
 
-
+    qDebug() << "llegue aca";
     // Intento parsear
     CommandInvocation inv;
     QString perr;
