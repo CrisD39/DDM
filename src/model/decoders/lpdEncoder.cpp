@@ -29,7 +29,7 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
 
     //cursores
     for (const auto &cursors : ctx.cursors){
-        bigBuffer.aapend(buildAB3Message(cursors));
+        bigBuffer.append(buildAB3Message(cursors));
     }
 
     bigBuffer.append(reinterpret_cast<const char*>(PADDING_BYTES), sizeof(PADDING_BYTES));
@@ -50,19 +50,19 @@ QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
         {
             Identity::Pending, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x60} },
-                { Type::Air,         {0x02, 0x60} },
+                { Type::Air,         {0x01, 0x60} },
                 { Type::Subsurface,  {0x1A, 0x60} },
             }
         },{
             Identity::PossFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x64} },
-                { Type::Air,         {0x02, 0x64} },
+                { Type::Air,         {0x01, 0x64} },
                 { Type::Subsurface,  {0x1A, 0x64} },
             }
         },{
             Identity::PossHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x7C} },
-                { Type::Air,         {0x02, 0x7C} },
+                { Type::Air,         {0x01, 0x7C} },
                 { Type::Subsurface,  {0x1A, 0x7C} },
             }
         },{
@@ -83,6 +83,12 @@ QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
                 { Type::Air,         {0x01, 0x00} },
                 { Type::Subsurface,  {0x19, 0x00} },
             }
+        },{
+            Identity::Heli, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x0A, 0x00} },
+                { Type::Air,         {0x0A, 0x00} },
+                { Type::Subsurface,  {0x0A, 0x00} },
+                }
         },
     };
 
@@ -170,8 +176,9 @@ QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, b
     return bytes;
 }
 
-QByteArray encoderLPD::encodeAngle(double value, unint8_t idBits, bool Ap, bool PV, bool LS)
+QByteArray encoderLPD::encodeAngle(double value, uint8_t idBits, bool Ap, bool PV, bool LS)
 {
+    QByteArray bytes;
 
 }
 
@@ -226,12 +233,6 @@ QByteArray encoderLPD::buildOBM()
     return buffer;
 }
 
-QByteArray encoderLPD::buildOwnCurs()
-{
-    QByteArray buffer;
-    buffer.append(enc)
-
-}
 
 QByteArray encoderLPD::negateData(const QByteArray &data) {
     QByteArray invertedData = data;

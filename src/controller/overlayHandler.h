@@ -12,14 +12,13 @@ public:
     explicit OverlayHandler(QObject* parent = nullptr);
 
     void setContext(CommandContext *ctx){this->ctx = ctx;};
-    void setOBMHandler(OBMHandler *oh){this->obmHandler = oh;}
-    void setOwnCurse(OwnCurs *ownCurs);
+    void setOBMHandler(OBMHandler *oh){this->obmHandler = oh;};
 public slots:
     void onNewOverlay(const QString& overlayName); // e.g. "SPC", "OPS", "APC"
     void onNewQEK(const QString& qekStr);          // e.g. "QEK_20"
     void onNewCursor();
     void ownCursOn();
-    void updateHandWheel(const QPair<qfloat16 ,qfloat16> update);
+
 
 private:
     std::unique_ptr<QEK> myQEK;
@@ -28,5 +27,4 @@ private:
     OBMHandler* obmHandler;
     std::unique_ptr<QEK> instanceNewQEK(const QString& overlayName);
     void executeQEK(Qek which);
-    OwnCurs* ownCurse;
 };

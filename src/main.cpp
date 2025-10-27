@@ -80,12 +80,14 @@ int main(int argc, char* argv[]) {
     auto* decoder = new ConcDecoder();
     auto* obmHandler = new OBMHandler();
     auto* controller = new DclConcController(socket, decoder, &app);
-    auto* ownCurse = new OwnCurse(ctx,obmHandler);
+    auto* ownCurse = new OwnCurs(ctx,obmHandler);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
     overlayHandler->setOBMHandler(obmHandler);
-    overlayHandler->setOwnCurse(ownCurse);
+
+
+    //conectar señales del decoder con ownCurse
 
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);

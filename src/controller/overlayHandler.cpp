@@ -1,14 +1,16 @@
 // overlayhandler.cpp
 #include "overlayHandler.h"
+#include "aaw.h"
+#include "asw.h"
+#include "ew.h"
+#include "heco.h"
+#include "linco.h"
+#include "ops.h"
 #include "spc.h"
+#include "apc.h"
 #include <QDebug>
 
 OverlayHandler::OverlayHandler(QObject* parent) : QObject(parent) {}
-
-void OverlayHandler::setOwnCurse(OwnCurse *ownCurs)
-{
-    ownCurse = ownCurs;
-}
 
 void OverlayHandler::onNewOverlay(const QString& overlayName) {
     if (overlayName == currentOverlay && myQEK) return;
@@ -21,7 +23,6 @@ void OverlayHandler::onNewOverlay(const QString& overlayName) {
     } else {
         qDebug() << "[OverlayHandler] Overlay activo =" << overlayName;
     }
-    owncurse = new OwnCurs()
 }
 
 void OverlayHandler::onNewQEK(const QString& qekStr) {
@@ -44,13 +45,18 @@ void OverlayHandler::onNewCursor()
 
 void OverlayHandler::ownCursOn()
 {
-    ownCurse->
+
 }
 
 std::unique_ptr<QEK> OverlayHandler::instanceNewQEK(const QString& overlayName) {
     if (overlayName.compare("SPC", Qt::CaseInsensitive) == 0) return std::make_unique<SPC>();
-    // if (overlayName.compare("OPS", Qt::CaseInsensitive) == 0) return std::make_unique<OPS>();
-    // if (overlayName.compare("APC", Qt::CaseInsensitive) == 0) return std::make_unique<APC>();
+    if (overlayName.compare("LINCO", Qt::CaseInsensitive) == 0) return std::make_unique<LINCO>();
+    if (overlayName.compare("HECO", Qt::CaseInsensitive) == 0) return std::make_unique<HECO>();
+    if (overlayName.compare("APC", Qt::CaseInsensitive) == 0) return std::make_unique<APC>();
+    if (overlayName.compare("ASW", Qt::CaseInsensitive) == 0) return std::make_unique<ASW>();
+    if (overlayName.compare("OPS", Qt::CaseInsensitive) == 0) return std::make_unique<OPS>();
+    if (overlayName.compare("AAW", Qt::CaseInsensitive) == 0) return std::make_unique<AAW>();
+    if (overlayName.compare("EW", Qt::CaseInsensitive) == 0) return std::make_unique<EW>();
     return nullptr;
 }
 

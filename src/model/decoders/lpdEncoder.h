@@ -24,7 +24,7 @@ private:
     QByteArray buildAB2Message(const Track &track);
     QByteArray buildAB3Message(const CursorEntity &cursor);
     QByteArray encodeCoordinate(double value, uint8_t idBits, bool AP = true, bool PV = false, bool LS = false);
-    QByteArray encodeAngle(double value, unint8_t idBits, bool Ap = true, bool PV = false, bool LS = false);
+    QByteArray encodeAngle(double value, uint8_t idBits, bool Ap = true, bool PV = false, bool LS = false);
     QByteArray buildSymbolBytes(const Track &track) const;
     QPair<uint8_t, uint8_t> symbolFor(const Track &track) const;
     uint8_t trackModeFor(const Track &track) const;

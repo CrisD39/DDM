@@ -95,39 +95,39 @@ void ConcDecoder::decodeWord2()
 {
     currentBit = WORD_SIZE * 1;
 
-    QVector<bool> decodedDisplayMode(16, false);
-    QJsonObject displayModeJson = jsonFile["DISPLAY_MODE_MASTER_DECODE"].toObject();
+    QVector<bool> decoded(16, false);
+    const QJsonObject centerJson = jsonFile["CENTER_MASTER_DECODE"].toObject();
 
-    // Display Mode Izquierda
-    for (int i = 0; i <= 7; i++) {
-        bool bitVal = inComingMessage->testBit(currentBit);
-        decodedDisplayMode[i] = bitVal;
-        if (bitVal) {
-            // qDebug()<< "bit valido";
-            QString key = QString::number(currentBit);
-            if (displayModeJson.contains(key)) {
-                QString decoded = displayModeJson[key].toString();
-                //qDebug() << "[Decodificación] DISPLAY MODE IZQ bit" << i << "→" << decoded;
+    // ---------- LADO IZQUIERDO: bits 0..7 ----------
+    for (int i = 0; i < 8; ++i) {
+        const bool now = inComingMessage->testBit(currentBit);
+        decoded[i] = now;
+
+        // (Opcional) log/lookup del JSON
+        if (now) {
+            const QString key = QString::number(currentBit);
+            if (centerJson.contains(key)) {
+                const QString txt = centerJson[key].toString();
+                // qDebug() << "[CENTER IZQ]" << i << "->" << txt;
             }
         }
-        currentBit++;
-    }
 
-    // Display Mode Derecha
-    for (int i = 0; i <= 7; i++) {
-        bool bitVal = inComingMessage->testBit(currentBit);
-        decodedDisplayMode[8 + i] = bitVal;
-        if (bitVal) {
-            QString key = QString::number(currentBit);
-            if (displayModeJson.contains(key)) {
-                QString decoded = displayModeJson[key].toString();
-                //qDebug() << "[Decodificación] DISPLAY MODE DER bit" << i << "→" << decoded;
+        // Flanco ascendente SOLO para índices 0..5 (los 6 items del enum)
+        if (i <= 5 && !prevCenterLeft[i] && now) {
+            switch (i) {
+            case 0: emit cuOrOffCentLeft(); break;
+            case 1: emit cuOrCentLeft();    break;
+            case 2: emit offCentLeft();     break;
+            case 3: emit centLeft();        break;
+            case 4: emit resetObmLeft();    break;
+            case 5: emit dataReqLeft();     break;
             }
         }
-        currentBit++;
-    }
 
-    this->displayMode = decodedDisplayMode;
+        // Actualizar memoria
+        prevCenterLeft[i] = now;
+        ++currentBit;
+    }
 }
 
 // ====================== MENSAJE 4 ======================
