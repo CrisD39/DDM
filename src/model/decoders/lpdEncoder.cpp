@@ -1,7 +1,5 @@
 #include "lpdEncoder.h"
 #include "commandContext.h"
-#include "qdebug.h"
-
 #include <QByteArray>
 #include <QtEndian>
 #include <QtGlobal>
@@ -29,6 +27,11 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
         bigBuffer.append(buildAB2Message(track));
     }
 
+    //cursores
+    for (const auto &cursors : ctx.cursors){
+        bigBuffer.aapend(buildAB3Message(cursors));
+    }
+
     bigBuffer.append(reinterpret_cast<const char*>(PADDING_BYTES), sizeof(PADDING_BYTES));
 
     QByteArray header = bigBuffer.left(3);
@@ -38,26 +41,88 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     return header + rest;
 }
 
-QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track &track) const {
+QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
+{
+    const Type t = track.getType();
+    const Identity id = track.getIdentity();
+
+    static const QHash<Identity, QHash<Type, QPair<uint8_t,uint8_t>>> LUT = {
+        {
+            Identity::Pending, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1D, 0x60} },
+                { Type::Air,         {0x02, 0x60} },
+                { Type::Subsurface,  {0x1A, 0x60} },
+            }
+        },{
+            Identity::PossFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1D, 0x64} },
+                { Type::Air,         {0x02, 0x64} },
+                { Type::Subsurface,  {0x1A, 0x64} },
+            }
+        },{
+            Identity::PossHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1D, 0x7C} },
+                { Type::Air,         {0x02, 0x7C} },
+                { Type::Subsurface,  {0x1A, 0x7C} },
+            }
+        },{
+            Identity::ConfFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1E, 0x00} },
+                { Type::Air,         {0x02, 0x00} },
+                { Type::Subsurface,  {0x1A, 0x00} },
+            }
+        },{
+            Identity::ConfHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1F, 0x00} },
+                { Type::Air,         {0x03, 0x00} },
+                { Type::Subsurface,  {0x1B, 0x00} },
+            }
+        },{
+            Identity::EvalUnknown, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x1D, 0x00} },
+                { Type::Air,         {0x01, 0x00} },
+                { Type::Subsurface,  {0x19, 0x00} },
+            }
+        },
+    };
+
+    // Lookup
+    const auto itId = LUT.find(id);
+    if (itId != LUT.end()) {
+        const auto& byType = itId.value();
+        const auto itT = byType.find(t);
+        if (itT != byType.end()) {
+            return itT.value();
+        }
+    }
+
+    // Fallback: "Evaluated unknown – Surface" (era tu default {0x1D,0xE0})
+    return {0x1D, 0xE0};
+}
+
+uint8_t encoderLPD::trackModeFor(const Track &track) const {
 
     // Definimos todas las combinaciones conocidas
-    static const QMap<QPair<Identity, QString>, QPair<uint8_t, uint8_t>> map = {
-      {{Identity::ConfFriend,   "s"}, {0x1E, 0x00}},
-      {{Identity::ConfFriend,   "a"}, {0x02, 0x00}},
-      {{Identity::ConfFriend,   "b"}, {0x1A, 0x00}},
-      {{Identity::ConfHostile,  "s"}, {0x1F, 0x00}},
-      {{Identity::ConfHostile,  "a"}, {0x03, 0x00}},
-      {{Identity::ConfHostile,  "b"}, {0x1B, 0x00}},
-      {{Identity::EvalUnknown,  "s"}, {0x1D, 0xE0}},
-      {{Identity::EvalUnknown,  "a"}, {0x01, 0xE0}},
-      {{Identity::EvalUnknown,  "b"}, {0x19, 0xE0}},
-      };
+    static const QMap<TrackMode,uint8_t> map = {
+        {TrackMode::FC1, 0x31},
+        {TrackMode::FC2, 0x32},
+        {TrackMode::FC3, 0x33},
+        {TrackMode::FC4, 0x34},
+        {TrackMode::FC5, 0x35},
+        {TrackMode::Auto, 0x2E},
+        {TrackMode::TentativeAuto, 0x08},
+        {TrackMode::AutomaticLost, 0x11},
+        {TrackMode::RAM, 0x2B},
+        {TrackMode::DR, 0x2D},
+        {TrackMode::Lost, 0x1E},
+        {TrackMode::Blank, 0x00},
+    };
 
-    QPair<Identity, QString> key(track.getIdentity(), TrackData::toQString(track.getIdentity()).toLower());
+    TrackMode tm = track.getTrackMode();
 
-    if (map.contains(key))
-        return map.value(key);
-    return {0x1D, 0xE0}; // default Unknown-s
+    if (map.contains(tm))
+        return map.value(tm);
+    return 0x01;
 }
 
 QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, bool PV, bool LS) {
@@ -105,6 +170,11 @@ QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, b
     return bytes;
 }
 
+QByteArray encoderLPD::encodeAngle(double value, unint8_t idBits, bool Ap, bool PV, bool LS)
+{
+
+}
+
 QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
     QByteArray bytes;
 
@@ -112,7 +182,8 @@ QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
     bytes.append(static_cast<char>(sym1));
     bytes.append(static_cast<char>(sym2));
 
-    bytes.append(static_cast<char>(0x2B));
+    bytes.append(trackModeFor(track));
+
     bytes.append(static_cast<char>(0x00));
     bytes.append(static_cast<char>(0x00));
 
@@ -130,10 +201,18 @@ QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
 
 QByteArray encoderLPD::buildAB2Message(const Track &track) {
     QByteArray buffer;
+    buffer.append(buildSymbolBytes(track));
     buffer.append(encodeCoordinate(track.getX(), AB2_ID_X));
     buffer.append(encodeCoordinate(track.getY(), AB2_ID_Y));
-    buffer.append(buildSymbolBytes(track));
     return buffer;
+}
+
+QByteArray encoderLPD::buildAB3Message(const CursorEntity &cursor)
+{
+    QByteArray buffer;
+
+    buffer.append(encodeCoordinate(cursor.getCoordinates().first, AB3_ID_X));
+    buffer.append(encodeCoordinate(cursor.getCoordinates().second, AB3_ID_Y));
 }
 
 QByteArray encoderLPD::buildOBM()
@@ -145,6 +224,13 @@ QByteArray encoderLPD::buildOBM()
     buffer.append(static_cast<char>(0x00));
     buffer.append(static_cast<char>(EOMM));
     return buffer;
+}
+
+QByteArray encoderLPD::buildOwnCurs()
+{
+    QByteArray buffer;
+    buffer.append(enc)
+
 }
 
 QByteArray encoderLPD::negateData(const QByteArray &data) {

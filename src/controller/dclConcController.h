@@ -6,14 +6,14 @@
 #include <QByteArray>
 
 class clientSocket;
-class FCDecodificator;
+class ConcDecoder;
 
 class DclConcController : public QObject
 {
     Q_OBJECT
 public:
     explicit DclConcController(clientSocket* socket,
-                               FCDecodificator* decodificator,
+                               ConcDecoder* decodificator,
                                QObject* parent = nullptr);
 
     QByteArray negateData(const QByteArray &data);
@@ -23,7 +23,7 @@ private slots:
 
 private:
     clientSocket* m_socket;
-    FCDecodificator* m_decoder;
+    ConcDecoder* m_decoder;
     QTimer m_timer;
 
     static QByteArray buildPedidoDclConc();

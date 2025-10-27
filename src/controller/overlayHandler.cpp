@@ -5,6 +5,11 @@
 
 OverlayHandler::OverlayHandler(QObject* parent) : QObject(parent) {}
 
+void OverlayHandler::setOwnCurse(OwnCurse *ownCurs)
+{
+    ownCurse = ownCurs;
+}
+
 void OverlayHandler::onNewOverlay(const QString& overlayName) {
     if (overlayName == currentOverlay && myQEK) return;
     currentOverlay = overlayName;
@@ -16,6 +21,7 @@ void OverlayHandler::onNewOverlay(const QString& overlayName) {
     } else {
         qDebug() << "[OverlayHandler] Overlay activo =" << overlayName;
     }
+    owncurse = new OwnCurs()
 }
 
 void OverlayHandler::onNewQEK(const QString& qekStr) {
@@ -34,6 +40,11 @@ void OverlayHandler::onNewQEK(const QString& qekStr) {
 void OverlayHandler::onNewCursor()
 {
 
+}
+
+void OverlayHandler::ownCursOn()
+{
+    ownCurse->
 }
 
 std::unique_ptr<QEK> OverlayHandler::instanceNewQEK(const QString& overlayName) {
