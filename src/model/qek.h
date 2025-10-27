@@ -5,6 +5,10 @@
 #include <QString>
 #include <QDebug>
 
+using Type      = TrackData::Type;
+using Identity  = TrackData::Identity;
+using TrackMode = TrackData::TrackMode;
+
 enum class Qek : int {
     QEK_20 = 20,  QEK_21 = 21,  QEK_22 = 22,  QEK_23 = 23,  QEK_24 = 24,  QEK_25 = 25,  QEK_26 = 26,  QEK_27 = 27,
     QEK_30 = 30,  QEK_31 = 31,  QEK_32 = 32,  QEK_33 = 33,  QEK_34 = 34,  QEK_35 = 35,  QEK_36 = 36,  QEK_37 = 37,
@@ -62,16 +66,50 @@ public:
     virtual void execute56() {}
     virtual void execute57() {}
 
-//quick
-    void addTrack(QString identity){
-        Track tr;
-        tr.id        = ctx->nextTrackId++;
-        tr.type      = TrackType::Unknown;
-        tr.identity  = identity;
-        tr.x         = obmHandler->getPosition().first;
-        tr.y         = obmHandler->getPosition().second;
+    //quick
+    void addTrack(Type type, TrackMode mode) {
+        const auto pos = obmHandler->getPosition(); // QPair<float,float>
+        ctx->emplaceTrackFront(
+            ctx->nextTrackId++,     // id
+            type,                   // type
+            Identity::Pending,      // identidad inicial
+            mode,                   // modo
+            pos.first,              // x
+            pos.second              // y
+            );
+    }
 
-        ctx->tracks.append(tr);
+    bool wipeTrack() {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if (!t) return false;
+
+        const int id = t->getId();
+        const bool ok = ctx->eraseTrackById(id);
+        if (!ok) {
+            qWarning() << "QEK::wipeTrack: no se pudo borrar id=" << id;
+        }
+        return ok;
+    }
+
+    bool assignTrackMode(TrackMode mode) {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx); // busca (más nuevo primero)
+        if (!t) return false;
+
+        t->setTrackMode(mode);  // setter existente en Track
+        return true;
+    }
+
+    bool changeIdentity(Identity identity) {
+        if (!ctx || !obmHandler) return false;
+
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if (!t) return false;           // no hay track cerca
+        t->setIdentity(identity);       // setter expuesto por Track
+        return true;
     }
 
     void setContext(CommandContext * ctx){this->ctx = ctx;}

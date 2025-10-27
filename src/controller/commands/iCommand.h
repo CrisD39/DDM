@@ -13,6 +13,10 @@
 
 #include "commandContext.h"
 
+using Type      = TrackData::Type;
+using Identity  = TrackData::Identity;
+using TrackMode = TrackData::TrackMode;
+
 struct CommandResult {
     bool ok = true;
     QString message;
