@@ -39,6 +39,7 @@ HEADERS += \
     src/model/obm/iOBMHandler.h \
     src/model/obm/obmHandler.h \
     src/model/overlays/spc.h \
+    src/model/ownCursor/owncurs.h \
     src/model/qek.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
@@ -64,6 +65,7 @@ SOURCES += \
     src/model/obm/obmHandler.cpp \
     src/model/overlays/spc.cpp \
     src/model/entities/track.cpp \
+    src/model/ownCursor/owncurs.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 

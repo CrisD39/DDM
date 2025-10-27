@@ -4,6 +4,7 @@
 #include <memory>
 #include "obmHandler.h"
 #include "qek.h"
+#include "ownCursor/owncurs.h"
 
 class OverlayHandler : public QObject {
     Q_OBJECT
@@ -15,6 +16,7 @@ public:
 public slots:
     void onNewOverlay(const QString& overlayName); // e.g. "SPC", "OPS", "APC"
     void onNewQEK(const QString& qekStr);          // e.g. "QEK_20"
+    void onNewCursor();
 
 private:
     std::unique_ptr<QEK> myQEK;
@@ -23,4 +25,5 @@ private:
     OBMHandler* obmHandler;
     std::unique_ptr<QEK> instanceNewQEK(const QString& overlayName);
     void executeQEK(Qek which);
+    OwnCurs* owncurse;
 };

@@ -1,51 +1,67 @@
 #ifndef CURSORENTITY_H
 #define CURSORENTITY_H
 
-#include <qpair.h>
-#include <qfloat16.h>
-#include <qstring.h>
+#include <QObject>    // ← necesario: hereda de QObject
+#include <QPair>      // ← usa QPair
+#include <qfloat16.h> // ← si tu Qt no trae qfloat16, cambia a float/qreal
+#include <QString>
 #include <QMetaType>
 
-class CursorEntity
-{
-private:
-    QPair<qfloat16,qfloat16> coordinate;
-    qfloat16 cursorAngle;
-    qfloat16 cursorLenght;
-    int lineType;
-    int cursorId;
+class CursorEntity : public QObject {
+    Q_OBJECT
 
-    public:
-    CursorEntity(): lineType(0){}
-    ~CursorEntity() = default;
-    CursorEntity(const CursorEntity &) = default;
+public:
+    // Constructores (QObject no es copiable: borrar copias)
+    explicit CursorEntity(QObject* parent = nullptr)
+        : QObject(parent), coordinates{}, cursorAngle(0), cursorLength(0), lineType(0), cursorId(0) {}
 
-    // Constructor
-    CursorEntity(
-        QPair<qfloat16, qfloat16> coordinates,
-        qfloat16 cursorAngle,
-        qfloat16 cursorLength,
-        int lineType
-        );
+    CursorEntity(QPair<qfloat16, qfloat16> coords,
+                 qfloat16 angle,
+                 qfloat16 length,
+                 int lineType,
+                 QObject* parent = nullptr)
+        : QObject(parent), coordinates(coords), cursorAngle(angle),
+        cursorLength(length), lineType(lineType), cursorId(0) {}
+
+    CursorEntity(const CursorEntity&)            = delete; // QObject no permite copia
+    CursorEntity& operator=(const CursorEntity&) = delete;
+    CursorEntity(CursorEntity&&)                 = delete;
+    CursorEntity& operator=(CursorEntity&&)      = delete;
 
     // Getters
-    QPair<qfloat16, qfloat16> getCoordinates() const;
-    qfloat16 getCursorAngle() const;
-    qfloat16 getCursorLength() const;
-    int getLineType() const;
+    QPair<qfloat16, qfloat16> getCoordinates() const { return coordinates; }
+    qfloat16 getCursorAngle()  const { return cursorAngle; }
+    qfloat16 getCursorLength() const { return cursorLength; }
+    int      getLineType()     const { return lineType; }
+    int      getCursorId()     const { return cursorId; }
 
     // Setters
-    void setCursorId(int id);
-    void setCoordinates(QPair<qfloat16, qfloat16> coordinates);
-    void setCursorAngle(qfloat16 cursorAngle);
-    void setCursorLength(qfloat16 cursorLength);
-    void setLineType(int lineType);
+    void setCursorId(int id)                                   { cursorId = id; }
+    void setCoordinates(const QPair<qfloat16, qfloat16>& c)    { coordinates = c; }
+    void setCursorAngle(qfloat16 angle)                        { cursorAngle = angle; }
+    void setCursorLength(qfloat16 length)                      { cursorLength = length; }
+    void setLineType(int lt)                                   { lineType = lt; }
 
-    void toString();
+    // Utilidad
+    QString toString() const; // mejor devolver QString
 
-    bool operator==(const CursorEntity &other) const;
+    bool operator==(const CursorEntity& other) const {
+        return cursorId == other.cursorId
+               && lineType == other.lineType
+               && coordinates == other.coordinates
+               && cursorAngle == other.cursorAngle
+               && cursorLength == other.cursorLength;
+    }
 
+private:
+    QPair<qfloat16, qfloat16> coordinates{};
+    qfloat16 cursorAngle{};
+    qfloat16 cursorLength{};
+    int      lineType{};
+    int      cursorId{};
 };
 
-Q_DECLARE_METATYPE(CursorMessage)
+// Registrar el *puntero* (los QObject no se registran por valor)
+Q_DECLARE_METATYPE(CursorEntity*)
+
 #endif // CURSORENTITY_H
