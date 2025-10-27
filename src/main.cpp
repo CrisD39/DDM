@@ -94,6 +94,23 @@ int main(int argc, char* argv[]) {
     QObject::connect(decoder, &ConcDecoder::newRollingBall, obmHandler, &OBMHandler::updatePosition);
     encoder->setOBMHandler(obmHandler);
 
+    QObject::connect(decoder, &ConcDecoder::offCentLeft,  [ctx,obmHandler](){
+        ctx->setCenter(obmHandler->getPosition());
+    });
+
+    QObject::connect(decoder, &ConcDecoder::centLeft,  [ctx](){
+        ctx->resetCenter();
+    });
+
+    QObject::connect(decoder, &ConcDecoder::resetObmLeft,  [obmHandler](){
+        obmHandler->setPosition({0.0,0.0});
+    });
+
+    QObject::connect(decoder, &ConcDecoder::dataReqLeft,  [obmHandler, ctx](){
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if(t) qDebug() << t->toString();
+    });
+
 
     QTimer timer;
 
