@@ -9,9 +9,9 @@
 #define WORD_SIZE 24
 #define WORD_COUNT 9
 
-FCDecodificator::FCDecodificator() {}
+ConcDecoder::ConcDecoder() {}
 
-void FCDecodificator::decode(const QByteArray &message)
+void ConcDecoder::decode(const QByteArray &message)
 {
     currentBit = 0;
     readJson();
@@ -28,7 +28,7 @@ void FCDecodificator::decode(const QByteArray &message)
 }
 
 
-void FCDecodificator::decodeWord1()
+void ConcDecoder::decodeWord1()
 {
     currentBit = WORD_SIZE * 0;;
 
@@ -91,7 +91,7 @@ void FCDecodificator::decodeWord1()
 
 
 // ====================== MENSAJE 2 ======================
-void FCDecodificator::decodeWord2()
+void ConcDecoder::decodeWord2()
 {
     currentBit = WORD_SIZE * 1;
 
@@ -131,7 +131,7 @@ void FCDecodificator::decodeWord2()
 }
 
 // ====================== MENSAJE 4 ======================
-void FCDecodificator::decodeWord4()
+void ConcDecoder::decodeWord4()
 {
     int word4 = WORD_SIZE * 3;
     currentBit = word4;
@@ -177,7 +177,7 @@ void FCDecodificator::decodeWord4()
 }
 
 
-void FCDecodificator::decodeWord5()
+void ConcDecoder::decodeWord5()
 {
     int word5 = WORD_SIZE * 4;
     currentBit = word5;
@@ -257,7 +257,7 @@ void FCDecodificator::decodeWord5()
     }
 }
 
-void FCDecodificator::decodeWord6()
+void ConcDecoder::decodeWord6()
 {
     // La palabra 6 empieza en el bit 24 * 5 = 120
     int word6 = WORD_SIZE * 5;  // Si las palabras van de 0–8, mantener 5; si van de 1–9, cambiar a 6
@@ -326,7 +326,7 @@ static inline qint32 signExtend(quint32 x, unsigned bits) {
     return static_cast<qint32>((x ^ sign) - sign);
 }
 
-void FCDecodificator::decodeWord7()
+void ConcDecoder::decodeWord7()
 {
     // Palabra 7 → desplazamiento base 24 * 6 = 144
     const int word7 = WORD_SIZE * 6;   // WORD_SIZE=24
@@ -348,7 +348,7 @@ void FCDecodificator::decodeWord7()
     emit newRollingBall(QPair<int,int>(dx, dy));
 }
 
-void FCDecodificator::decodeWord8()
+void ConcDecoder::decodeWord8()
 {
     // Palabra 8 → desplazamiento base 24 * 7 = 168
     int word8 = WORD_SIZE * 7;
@@ -391,7 +391,7 @@ void FCDecodificator::decodeWord8()
 
 
  // ====================== UTILIDADES ======================
- QBitArray FCDecodificator::byteArrayToBitArray(const QByteArray &byteArray)
+ QBitArray ConcDecoder::byteArrayToBitArray(const QByteArray &byteArray)
  {
      QBitArray bits(byteArray.size() * 8);
      for (int i = 0; i < byteArray.size(); ++i) {
@@ -403,7 +403,7 @@ void FCDecodificator::decodeWord8()
      return bits;
  }
 
- QByteArray FCDecodificator::bitArrayToByteArray(const QBitArray &bitArray)
+ QByteArray ConcDecoder::bitArrayToByteArray(const QBitArray &bitArray)
  {
      QByteArray byteArray((bitArray.size() + 7) / 8, 0);
      for (int i = 0; i < bitArray.size(); ++i) {
@@ -412,7 +412,7 @@ void FCDecodificator::decodeWord8()
      return byteArray;
  }
 
- void FCDecodificator::readJson()
+ void ConcDecoder::readJson()
  {
      QString jsonFilePath = ":/jsons/decodificado.json";
      QFile file(jsonFilePath);

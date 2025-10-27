@@ -56,4 +56,18 @@ struct CommandContext {
         return false;
     }
 
+    inline Track* getNextTrackById(int currentId) {
+        if (tracks.empty()) return nullptr;
+
+        // buscar índice del id
+        std::size_t i = 0;
+        for (; i < tracks.size(); ++i) {
+            if (tracks[i].getId() == currentId) break;
+        }
+        if (i == tracks.size()) return nullptr;  // id no encontrado
+
+        const std::size_t j = (i + 1) % tracks.size();  // circular
+        return &tracks[j];
+    }
+
 };

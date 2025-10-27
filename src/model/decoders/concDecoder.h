@@ -15,11 +15,11 @@ struct RollingSteps {
     QByteArray second;
 };
 
-class FCDecodificator : public IDecodificator {
+class ConcDecoder : public IDecodificator {
 Q_OBJECT
 
 public:
-    explicit FCDecodificator();
+    explicit ConcDecoder();
     void decode(const QByteArray &message) override;
 
 signals:

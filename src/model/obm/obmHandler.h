@@ -17,6 +17,7 @@ public:
     void updateRange(int newRange) override;
     double getDistanceFromTrack(const Track& t) const;
     Track* OBMAssociationProcess(CommandContext* ctx);
+    void setPosition(QPair<float, float> newPosition);
 signals:
     void newOBMPosition();
 };

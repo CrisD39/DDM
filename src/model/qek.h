@@ -112,10 +112,38 @@ public:
         return true;
     }
 
+    bool closeControl(){
+        if(!ctx || !obmHandler) return false;
+
+        Track* t= obmHandler->OBMAssociationProcess(ctx);
+        if(!t) return false;
+        closeControlTrack = t;
+        obmHandler->setPosition({t->getX(),t->getY()});
+        return true;
+    }
+
+    bool correct(){
+        if(!closeControlTrack) return false;
+        const auto pos = obmHandler->getPosition();
+        closeControlTrack->setX(pos.first);
+        closeControlTrack->setY(pos.second);
+        return true;
+    }
+
+    bool nextTrack() {
+        if(!closeControlTrack) return false;
+        Track* t = ctx->getNextTrackById(closeControlTrack->getId());
+        if(!t) return false;
+        closeControlTrack = t;
+        obmHandler->setPosition({t->getX(),t->getY()});
+        return true;
+    }
+
     void setContext(CommandContext * ctx){this->ctx = ctx;}
     void setOBMHandler(OBMHandler* oh){this->obmHandler = oh;}
 
 private:
     CommandContext* ctx;
     OBMHandler* obmHandler;
+    Track *closeControlTrack;
 };

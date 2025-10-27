@@ -5,7 +5,7 @@
 #include <QDebug>
 
 DclConcController::DclConcController(clientSocket* socket,
-                                     FCDecodificator* decodificator,
+                                     ConcDecoder* decodificator,
                                      QObject* parent)
     : QObject(parent),
     m_socket(socket),

@@ -15,9 +15,9 @@ void SPC::execute31() { assignTrackMode(TrackMode::RAM);}
 void SPC::execute32() { assignTrackMode(TrackMode::DR);}
 void SPC::execute33() { assignTrackMode(TrackMode::Lost);}
 void SPC::execute34() { assignTrackMode(TrackMode::AutomaticLost);}
-void SPC::execute35() {}
-void SPC::execute36() {}
-void SPC::execute37() {}
+void SPC::execute35() { nextTrack(); }
+void SPC::execute36() { correct(); }
+void SPC::execute37() { closeControl(); }
 void SPC::execute40() { changeIdentity(Identity::Pending);}
 void SPC::execute41() { changeIdentity(Identity::PossHostile);}
 void SPC::execute42() { changeIdentity(Identity::PossFriend);}
