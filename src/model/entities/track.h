@@ -29,6 +29,7 @@ public:
     void setX(double x);
     void setY(double y);
 
+    QString toString() const;
 private:
     int m_id{0};
     Identity m_identity{Identity::Pending};     // default como en tu struct original

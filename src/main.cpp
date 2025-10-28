@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     encoderLPD *encoder = new encoderLPD();
 
     clientSocket *socket = new clientSocket(nullptr);
-    auto* decoder = new FCDecodificator();
+    auto* decoder = new ConcDecoder();
     auto* obmHandler = new OBMHandler();
     auto* controller = new DclConcController(socket, decoder, &app);
 
@@ -86,13 +86,30 @@ int main(int argc, char* argv[]) {
     overlayHandler->setOBMHandler(obmHandler);
 
     // Conecta señales que emite el decoder
-    QObject::connect(decoder, &FCDecodificator::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
-    QObject::connect(decoder, &FCDecodificator::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
+    QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
+    QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
 
 
-    QObject::connect(decoder, &FCDecodificator::newRange, obmHandler, &OBMHandler::updateRange);
-    QObject::connect(decoder, &FCDecodificator::newRollingBall, obmHandler, &OBMHandler::updatePosition);
+    QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);
+    QObject::connect(decoder, &ConcDecoder::newRollingBall, obmHandler, &OBMHandler::updatePosition);
     encoder->setOBMHandler(obmHandler);
+
+    QObject::connect(decoder, &ConcDecoder::offCentLeft,  [ctx,obmHandler](){
+        ctx->setCenter(obmHandler->getPosition());
+    });
+
+    QObject::connect(decoder, &ConcDecoder::centLeft,  [ctx](){
+        ctx->resetCenter();
+    });
+
+    QObject::connect(decoder, &ConcDecoder::resetObmLeft,  [obmHandler](){
+        obmHandler->setPosition({0.0,0.0});
+    });
+
+    QObject::connect(decoder, &ConcDecoder::dataReqLeft,  [obmHandler, ctx](){
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if(t) qDebug() << t->toString();
+    });
 
 
     QTimer timer;
