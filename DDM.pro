@@ -1,4 +1,5 @@
-QT += core network
+QT += core network \
+    widgets
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
@@ -33,7 +34,8 @@ HEADERS += \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
-    src/model/enums/enums.h \
+    src/model/enums/enumsOwnShip.h \
+    src/model/enums/enumsTrack.h \
     src/model/network/clientSocket.h \
     src/model/obm/iOBMHandler.h \
     src/model/obm/obmHandler.h \
@@ -45,7 +47,9 @@ HEADERS += \
     src/model/overlays/ops.h \
     src/model/overlays/spc.h \
     src/model/overlays/linco.h \
+    src/model/ownShip/ownship.h \
     src/model/qek.h \
+    src/model/ownship.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
@@ -76,6 +80,7 @@ SOURCES += \
     src/model/overlays/spc.cpp \
     src/model/overlays/linco.cpp \
     src/model/entities/track.cpp \
+    src/model/ownShip/ownship.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 

@@ -3,7 +3,7 @@
     y coordenadas `<x> <y>`; actualiza `ctx.tracks`.
 */
 #include "commands/addCommand.h"
-#include "enums.h"
+#include "enumsTrack.h"
 #include <algorithm> // por las dudas, aunque no lo usemos acá
 
 static bool takeNumber(const QString& s, double& out) {

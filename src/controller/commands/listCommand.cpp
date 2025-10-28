@@ -4,7 +4,7 @@
 */
 
 #include "commands/listCommand.h"
-#include "enums.h"
+#include "enumsTrack.h"
 #include "entities/track.h"
 #include <QString>
 #include <QTextStream>
