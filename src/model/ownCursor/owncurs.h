@@ -15,8 +15,10 @@ public:
     explicit OwnCurs(CommandContext* ctx, OBMHandler* newObm, QObject* parent = nullptr);
 
 public slots:
-    void cuOrOffCent();                                                // ← faltaba 'void'
+    void cuOrOffCent();    // ← faltaba 'void'
+    void curOrCent();
     void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
+
 
 private:
     CursorEntity*   cursor = nullptr;

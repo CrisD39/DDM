@@ -127,6 +127,8 @@ void ConcDecoder::decodeWord2()
         // Actualizar memoria
         prevCenterLeft[i] = now;
         ++currentBit;
+
+        //UNO QUE CHEQUEE OWN CURS Y SE LO MANDE A OWNCURS HANDLER PARA PRENDER  APAGAR
     }
 }
 

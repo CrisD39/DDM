@@ -180,6 +180,57 @@ QByteArray encoderLPD::encodeAngle(double value, uint8_t idBits, bool Ap, bool P
 {
     QByteArray bytes;
 
+    // ESTA RRRE CHATGEPETEADO ESTO
+
+    // Normalizar a [0, 360)
+    double a = std::fmod(value, 360.0);
+    if (a < 0.0) a += 360.0;
+
+    // 12 bits: LSB = 360/4096  ⇒ code = round(a * 4096 / 360)
+    uint32_t code12 = static_cast<uint32_t>(qRound(a * (4096.0 / 360.0))) & 0x0FFF;
+    if (code12 == 4096u) code12 = 0u; // por si redondea justo 360°
+
+    // Ubicar los 12 bits en [23..12]; abajo sólo va el nibble de ID
+    uint32_t encoded = (code12 << 12) | (idBits & 0x0F);
+
+    // Empaquetar en 3 bytes (MSB primero), igual que encodeCoordinate
+    bytes.append(static_cast<char>((encoded >> 16) & 0xFF));
+    bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
+    bytes.append(static_cast<char>( encoded        & 0xFF));
+
+    return bytes;
+
+    // falta poner los bits E y v
+}
+
+QByteArray encoderLPD::encodeCursorLong(double value, int type)
+{
+    //en este metodo formo la seguna palabra del AB3 que sería codificar longitud y tipo de linea.
+
+    QByteArray bytes;
+
+    // ρ siempre no negativa. Escala Q8.8: LSB = 1/256 DM  ⇒ code = round(dm * 256)
+    if (value < 0.0) value = 0.0;
+    uint32_t code16 = static_cast<uint32_t>(qRound(value * 256.0));
+
+    // Saturar a 16 bits (0 .. 65535)  → rango ≈ 0 .. (256 - 1/256) DM
+    if (code16 > 0xFFFFu) code16 = 0xFFFFu;
+
+    // Colocar ρ en [23..8] y el tipo de línea en [3..0]; [7..4] = 0
+    uint32_t encoded = (code16 << 8) | (type & 0x0F);
+
+    // Salida en 3 bytes MSB primero (mismo estilo que el resto)
+    bytes.append(static_cast<char>((encoded >> 16) & 0xFF));
+    bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
+    bytes.append(static_cast<char>( encoded        & 0xFF));
+
+
+
+
+    return bytes;
+
+
+
 }
 
 QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
