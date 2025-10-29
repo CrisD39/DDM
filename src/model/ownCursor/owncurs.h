@@ -8,6 +8,7 @@
 #include "entities/cursorEntity.h"  // Usa setters y tipos de CursorEntity
 #include "commandContext.h"
 #include "obmHandler.h"
+#define ORIGIN {0.0,0.0}
 
 class OwnCurs : public QObject {
     Q_OBJECT
@@ -16,9 +17,9 @@ public:
 
 public slots:
     void cuOrOffCent();    // ← faltaba 'void'
-    void curOrCent();
-    void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
+    void cuOrCent();
 
+    void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
 
 private:
     CursorEntity*   cursor = nullptr;

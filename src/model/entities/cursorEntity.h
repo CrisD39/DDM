@@ -57,7 +57,7 @@ private:
     QPair<qfloat16, qfloat16> coordinates{};
     qfloat16 cursorAngle{};
     qfloat16 cursorLength{};
-    int      lineType{};
+    qint8      lineType{};
     int      cursorId{};
 };
 

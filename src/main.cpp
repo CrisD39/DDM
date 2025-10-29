@@ -80,14 +80,16 @@ int main(int argc, char* argv[]) {
     auto* decoder = new ConcDecoder();
     auto* obmHandler = new OBMHandler();
     auto* controller = new DclConcController(socket, decoder, &app);
-    auto* ownCurse = new OwnCurs(ctx,obmHandler);
+    auto* ownCurs = new OwnCurs(ctx,obmHandler);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
     overlayHandler->setOBMHandler(obmHandler);
 
-
     //conectar señales del decoder con ownCurse
+    QObject::connect(decoder, &ConcDecoder::newHandWheel, ownCurs, &OwnCurs::updateHandwheel);
+    QObject::connect(decoder, &ConcDecoder::cuOrOffCentLeft, ownCurs, &OwnCurs::cuOrOffCent);
+    QObject::connect(decoder, &ConcDecoder::cuOrCentLeft, ownCurs, &OwnCurs::cuOrCent);
 
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);

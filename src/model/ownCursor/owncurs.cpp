@@ -8,23 +8,21 @@ OwnCurs::OwnCurs(CommandContext* context, OBMHandler* newObm, QObject* parent)
 {
     // Si querés valores iniciales específicos, podés setearlos acá.
     // p.ej.: cursor->setCoordinates(QPair<qfloat16,qfloat16>(0,0));
+    cursor->setLineType(0);
 }
 
-void OwnCurs::cuOrOffCent() // coloca el origen del cursor propio en la posición actual de la obm
-{
+void OwnCurs::cuOrOffCent(){ // coloca el origen del cursor propio en la posición actual de la obm
     if (!cursor || !obm) return;
     // Asumo que OBMHandler::getPosition() devuelve QPair<qfloat16,qfloat16>
     cursor->setCoordinates(obm->getPosition());
 }
 
-void OwnCurs::curOrCent()
-{
-
+void OwnCurs::cuOrCent(){
+    cursor->setCoordinates(ORIGIN);
 }
 
-void OwnCurs::updateHandwheel(const QPair<qfloat16, qfloat16>& update)
-{
+void OwnCurs::updateHandwheel(const QPair<qfloat16, qfloat16>& update){
     if (!cursor) return;
-    cursor->setCursorAngle(update.first);   // ángu
+    cursor->setCursorAngle(update.first);   // ángulo
     cursor->setCursorLength(update.second); // largo
 }
