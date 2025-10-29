@@ -1,11 +1,8 @@
 #include "ITransport.h"
-#include "LocalIpcClient.h"
 #include "TransportFactory.h"
-#include "UdpClientAdapter.h"
 #include "lpdEncoder.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
-#include "clientSocket.h"
 #include "concDecoder.h"
 #include "overlayHandler.h"
 #include <QCoreApplication>
@@ -81,9 +78,20 @@ int main(int argc, char* argv[]) {
     encoderLPD *encoder = new encoderLPD();
     auto* decoder = new ConcDecoder();
 
-    auto transport = makeTransport(TransportKind::Udp, TransportOpts{}, &app).release();
+    bool useLocalIpc = Configuration::instance().useLocalIpc;
 
-    auto* controller = new DclConcController(transport, decoder, &app);
+    TransportOpts opts;
+    if (useLocalIpc) {
+        opts.localName = "siag_ddm";  // debe coincidir con el nombre que use el servidor (juego)
+    }
+
+    // Mantené vivo el unique_ptr (no uses release), y usá get() para el crudo
+    std::unique_ptr<ITransport> transportGuard = useLocalIpc
+        ? makeTransport(TransportKind::LocalIpc, opts, &app)
+        : makeTransport(TransportKind::Udp,       TransportOpts{}, &app);
+
+    ITransport* transport = transportGuard.get();
+    transport->start();
 
     QTimer timer;
 
