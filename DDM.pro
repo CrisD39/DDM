@@ -36,6 +36,10 @@ HEADERS += \
     src/model/entities/cursorEntity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
+    src/model/network/iTransport.h \
+    src/model/network/localipcclient.h \
+    src/model/network/transportFactory.h \
+    src/model/network/udpClientAdapter.h \
     src/model/obm/iOBMHandler.h \
     src/model/obm/obmHandler.h \
     src/model/overlays/aaw.h \
@@ -69,6 +73,9 @@ SOURCES += \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \
     src/model/network/clientSocket.cpp \
+    src/model/network/localipcclient.cpp \
+    src/model/network/transportFactory.cpp \
+    src/model/network/udpClientAdapter.cpp \
     src/model/obm/obmHandler.cpp \
     src/model/overlays/aaw.cpp \
     src/model/overlays/apc.cpp \

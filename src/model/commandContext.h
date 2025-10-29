@@ -42,6 +42,13 @@ struct CommandContext {
 
     inline QPointF center() const { return QPointF(centerX, centerY); }
 
+    inline void setCenter(QPair<float,float> c){
+        centerX = c.first;
+        centerY = c.second;
+    }
+
+    inline void resetCenter(){ setCenter({0.0,0.0});}
+
     inline Track* findTrackById(int id) {
         for (Track& t : tracks) if (t.getId() == id) return &t;
         return nullptr;
@@ -71,6 +78,7 @@ struct CommandContext {
         const std::size_t j = (i + 1) % tracks.size();  // circular
         return &tracks[j];
     }
+
 
 };
 

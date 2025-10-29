@@ -1,21 +1,21 @@
 #include "dclConcController.h"
-#include "clientSocket.h"
+#include "ITransport.h"
 #include "concDecoder.h"
 #include <QtEndian>
 #include <QDebug>
 
-DclConcController::DclConcController(clientSocket* socket,
+DclConcController::DclConcController(ITransport* link,
                                      ConcDecoder* decodificator,
                                      QObject* parent)
     : QObject(parent),
-    m_socket(socket),
+    m_link(link),
     m_decoder(decodificator)
 {
-    Q_ASSERT(m_socket);
+    Q_ASSERT(m_link);
     Q_ASSERT(m_decoder);
 
-    connect(m_socket, &clientSocket::receivedDatagram,
-            this, &DclConcController::onDatagram);
+    connect(m_link, SIGNAL(messageReceived(QByteArray)),
+            this,   SLOT(onDatagram(QByteArray)));
 
     // Timer a 100 ms para enviar PEDIDO_DCL_CONC
     m_timer.setInterval(50);
@@ -25,18 +25,14 @@ DclConcController::DclConcController(clientSocket* socket,
 
 void DclConcController::askForConcentrator()
 {
-    m_socket->sendMessage(buildPedidoDclConc());
+    m_link->send(buildPedidoDclConc());
 }
 
 void DclConcController::onDatagram(const QByteArray& datagram)
 {
     // Necesitamos al menos la primera palabra (3 bytes) para extraer secuencia
-    if (datagram.size() < 3) {
-        //qWarning() << "[DCL_CONC] Datagram demasiado corto";
-        return;
-    }
+    if (datagram.size() < 3) return;
 
-    // Primera palabra = 3 bytes (24 bits). Secuencia = últimos 15 bits (LSBs).
     // w1 = B0 B1 B2 (big-endian a 24 bits)
     const uchar b0 = static_cast<uchar>(datagram[0]);
     const uchar b1 = static_cast<uchar>(datagram[1]);
@@ -48,12 +44,12 @@ void DclConcController::onDatagram(const QByteArray& datagram)
     const quint16 seq = static_cast<quint16>(w1 & 0x7FFF); // últimos 15 bits
 
     const QByteArray ack = buildAckFromSeq(seq);
-    m_socket->sendMessage(ack);
+    // Antes: m_socket->sendMessage(ack)
+    m_link->send(ack);
 
     if (datagram.size() > 3) {
         QByteArray payload = datagram.mid(3);
         payload = negateData(payload);
-        //qDebug() << payload.toHex(' ');
         m_decoder->decode(payload);
     }
 }
