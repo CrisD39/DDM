@@ -131,6 +131,7 @@ uint8_t encoderLPD::trackModeFor(const Track &track) const {
     return 0x01;
 }
 
+//tengo que guardar todos los booleanos en el Cursor entity porque son muchos parametros
 QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, bool PV, bool LS) {
     QByteArray bytes;
 
@@ -176,62 +177,67 @@ QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, b
     return bytes;
 }
 
-QByteArray encoderLPD::encodeAngle(double value, uint8_t idBits, bool Ap, bool PV, bool LS)
+
+QByteArray encoderLPD::encodeAngle(double value, bool e, bool v)
 {
     QByteArray bytes;
 
-    // ESTA RRRE CHATGEPETEADO ESTO
-
-    // Normalizar a [0, 360)
+    // Normalizar a [0,360)
     double a = std::fmod(value, 360.0);
     if (a < 0.0) a += 360.0;
 
-    // 12 bits: LSB = 360/4096  ⇒ code = round(a * 4096 / 360)
+    // 12 bits para el ángulo: LSB = 360/4096
+    // Nota: el & 0x0FFF ya envuelve 4096 -> 0 si redondea justo 360°
     uint32_t code12 = static_cast<uint32_t>(qRound(a * (4096.0 / 360.0))) & 0x0FFF;
-    if (code12 == 4096u) code12 = 0u; // por si redondea justo 360°
 
-    // Ubicar los 12 bits en [23..12]; abajo sólo va el nibble de ID
-    uint32_t encoded = (code12 << 12) | (idBits & 0x0F);
+    // Byte/bits de control: ID en el nibble bajo + flags E/V arriba
+    uint32_t control = AB3_ID_ANGLE;          // .... .... .... 0101
+    if (e) control |= BIT_E;                  // ej: 0x40 → bit 6
+    if (v) control |= BIT_V;                  // ej: 0x20 → bit 5
 
-    // Empaquetar en 3 bytes (MSB primero), igual que encodeCoordinate
+    // Empaquetar: ángulo en [23..12], control en [11..0] (nos interesa [7..0])
+    uint32_t encoded = (code12 << 12) | (control & 0x0FFF);
+
+    // MSB primero
     bytes.append(static_cast<char>((encoded >> 16) & 0xFF));
     bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
     bytes.append(static_cast<char>( encoded        & 0xFF));
 
     return bytes;
-
-    // falta poner los bits E y v
 }
 
-QByteArray encoderLPD::encodeCursorLong(double value, int type)
-{
-    //en este metodo formo la seguna palabra del AB3 que sería codificar longitud y tipo de linea.
 
+QByteArray encoderLPD::encodeCursorLong(double dm, int type)
+{
     QByteArray bytes;
 
-    // ρ siempre no negativa. Escala Q8.8: LSB = 1/256 DM  ⇒ code = round(dm * 256)
-    if (value < 0.0) value = 0.0;
-    uint32_t code16 = static_cast<uint32_t>(qRound(value * 256.0));
-
-    // Saturar a 16 bits (0 .. 65535)  → rango ≈ 0 .. (256 - 1/256) DM
+    // ρ ≥ 0, Q8.8 (LSB = 1/256)
+    if (dm < 0.0) dm = 0.0;
+    uint32_t code16 = static_cast<uint32_t>(qRound(dm * 256.0));
     if (code16 > 0xFFFFu) code16 = 0xFFFFu;
 
-    // Colocar ρ en [23..8] y el tipo de línea en [3..0]; [7..4] = 0
-    uint32_t encoded = (code16 << 8) | (type & 0x0F);
+    // Usamos solo 12 bits para ubicar ρ en [19..8]
+    const uint32_t code12 = (code16 & 0x0FFFu);
 
-    // Salida en 3 bytes MSB primero (mismo estilo que el resto)
+    // tipo 0..7  → 000..111 (saturado y enmascarado a 3 bits)
+    const uint32_t type3 = static_cast<uint32_t>(qBound(0, type, 7)) & 0x7u;
+
+    // Construcción de la palabra de 24 bits
+    uint32_t encoded = 0;
+    encoded |= (0x7u << 20);   // [23..20] = 0111  (garantiza bit 23 = 0)
+    encoded |= (code12 << 8);  // [19..8]  = ρ(12 bits)
+    // [7..4] = 0000
+    // [3]    = 0
+    encoded |= type3;          // [2..0]   = tipo
+
+    // Empaquetado MSB-first
     bytes.append(static_cast<char>((encoded >> 16) & 0xFF));
     bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
     bytes.append(static_cast<char>( encoded        & 0xFF));
-
-
-
-
     return bytes;
-
-
-
 }
+
+
 
 QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
     QByteArray bytes;
@@ -269,6 +275,8 @@ QByteArray encoderLPD::buildAB3Message(const CursorEntity &cursor)
 {
     QByteArray buffer;
 
+    buffer.append(encodeAngle(cursor.getCursorAngle(),true,true));
+    buffer.append(encodeCursorLong(cursor.getCursorLength(),cursor.getLineType()));
     buffer.append(encodeCoordinate(cursor.getCoordinates().first, AB3_ID_X));
     buffer.append(encodeCoordinate(cursor.getCoordinates().second, AB3_ID_Y));
 }

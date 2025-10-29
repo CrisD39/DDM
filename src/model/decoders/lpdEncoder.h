@@ -24,7 +24,7 @@ private:
     QByteArray buildAB2Message(const Track &track);
     QByteArray buildAB3Message(const CursorEntity &cursor);
     QByteArray encodeCoordinate(double value, uint8_t idBits, bool AP = true, bool PV = false, bool LS = false);
-    QByteArray encodeAngle(double value, uint8_t idBits, bool Ap = true, bool PV = false, bool LS = false);
+    QByteArray encodeAngle(double value, bool e, bool v);
     QByteArray encodeCursorLong(double value,int type);
     QByteArray buildSymbolBytes(const Track &track) const;
     QPair<uint8_t, uint8_t> symbolFor(const Track &track) const;
@@ -40,11 +40,14 @@ constexpr uint8_t BIT_LS = 1 << 6;
 constexpr uint8_t BIT_PV = 1 << 5;
 constexpr uint8_t BIT_V  = 1 << 4;
 constexpr uint8_t BIT_AP = 1 << 3;
+constexpr uint8_t BIT_E =  1 << 6;
 
-constexpr quint8 AB3_ID_ANGLE = 0x0D;   // <- PONER EL REAL
-constexpr quint8 AB3_ID_RHO   = 0x0E;   // <- PONER EL REAL
-constexpr quint8 AB3_ID_X     = 0x05;   // <- PONER EL REAL
-constexpr quint8 AB3_ID_Y     = 0x07;   // <- PONER EL REAL
+
+constexpr quint8 AB3_ID_ANGLE = 0x05;
+constexpr quint8 AB3_ID_RHO   = 0x07;
+
+constexpr quint8 AB3_ID_X     = 0x06;
+constexpr quint8 AB3_ID_Y     = 0x04;
 
 constexpr uint8_t AB2_ID_X = 0x01;
 constexpr uint8_t AB2_ID_Y = 0x03;
