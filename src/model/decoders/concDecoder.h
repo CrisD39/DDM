@@ -28,6 +28,12 @@ signals:
     void newRange(int);
     void newQEK(QString);
     void newOverlay(QString);
+    void cuOrOffCentLeft();
+    void cuOrCentLeft();
+    void offCentLeft();
+    void centLeft();
+    void resetObmLeft();
+    void dataReqLeft();
 
 private:
     // Métodos de decodificación por palabra
@@ -58,6 +64,7 @@ private:
     QVector<bool> threatAssessment;
     QVector<bool> displayMode;
     QVector<bool> displaySelection;
+    QVector<bool> prevCenterLeft  = QVector<bool>(8, false);
 
     // Estados master
     QVector<bool> labelSelectionMaster;

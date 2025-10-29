@@ -16,19 +16,19 @@ QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
         {
             Identity::Pending, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x60} },
-                { Type::Air,         {0x02, 0x60} },
+                { Type::Air,         {0x01, 0x60} },
                 { Type::Subsurface,  {0x1A, 0x60} },
             }
         },{
             Identity::PossFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x64} },
-                { Type::Air,         {0x02, 0x64} },
+                { Type::Air,         {0x01, 0x64} },
                 { Type::Subsurface,  {0x1A, 0x64} },
             }
         },{
             Identity::PossHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
                 { Type::Surface,     {0x1D, 0x7C} },
-                { Type::Air,         {0x02, 0x7C} },
+                { Type::Air,         {0x01, 0x7C} },
                 { Type::Subsurface,  {0x1A, 0x7C} },
             }
         },{
@@ -49,6 +49,12 @@ QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
                 { Type::Air,         {0x01, 0x00} },
                 { Type::Subsurface,  {0x19, 0x00} },
             }
+        },{
+            Identity::Heli, QHash<Type, QPair<uint8_t,uint8_t>>{
+                { Type::Surface,     {0x0A, 0x00} },
+                { Type::Air,         {0x0A, 0x00} },
+                { Type::Subsurface,  {0x0A, 0x00} },
+                }
         },
     };
 

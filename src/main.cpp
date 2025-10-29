@@ -1,3 +1,7 @@
+#include "ITransport.h"
+#include "LocalIpcClient.h"
+#include "TransportFactory.h"
+#include "UdpClientAdapter.h"
 #include "lpdEncoder.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
@@ -75,11 +79,21 @@ int main(int argc, char* argv[]) {
     ctx->out.flush();
 
     encoderLPD *encoder = new encoderLPD();
-
-    clientSocket *socket = new clientSocket(nullptr);
     auto* decoder = new ConcDecoder();
+
+    auto transport = makeTransport(TransportKind::Udp, TransportOpts{}, &app).release();
+
+    auto* controller = new DclConcController(transport, decoder, &app);
+
+    QTimer timer;
+
+    QObject::connect(&timer, &QTimer::timeout, &timer, [ctx, encoder, transport]() {
+        transport->send(encoder->buildFullMessage(*ctx));
+    });
+
+
     auto* obmHandler = new OBMHandler();
-    auto* controller = new DclConcController(socket, decoder, &app);
+    new DclConcController(transport, decoder, &app);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
@@ -94,13 +108,25 @@ int main(int argc, char* argv[]) {
     QObject::connect(decoder, &ConcDecoder::newRollingBall, obmHandler, &OBMHandler::updatePosition);
     encoder->setOBMHandler(obmHandler);
 
-
-    QTimer timer;
-
-    QObject::connect(&timer, &QTimer::timeout, &timer, [ctx, encoder, socket]() {
-        QByteArray message = encoder->buildFullMessage(*ctx);
-        socket->sendMessage(message);
+    QObject::connect(decoder, &ConcDecoder::offCentLeft,  [ctx,obmHandler](){
+        ctx->setCenter(obmHandler->getPosition());
     });
+
+    QObject::connect(decoder, &ConcDecoder::centLeft,  [ctx](){
+        ctx->resetCenter();
+    });
+
+    QObject::connect(decoder, &ConcDecoder::resetObmLeft,  [obmHandler](){
+        obmHandler->setPosition({0.0,0.0});
+    });
+
+    QObject::connect(decoder, &ConcDecoder::dataReqLeft,  [obmHandler, ctx](){
+        Track* t = obmHandler->OBMAssociationProcess(ctx);
+        if(t) qDebug() << t->toString();
+    });
+
+
+
 
     timer.start(40);
 
