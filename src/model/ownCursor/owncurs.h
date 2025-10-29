@@ -18,8 +18,6 @@ public:
 public slots:
     void cuOrOffCent();    // ← faltaba 'void'
     void cuOrCent();
-    void offCent();
-    void cent();
 
     void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
 
