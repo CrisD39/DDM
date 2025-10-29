@@ -309,7 +309,7 @@ void ConcDecoder::decodeWord6()
     //qDebug() << "[Decodificación] Handwheel ΔΦ:" << phiValue
     //         << " Δρ:" << rhoValue;
 
-    emit signalOBM(deltasHandwhell);
+    emit newHandWheel(deltasHandwhell);
 }
 
 
