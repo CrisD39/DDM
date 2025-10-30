@@ -24,6 +24,7 @@ public:
     static inline QString toQString(Identity v)   { return enumName(v, "Unknown"); }
     static inline QString toQString(TrackMode v)  { return enumName(v, "Unknown"); }
 
+
 private:
     template <typename E>
     static inline QString enumName(E v, const char* fallback) {
@@ -32,5 +33,6 @@ private:
         return key ? QString::fromLatin1(key) : QString::fromLatin1(fallback);
     }
 };
+
 
 #endif // TYPESDATA_H
