@@ -18,13 +18,16 @@ public:
 public slots:
     void cuOrOffCent();    // ← faltaba 'void'
     void cuOrCent();
+    void ownCursActive();
 
     void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
 
 private:
-    CursorEntity*   cursor = nullptr;
+    std::optional<std::reference_wrapper<CursorEntity>> cursorRef;
     CommandContext* ctx    = nullptr;
     OBMHandler*     obm    = nullptr;
+    bool            ownCursAct = false;
+
 };
 
 #endif // OWNCURS_H

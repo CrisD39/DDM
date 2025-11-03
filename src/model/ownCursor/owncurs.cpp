@@ -1,28 +1,42 @@
 #include "owncurs.h"
 
 OwnCurs::OwnCurs(CommandContext* context, OBMHandler* newObm, QObject* parent)
-    : QObject(parent),
-    cursor(new CursorEntity(this)),   // CursorEntity hereda de QObject ⇒ dale parent
-    ctx(context),
-    obm(newObm)
-{
-    // Si querés valores iniciales específicos, podés setearlos acá.
-    // p.ej.: cursor->setCoordinates(QPair<qfloat16,qfloat16>(0,0));
-    cursor->setLineType(0);
-}
+    : QObject(parent), ctx(context), obm(newObm) {}
 
-void OwnCurs::cuOrOffCent(){ // coloca el origen del cursor propio en la posición actual de la obm
-    if (!cursor || !obm) return;
-    // Asumo que OBMHandler::getPosition() devuelve QPair<qfloat16,qfloat16>
-    cursor->setCoordinates(obm->getPosition());
+void OwnCurs::cuOrOffCent() {
+    qDebug() << "OwnCurs << cuOrOffCent PRESSED";
+    if (!cursorRef || !obm) return;
+    cursorRef->get().setCoordinates(obm->getPosition());
 }
 
 void OwnCurs::cuOrCent(){
-    cursor->setCoordinates(ORIGIN);
+    if (!cursorRef) return;
+    cursorRef->get().setCoordinates(ORIGIN);
+}
+
+void OwnCurs::ownCursActive()
+{
+    qDebug() << "OWNCURS::ACTIVE";
+    if (!cursorRef) {
+        // Opción A: emplace (sin objeto temporal)
+        CursorEntity& ref = ctx->emplaceCursorFront(
+            QPair<qfloat16,qfloat16>(qfloat16(0), qfloat16(0)), // coordenadas
+            qfloat16(45.0f),   // ángulo
+            qfloat16(30.0f),   // largo
+            0,                 // tipo de línea
+            0                  // id
+            );
+        cursorRef = std::ref(ref);
+
+        // (Opcional) Si querés asegurarte de una pos exacta:
+        // cursorRef->get().setCoordinates(ORIGIN);
+    }
+    // Si ya existe, no hacemos nada: ya tenemos la referencia al guardado en ctx
+    qDebug()<<"OWNCURS::YA PASE EL EMPLACE";
 }
 
 void OwnCurs::updateHandwheel(const QPair<qfloat16, qfloat16>& update){
-    if (!cursor) return;
-    cursor->setCursorAngle(update.first);   // ángulo
-    cursor->setCursorLength(update.second); // largo
+    if (!cursorRef) return;
+    cursorRef->get().setCursorAngle(update.first);
+    cursorRef->get().setCursorLength(update.second);
 }

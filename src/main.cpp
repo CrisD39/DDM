@@ -112,10 +112,13 @@ int main(int argc, char* argv[]) {
     QObject::connect(decoder, &ConcDecoder::newHandWheel, ownCurs, &OwnCurs::updateHandwheel);
     QObject::connect(decoder, &ConcDecoder::cuOrOffCentLeft, ownCurs, &OwnCurs::cuOrOffCent);
     QObject::connect(decoder, &ConcDecoder::cuOrCentLeft, ownCurs, &OwnCurs::cuOrCent);
+    QObject::connect(decoder, &ConcDecoder::ownCurs, ownCurs, &OwnCurs::ownCursActive);
 
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
     QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
+
+
 
 
     QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);

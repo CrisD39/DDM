@@ -29,12 +29,18 @@ signals:
     void newRange(int);
     void newQEK(QString);
     void newOverlay(QString);
-    void cuOrOffCentLeft();
-    void cuOrCentLeft();
-    void offCentLeft();
+
     void centLeft();
     void resetObmLeft();
     void dataReqLeft();
+
+    //-- OwnCurs--//
+    void cuOrOffCentLeft();
+    void cuOrCentLeft();
+    void offCentLeft();
+
+    void trueMotion();
+    void ownCurs();
 
 private:
     // Métodos de decodificación por palabra

@@ -1,12 +1,14 @@
 #pragma once
 #include <QTextStream>
-#include <QStringConverter>
+#include <QStringConverter>   // Qt6; si usas Qt5, ver nota abajo
 #include <QString>
 #include <QPointF>
-#include <deque>        // ← usamos deque para push_front O(1)
+#include <QPair>              // ← por QPair<float,float>
+#include <deque>
+#include <utility>            // ← por std::forward
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
-// Dominio de tracks
+
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
         out.setEncoding(QStringConverter::Utf8);
@@ -29,14 +31,30 @@ struct CommandContext {
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
 
+    inline CursorEntity& addCursorFront(const CursorEntity& c) {
+        qDebug() << "agregando cursor";
+        cursors.push_front(c);
+        qDebug() << "termine de agregar";
+        return cursors.front();
+    }
+
+    template <typename... Args>
+    inline CursorEntity& emplaceCursorFront(Args&&... args) {
+        qDebug() << "agregando cursor (emplace)";
+        cursors.emplace_front(std::forward<Args>(args)...);
+        qDebug() << "termine de agregar (emplace)";
+        qDebug() << "cursors size =" << cursors.size();
+        return cursors.front();
+    }
+
     inline Track& addTrackFront(const Track& t) {
-        tracks.push_front(t);              // O(1)
+        tracks.push_front(t);
         return tracks.front();
     }
 
-    template<typename... Args>
+    template <typename... Args>
     inline Track& emplaceTrackFront(Args&&... args) {
-        tracks.emplace_front(std::forward<Args>(args)...); // O(1)
+        tracks.emplace_front(std::forward<Args>(args)...);
         return tracks.front();
     }
 
@@ -47,7 +65,7 @@ struct CommandContext {
         centerY = c.second;
     }
 
-    inline void resetCenter(){ setCenter({0.0,0.0});}
+    inline void resetCenter(){ setCenter({0.0f, 0.0f}); }
 
     inline Track* findTrackById(int id) {
         for (Track& t : tracks) if (t.getId() == id) return &t;
@@ -67,18 +85,12 @@ struct CommandContext {
 
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
-
-        // buscar índice del id
         std::size_t i = 0;
         for (; i < tracks.size(); ++i) {
             if (tracks[i].getId() == currentId) break;
         }
-        if (i == tracks.size()) return nullptr;  // id no encontrado
-
-        const std::size_t j = (i + 1) % tracks.size();  // circular
+        if (i == tracks.size()) return nullptr;
+        const std::size_t j = (i + 1) % tracks.size();
         return &tracks[j];
     }
-
-
 };
-

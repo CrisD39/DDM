@@ -113,7 +113,7 @@ void ConcDecoder::decodeWord2()
         }
 
         // Flanco ascendente SOLO para índices 0..5 (los 6 items del enum)
-        if (i <= 5 && !prevCenterLeft[i] && now) {
+        if (i <= 7 && !prevCenterLeft[i] && now) {
             switch (i) {
             case 0: emit cuOrOffCentLeft(); break;
             case 1: emit cuOrCentLeft();    break;
@@ -121,6 +121,8 @@ void ConcDecoder::decodeWord2()
             case 3: emit centLeft();        break;
             case 4: emit resetObmLeft();    break;
             case 5: emit dataReqLeft();     break;
+            case 6: emit trueMotion();       break;
+            case 7: emit ownCurs();          break;
             }
         }
 

@@ -9,10 +9,21 @@ encoderLPD::encoderLPD() {}
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     QByteArray bigBuffer;
 
+    const int words_tracks     = static_cast<int>(ctx.tracks.size()) * 6;
+    const int words_center     = 2;
+    const int words_obm        = 3;
+    const int words_cursors    = static_cast<int>(ctx.cursors.size()) * 4;
+    const int words_ownership  = static_cast<int>(sizeof(INVALID_OWNSHIP) / 3);
+    const int words_padding    = static_cast<int>(sizeof(PADDING_BYTES) / 3);
+
+    int palabras = words_center + words_ownership + words_obm
+                   + words_tracks + words_cursors + words_padding;
+
+
     bigBuffer.append(static_cast<char>(HEADER_BYTES[0]));
     bigBuffer.append(static_cast<char>(HEADER_BYTES[1]));
-    int palabrasTracks = (ctx.tracks.size() * 6) + 2 + 9;
-    bigBuffer.append(static_cast<char>(palabrasTracks & 0xFF));
+    bigBuffer.append(static_cast<char>(palabras & 0xFF));
+
 
     //center
 
@@ -32,6 +43,7 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
         bigBuffer.append(buildAB3Message(cursors));
     }
 
+
     bigBuffer.append(reinterpret_cast<const char*>(PADDING_BYTES), sizeof(PADDING_BYTES));
 
     QByteArray header = bigBuffer.left(3);
@@ -39,6 +51,8 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     rest = negateData(rest);
 
     return header + rest;
+
+
 }
 
 QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
@@ -162,9 +176,14 @@ QByteArray encoderLPD::encodeCoordinate(double value, uint8_t idBits, bool AP, b
     case AB2_ID_Y:
         controlByte = BIT_AP;
         break;
+    case AB3_ID_X:
+        controlByte = 0x00;
+    case AB3_ID_Y:
+        controlByte = 0x00;
     default:
         controlByte = 0x00;
         break;
+
     }
     controlByte |= (idBits & 0x0F);
     encoded |= controlByte;
@@ -274,12 +293,13 @@ QByteArray encoderLPD::buildAB2Message(const Track &track) {
 QByteArray encoderLPD::buildAB3Message(const CursorEntity &cursor)
 {
     QByteArray buffer;
-
-    buffer.append(encodeAngle(cursor.getCursorAngle(),true,true));
-    buffer.append(encodeCursorLong(cursor.getCursorLength(),cursor.getLineType()));
-    buffer.append(encodeCoordinate(cursor.getCoordinates().first, AB3_ID_X));
+    buffer.append(encodeAngle(cursor.getCursorAngle(), true, true));
+    buffer.append(encodeCursorLong(cursor.getCursorLength(), cursor.getLineType()));
+    buffer.append(encodeCoordinate(cursor.getCoordinates().first,  AB3_ID_X));
     buffer.append(encodeCoordinate(cursor.getCoordinates().second, AB3_ID_Y));
+    return buffer; // ← FALTABA ESTO
 }
+
 
 QByteArray encoderLPD::buildOBM()
 {
