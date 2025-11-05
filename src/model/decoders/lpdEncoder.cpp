@@ -9,20 +9,10 @@ encoderLPD::encoderLPD() {}
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     QByteArray bigBuffer;
 
-    const int words_tracks     = static_cast<int>(ctx.tracks.size()) * 6;
-    const int words_center     = 2;
-    const int words_obm        = 3;
-    const int words_cursors    = static_cast<int>(ctx.cursors.size()) * 4;
-    const int words_ownership  = static_cast<int>(sizeof(INVALID_OWNSHIP) / 3);
-    const int words_padding    = static_cast<int>(sizeof(PADDING_BYTES) / 3);
-
-    int palabras = words_center + words_ownership + words_obm
-                   + words_tracks + words_cursors + words_padding;
-
-
     bigBuffer.append(static_cast<char>(HEADER_BYTES[0]));
     bigBuffer.append(static_cast<char>(HEADER_BYTES[1]));
-    bigBuffer.append(static_cast<char>(palabras & 0xFF));
+    int palabrasTracks = (ctx.tracks.size() * 6) + 2 + 9;
+    bigBuffer.append(static_cast<char>(palabrasTracks & 0xFF));
 
 
     //center
@@ -284,9 +274,9 @@ QByteArray encoderLPD::buildSymbolBytes(const Track &track) const {
 
 QByteArray encoderLPD::buildAB2Message(const Track &track) {
     QByteArray buffer;
-    buffer.append(buildSymbolBytes(track));
     buffer.append(encodeCoordinate(track.getX(), AB2_ID_X));
     buffer.append(encodeCoordinate(track.getY(), AB2_ID_Y));
+    buffer.append(buildSymbolBytes(track));
     return buffer;
 }
 
