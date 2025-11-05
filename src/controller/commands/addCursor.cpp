@@ -51,15 +51,15 @@ CommandResult addCursor::execute(const CommandInvocation &inv, CommandContext &c
 
     // alta O(1) como en add/emplace de tracks
     CursorEntity& ref = ctx.emplaceCursorFront(
-        QPair<qfloat16,qfloat16>(qfloat16(0), qfloat16(0)), // coordenadas
-        qfloat16(45.0f),   // ángulo
-        qfloat16(30.0f),   // largo
-        0,                 // tipo de línea
-        1,                  // id
+        QPair<qfloat16,qfloat16>(qfloat16(xd), qfloat16(yd)), // coordenadas
+        qfloat16(angd),   // ángulo
+        qfloat16(longd),   // largo
+        id,                 // tipo de línea
+        lineType,                  // id
         true);
 
     return {
-        true,"chau"
+        true,"ca"
         // QString("OK addCursor → id=%1 tipo=%2 x=%3 y=%4 largo=%5 ang=%6")
         //     .arg(id)
         //     .arg(lineType)
