@@ -23,6 +23,7 @@ HEADERS += \
     src/controller/commandRegistry.h \
     src/controller/commanddispatcher.h \
     src/controller/commands/addCommand.h \
+    src/controller/commands/addCursor.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/iCommand.h \
@@ -63,6 +64,7 @@ HEADERS += \
 SOURCES += \
     src/controller/commandDispatcher.cpp \
     src/controller/commands/addCommand.cpp \
+    src/controller/commands/addCursor.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/listCommand.cpp \

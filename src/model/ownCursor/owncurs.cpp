@@ -14,7 +14,7 @@ void OwnCurs::cuOrCent(){
     cursorRef->get().setCoordinates(ORIGIN);
 }
 
-void OwnCurs::ownCursActive()
+void OwnCurs::ownCursActive(bool value)
 {
     qDebug() << "OWNCURS::ACTIVE";
     if (!cursorRef) {
@@ -24,15 +24,15 @@ void OwnCurs::ownCursActive()
             qfloat16(45.0f),   // ángulo
             qfloat16(30.0f),   // largo
             0,                 // tipo de línea
-            0                  // id
-            );
+            1,                  // id
+            false);
         cursorRef = std::ref(ref);
 
         // (Opcional) Si querés asegurarte de una pos exacta:
         // cursorRef->get().setCoordinates(ORIGIN);
     }
     // Si ya existe, no hacemos nada: ya tenemos la referencia al guardado en ctx
-    qDebug()<<"OWNCURS::YA PASE EL EMPLACE";
+    cursorRef->get().setActive(value);
 }
 
 void OwnCurs::updateHandwheel(const QPair<qfloat16, qfloat16>& update){

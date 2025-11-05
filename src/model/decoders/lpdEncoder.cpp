@@ -283,7 +283,7 @@ QByteArray encoderLPD::buildAB2Message(const Track &track) {
 QByteArray encoderLPD::buildAB3Message(const CursorEntity &cursor)
 {
     QByteArray buffer;
-    buffer.append(encodeAngle(cursor.getCursorAngle(), true, true));
+    buffer.append(encodeAngle(cursor.getCursorAngle(), true, cursor.isActive()  ));
     buffer.append(encodeCursorLong(cursor.getCursorLength(), cursor.getLineType()));
     buffer.append(encodeCoordinate(cursor.getCoordinates().first,  AB3_ID_X));
     buffer.append(encodeCoordinate(cursor.getCoordinates().second, AB3_ID_Y));

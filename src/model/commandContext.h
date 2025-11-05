@@ -24,6 +24,7 @@ struct CommandContext {
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
     int               nextTrackId = 1;
+    int               nextCursorId = 2;
 
     double centerX = 0.0;
     double centerY = 0.0;

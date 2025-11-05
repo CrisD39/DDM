@@ -16,12 +16,14 @@ public:
                  qfloat16 angle,
                  qfloat16 length,
                  int      lineType,
-                 int      id = 0)
+                 int      id = 0,
+                 bool     value = false)
         : coordinates(coords),
         cursorAngle(angle),
         cursorLength(length),
         lineType(lineType),
-        cursorId(id) {}
+        cursorId(id),
+        state(value) {}
 
     // --- Copia / Move habilitados ---
     CursorEntity(const CursorEntity&)            = default;
@@ -41,8 +43,10 @@ public:
     void setCoordinates(const QPair<qfloat16, qfloat16>& c)          { coordinates = c; }                         // :contentReference[oaicite:8]{index=8}
     void setCursorAngle(qfloat16 angle)                              { cursorAngle = angle; }                     // :contentReference[oaicite:9]{index=9}
     void setCursorLength(qfloat16 length)                            { cursorLength = length; }                   // :contentReference[oaicite:10]{index=10}
-    void setLineType(int lt)                                         { lineType= lt; }                          // :contentReference[oaicite:11]{index=11}
-
+    void setLineType(int lt)                                         { lineType= lt; }    // :contentReference[oaicite:11]{index=11}
+    void setActive(bool value)                                       { state = value;}
+    void switchActive()                                              { state = !state; }
+    bool isActive() const                                            { return state;}
     // --- Utilidad (igual que antes) ---
     QString toString() const {
         return QString("Cursor{id=%1, lt=%2, pos=(%3,%4), ang=%5, len=%6}")
@@ -58,6 +62,7 @@ private:
     qfloat16 cursorLength{};
     int      lineType{};   // mismo nombre lógico, sin choque con macro
     int      cursorId{};
+    bool     state{};
     // Nota: renombré el miembro a lineType_ / cursorId_ arriba para no chocar
     // con los getters y mantener claridad.
 };

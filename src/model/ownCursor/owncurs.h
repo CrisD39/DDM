@@ -14,11 +14,12 @@ class OwnCurs : public QObject {
     Q_OBJECT
 public:
     explicit OwnCurs(CommandContext* ctx, OBMHandler* newObm, QObject* parent = nullptr);
+    bool isActive();
 
 public slots:
     void cuOrOffCent();    // ← faltaba 'void'
     void cuOrCent();
-    void ownCursActive();
+    void ownCursActive(bool value);
 
     void updateHandwheel(const QPair<qfloat16, qfloat16>& update);     // ← const& para evitar copia
 

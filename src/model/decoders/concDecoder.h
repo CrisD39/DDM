@@ -40,7 +40,7 @@ signals:
     void offCentLeft();
 
     void trueMotion();
-    void ownCurs();
+    void ownCurs(bool value);
 
 private:
     // Métodos de decodificación por palabra
