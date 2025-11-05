@@ -54,8 +54,8 @@ CommandResult addCursor::execute(const CommandInvocation &inv, CommandContext &c
         QPair<qfloat16,qfloat16>(qfloat16(xd), qfloat16(yd)), // coordenadas
         qfloat16(angd),   // ángulo
         qfloat16(longd),   // largo
-        id,                 // tipo de línea
-        lineType,                  // id
+        2,                 // tipo de línea
+        id,                  // id
         true);
 
     return {
