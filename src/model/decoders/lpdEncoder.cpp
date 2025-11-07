@@ -216,33 +216,34 @@ QByteArray encoderLPD::encodeAngle(double value, bool e, bool v)
 }
 
 
-QByteArray encoderLPD::encodeCursorLong(double dm, int type)
+QByteArray encoderLPD::encodeCursorLong(double rho, int type)
 {
     QByteArray bytes;
 
     // ρ ≥ 0, Q8.8 (LSB = 1/256)
-    if (dm < 0.0) dm = 0.0;
-    uint32_t code16 = static_cast<uint32_t>(qRound(dm * 256.0));
-    if (code16 > 0xFFFFu) code16 = 0xFFFFu;
+    if (rho < 0.0) rho = 0.0;
+    // Entero Q8.8
+    uint32_t q88 = static_cast<uint32_t>(qRound(rho * 512 * 4));
 
-    // Usamos solo 12 bits para ubicar ρ en [19..8]
-    const uint32_t code12 = (code16 & 0x0FFFu);
+    // La planilla da 19 bits para ρ → [22..4]
+    // Saturamos a 19 bits por las dudas
+    const uint32_t len19 = (q88 > 0x7FFFFu) ? 0x7FFFFu : q88;
 
-    // tipo 0..7  → 000..111 (saturado y enmascarado a 3 bits)
+    // Tipo en 3 bits (bit 3 reservado = 0)
     const uint32_t type3 = static_cast<uint32_t>(qBound(0, type, 7)) & 0x7u;
 
-    // Construcción de la palabra de 24 bits
-    uint32_t encoded = 0;
-    encoded |= (0x7u << 20);   // [23..20] = 0111  (garantiza bit 23 = 0)
-    encoded |= (code12 << 8);  // [19..8]  = ρ(12 bits)
-    // [7..4] = 0000
-    // [3]    = 0
-    encoded |= type3;          // [2..0]   = tipo
+    // Armado de la palabra de 24 bits:
+    // [23] = 0  (queda en 0 porque no lo tocamos)
+    // [22..4] = len19
+    // [3]     = 0
+    // [2..0]  = type3
+    uint32_t word24 = (len19 << 4) | type3;
 
-    // Empaquetado MSB-first
-    bytes.append(static_cast<char>((encoded >> 16) & 0xFF));
-    bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
-    bytes.append(static_cast<char>( encoded        & 0xFF));
+    // Empaquetado MSB-first (big endian)
+    bytes.append(static_cast<char>((word24 >> 16) & 0xFF));
+    bytes.append(static_cast<char>((word24 >> 8)  & 0xFF));
+    bytes.append(static_cast<char>( word24        & 0xFF));
+
     return bytes;
 }
 

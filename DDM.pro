@@ -26,8 +26,10 @@ HEADERS += \
     src/controller/commands/addCursor.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
+    src/controller/commands/deletecursorscommand.h \
     src/controller/commands/iCommand.h \
     src/controller/commands/listCommand.h \
+    src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
     src/controller/overlayHandler.h \
     src/model/commandContext.h \
@@ -67,7 +69,9 @@ SOURCES += \
     src/controller/commands/addCursor.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
+    src/controller/commands/deletecursorscommand.cpp \
     src/controller/commands/listCommand.cpp \
+    src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
     src/controller/overlayHandler.cpp \
     src/main.cpp \

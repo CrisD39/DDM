@@ -25,6 +25,8 @@
 #include "QTimer"
 #include "configuration.h"
 #include "addCursor.h"
+#include "listcursorscommand.h"
+#include "deletecursorscommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -61,6 +63,8 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
+    registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
 
     CommandDispatcher dispatcher(registry, parser, *ctx);
 

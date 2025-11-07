@@ -59,13 +59,13 @@ CommandResult addCursor::execute(const CommandInvocation &inv, CommandContext &c
         true);
 
     return {
-        true,"ca"
-        // QString("OK addCursor → id=%1 tipo=%2 x=%3 y=%4 largo=%5 ang=%6")
-        //     .arg(id)
-        //     .arg(lineType)
-        //     .arg(double(ref.getCoordinates().first),  0, 'f', 3)
-        //     .arg(double(ref.getCoordinates().second), 0, 'f', 3)
-        //     .arg(double(ref.getCursorLength()),          0, 'f', 3)
-        //     .arg(double(ref.getCursorAngle()),            0, 'f', 3)
+        true,
+        QString("OK addCursor → id=%1 tipo=%2 x=%3 y=%4 largo=%5 ang=%6")
+            .arg(id)
+            .arg(lineType)
+            .arg(double(ref.getCoordinates().first),  0, 'f', 3)
+            .arg(double(ref.getCoordinates().second), 0, 'f', 3)
+            .arg(double(ref.getCursorLength()),          0, 'f', 3)
+            .arg(double(ref.getCursorAngle()),            0, 'f', 3)
     };
 }
