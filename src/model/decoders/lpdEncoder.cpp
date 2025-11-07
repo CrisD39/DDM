@@ -230,7 +230,7 @@ QByteArray encoderLPD::encodeCursorLong(double rho, int type)
     const uint32_t len19 = (q88 > 0x7FFFFu) ? 0x7FFFFu : q88;
 
     // Tipo en 3 bits (bit 3 reservado = 0)
-    const uint32_t type3 = static_cast<uint32_t>(qBound(0, type, 7)) & 0x7u;
+    const uint32_t type3 = static_cast<uint32_t>((qBound(1, type, 8) - 1) & 0x7u);
 
     // Armado de la palabra de 24 bits:
     // [23] = 0  (queda en 0 porque no lo tocamos)
