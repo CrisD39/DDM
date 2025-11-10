@@ -212,40 +212,57 @@ QByteArray encoderLPD::encodeAngle(double value, bool e, bool v)
     bytes.append(static_cast<char>((encoded >> 8)  & 0xFF));
     bytes.append(static_cast<char>( encoded        & 0xFF));
 
+
     return bytes;
 }
 
+
+// ID de palabra para "longitud de cursor" (según planilla: 0b0111)
+static constexpr uint32_t AB3_ID_CURSOR_LONG = 0x7;
 
 QByteArray encoderLPD::encodeCursorLong(double rho, int type)
 {
     QByteArray bytes;
 
-    // ρ ≥ 0, Q8.8 (LSB = 1/256)
     if (rho < 0.0) rho = 0.0;
-    // Entero Q8.8
-    uint32_t q88 = static_cast<uint32_t>(qRound(rho * 512 * 4));
 
-    // La planilla da 19 bits para ρ → [22..4]
-    // Saturamos a 19 bits por las dudas
-    const uint32_t len19 = (q88 > 0x7FFFFu) ? 0x7FFFFu : q88;
+    // Escala que venías usando (planilla): 512*4 = 2048
+    const uint32_t q = static_cast<uint32_t>(qRound(rho * 256));
 
-    // Tipo en 3 bits (bit 3 reservado = 0)
-    const uint32_t type3 = static_cast<uint32_t>((qBound(1, type, 8) - 1) & 0x7u);
+    // ρ ocupa 16 bits en [22..7]
+    const uint32_t len16 = (q & 0xFFFFu);
 
-    // Armado de la palabra de 24 bits:
-    // [23] = 0  (queda en 0 porque no lo tocamos)
-    // [22..4] = len19
-    // [3]     = 0
-    // [2..0]  = type3
-    uint32_t word24 = (len19 << 4) | type3;
+    // type en [6..4]
+    const uint32_t type3 = static_cast<uint32_t>(qBound(0, type, 7)) & 0x7u;
 
-    // Empaquetado MSB-first (big endian)
-    bytes.append(static_cast<char>((word24 >> 16) & 0xFF));
-    bytes.append(static_cast<char>((word24 >> 8)  & 0xFF));
-    bytes.append(static_cast<char>( word24        & 0xFF));
+    // [23]=0 | [22..7]=len16 | [6..4]=type3 | [3..0]=ID(0111)
+    const uint32_t word24 = (len16 << 7) | (type3 << 4) | AB3_ID_CURSOR_LONG;
+
+    bytes.append(static_cast<char>((word24 >> 16) & 0xFF)); // [23..16]
+    bytes.append(static_cast<char>((word24 >>  8) & 0xFF)); // [15..8]
+    bytes.append(static_cast<char>( word24        & 0xFF)); // [7..0]
+
+    // // ---- DEBUG opcional: bits por byte + campos decodificados ----
+    // auto bin8 = [](quint8 v){ return QString("%1").arg(v, 8, 2, QChar('0')); };
+    // const quint8 b0 = static_cast<quint8>(bytes[0]);
+    // const quint8 b1 = static_cast<quint8>(bytes[1]);
+    // const quint8 b2 = static_cast<quint8>(bytes[2]);
+
+    // const uint32_t dec_len16 = (word24 >> 7) & 0xFFFFu;
+    // const uint32_t dec_type3 = (word24 >> 4) & 0x7u;   // <-- [6..4]
+    // const uint32_t dec_id4   =  word24       & 0xFu;   // <-- [3..0]
+
+    // qDebug().noquote()
+    //     << "\nbytes (bits MSB→LSB):"
+    //     << "\n  [23..16] " << bin8(b0)
+    //     << "\n  [15..8 ] " << bin8(b1)
+    //     << "\n  [ 7..0 ] " << bin8(b2)
+    //     << "\n  join     " << bin8(b0) << " " << bin8(b1) << " " << bin8(b2)
+    //     << "\n  len16=" << dec_len16 << " type3=" << dec_type3 << " id4=" << dec_id4;
 
     return bytes;
 }
+
 
 
 

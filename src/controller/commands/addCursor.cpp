@@ -19,6 +19,7 @@ CommandResult addCursor::execute(const CommandInvocation &inv, CommandContext &c
     // 1) tipo de línea (entero)
     bool okType = false;
     int lineType = args[0].toInt(&okType);
+    qDebug()<<"ADDCURSOR<<"<<lineType;
     if (!okType) {
         return {false, "tipoLinea inválido (entero requerido). Uso: " + usage()};
     }
@@ -54,7 +55,7 @@ CommandResult addCursor::execute(const CommandInvocation &inv, CommandContext &c
         QPair<qfloat16,qfloat16>(qfloat16(xd), qfloat16(yd)), // coordenadas
         qfloat16(angd),   // ángulo
         qfloat16(longd),   // largo
-        2,                 // tipo de línea
+        lineType,                 // tipo de línea
         id,                  // id
         true);
 
