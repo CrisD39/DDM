@@ -1,7 +1,8 @@
+#include "ITransport.h"
+#include "TransportFactory.h"
 #include "lpdEncoder.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
-#include "clientSocket.h"
 #include "concDecoder.h"
 #include "overlayHandler.h"
 #include <QCoreApplication>
@@ -75,11 +76,32 @@ int main(int argc, char* argv[]) {
     ctx->out.flush();
 
     encoderLPD *encoder = new encoderLPD();
-
-    clientSocket *socket = new clientSocket(nullptr);
     auto* decoder = new ConcDecoder();
+
+    bool useLocalIpc = Configuration::instance().useLocalIpc;
+
+    TransportOpts opts;
+    if (useLocalIpc) {
+        opts.localName = "siag_ddm";  // debe coincidir con el nombre que use el servidor (juego)
+    }
+
+    // Mantené vivo el unique_ptr (no uses release), y usá get() para el crudo
+    std::unique_ptr<ITransport> transportGuard = useLocalIpc
+        ? makeTransport(TransportKind::LocalIpc, opts, &app)
+        : makeTransport(TransportKind::Udp,       TransportOpts{}, &app);
+
+    ITransport* transport = transportGuard.get();
+    transport->start();
+
+    QTimer timer;
+
+    QObject::connect(&timer, &QTimer::timeout, &timer, [ctx, encoder, transport]() {
+        transport->send(encoder->buildFullMessage(*ctx));
+    });
+
+
     auto* obmHandler = new OBMHandler();
-    auto* controller = new DclConcController(socket, decoder, &app);
+    new DclConcController(transport, decoder, &app);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
@@ -112,12 +134,7 @@ int main(int argc, char* argv[]) {
     });
 
 
-    QTimer timer;
 
-    QObject::connect(&timer, &QTimer::timeout, &timer, [ctx, encoder, socket]() {
-        QByteArray message = encoder->buildFullMessage(*ctx);
-        socket->sendMessage(message);
-    });
 
     timer.start(40);
 

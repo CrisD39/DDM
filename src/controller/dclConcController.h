@@ -5,14 +5,14 @@
 #include <QTimer>
 #include <QByteArray>
 
-class clientSocket;
+class ITransport;   // interfaz de transporte (UDP, Local IPC, etc.)
 class ConcDecoder;
 
 class DclConcController : public QObject
 {
     Q_OBJECT
 public:
-    explicit DclConcController(clientSocket* socket,
+    explicit DclConcController(ITransport* link,
                                ConcDecoder* decodificator,
                                QObject* parent = nullptr);
 
@@ -22,7 +22,7 @@ private slots:
     void onDatagram(const QByteArray&);
 
 private:
-    clientSocket* m_socket;
+    ITransport* m_link;
     ConcDecoder* m_decoder;
     QTimer m_timer;
 

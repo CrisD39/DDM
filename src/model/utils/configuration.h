@@ -39,6 +39,7 @@ public:
     QString overlay;
     QJsonArray jsonArray;
     int midi = -1;
+    bool useLocalIpc = true;
 
     // Métodos para cargar o establecer configuración
     void loadConfiguration();
