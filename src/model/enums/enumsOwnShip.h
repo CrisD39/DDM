@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-// Contenedor para que Q_GADGET + Q_ENUM funcionen sin QObject
 class OwnShipData {
     Q_GADGET
 public:
@@ -25,7 +24,6 @@ public:
 };
 
 // ===== Alias en el espacio global =====
-// De esta forma, en ownship.h/.cpp podés usar Month/Mode/GridLockMode/Colour directamente
 using Month        = OwnShipData::Month;
 using Mode         = OwnShipData::Mode;
 using GridLockMode = OwnShipData::GridLockMode;
