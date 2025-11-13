@@ -19,6 +19,7 @@ public:
     QByteArray negateData(const QByteArray &data);
 private slots:
     void askForConcentrator();
+public slots:
     void onDatagram(const QByteArray&);
 
 private:

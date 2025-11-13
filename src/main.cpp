@@ -1,6 +1,8 @@
 #include "ITransport.h"
 #include "TransportFactory.h"
+#include "jsoncommandhandler.h"
 #include "lpdEncoder.h"
+#include "messagerouter.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
 #include "concDecoder.h"
@@ -109,7 +111,17 @@ int main(int argc, char* argv[]) {
 
     auto* obmHandler = new OBMHandler();
     auto* ownCurs = new OwnCurs(ctx,obmHandler);
-    new DclConcController(transport, decoder, &app);
+
+    // 1. Crear los controladores
+    auto* dclConcController = new DclConcController(transport, decoder, &app);
+    auto* jsonHandler = new JsonCommandHandler(ctx, &app);
+
+    // 2. Crear el Router y pasarle los controladores
+    auto* router = new MessageRouter(dclConcController, jsonHandler, &app);
+
+    // 3. Conectar el transporte ÚNICAMENTE al router
+    QObject::connect(transport, &ITransport::messageReceived,
+                     router, &MessageRouter::onMessageReceived);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
