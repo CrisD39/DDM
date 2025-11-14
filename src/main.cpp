@@ -27,6 +27,7 @@
 #include "addCursor.h"
 #include "listcursorscommand.h"
 #include "deletecursorscommand.h"
+#include "figuresDispatcher.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -154,8 +155,29 @@ int main(int argc, char* argv[]) {
 
     timer.start(40);
 
+    //probando figuras
+    FiguresDispatcher figureDispatcher(ctx);
+
+    FiguresDispatcher::Circle circle;
+
+    // Asignar campos
+    circle.radio  = 50.0; // por ejemplo, radio 50
+    circle.center = QPair<qfloat16, qfloat16>(
+        qfloat16(0.0f),   // x
+        qfloat16(0.0f)    // y
+        );
+
+    circle.type   = TrackData::Type::Surface; // o el tipo que corresponda
+    circle.color  = 0;                        // si usás color de alguna forma
+
+    // Llamar al método
+    figureDispatcher.createCircle(circle);
+
+
     ioThread.start();
     const int code = app.exec();
     ioThread.wait();
+
+
     return code;
 }

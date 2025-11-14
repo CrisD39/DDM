@@ -31,6 +31,7 @@ HEADERS += \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
+    src/controller/figuresDispatcher.h \
     src/controller/overlayHandler.h \
     src/model/commandContext.h \
     src/model/decoders/concDecoder.h \
@@ -73,6 +74,7 @@ SOURCES += \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
+    src/controller/figuresDispatcher.cpp \
     src/controller/overlayHandler.cpp \
     src/main.cpp \
     src/model/decoders/concDecoder.cpp \
