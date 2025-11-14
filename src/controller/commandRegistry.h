@@ -5,7 +5,7 @@
 #ifndef COMMANDREGISTRY_H
 #define COMMANDREGISTRY_H
 #include <QObject>
-#include "iCommand.h"
+#include "ICommand.h"
 
 #include <QSharedPointer>
 #include <QMap>

@@ -21,6 +21,7 @@
 #include "deleteCommand.h"
 #include "centerCommand.h"
 #include "listCommand.h"
+#include "estcommand.h"
 #include "commandContext.h"
 #include "QTimer"
 #include "configuration.h"
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new EstCommand()));
     CommandDispatcher dispatcher(registry, parser, *ctx);
 
 

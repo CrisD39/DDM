@@ -5,7 +5,7 @@
 #include "CommandDispatcher.h"
 #include "commandRegistry.h"
 #include "iInputParser.h"
-#include "iCommand.h"
+#include "ICommand.h"
 #include "commandContext.h"
 #include <QStringList>
 #include "consoleUtils.h"

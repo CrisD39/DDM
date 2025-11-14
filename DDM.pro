@@ -23,10 +23,11 @@ INCLUDEPATH += \
 HEADERS += \
     src/controller/commandDispatcher.h \
     src/controller/commandRegistry.h \
+    src/controller/commands/ICommand.h \
     src/controller/commands/addCommand.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
-    src/controller/commands/iCommand.h \
+    src/controller/commands/estcommand.h \
     src/controller/commands/listCommand.h \
     src/controller/dclConcController.h \
     src/controller/overlayHandler.h \
@@ -57,6 +58,7 @@ HEADERS += \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
+    src/model/utils/geometry.h \
     src/view/CommandParser.h \
     src/view/ansi.h \
     src/view/iInputParser.h \
@@ -67,6 +69,7 @@ SOURCES += \
     src/controller/commands/addCommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
+    src/controller/commands/estcommand.cpp \
     src/controller/commands/listCommand.cpp \
     src/controller/dclConcController.cpp \
     src/controller/overlayHandler.cpp \
