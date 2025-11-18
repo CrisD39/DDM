@@ -84,6 +84,13 @@ struct CommandContext {
         return false;
     }
 
+    inline bool eraseCursorById(int id) {
+        for (auto it = cursors.begin(); it != cursors.end(); ++it) {
+            if (it->getCursorId() == id) { cursors.erase(it); return true; }
+        }
+        return false;
+    }
+
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
         std::size_t i = 0;

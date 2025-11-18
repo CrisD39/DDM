@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 
     // 1. Crear los controladores
     auto* dclConcController = new DclConcController(transport, decoder, &app);
-    auto* jsonHandler = new JsonCommandHandler(ctx, &app);
+    auto* jsonHandler = new JsonCommandHandler(ctx, transport, &app);
 
     // 2. Crear el Router y pasarle los controladores
     auto* router = new MessageRouter(dclConcController, jsonHandler, &app);

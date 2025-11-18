@@ -32,6 +32,7 @@ HEADERS += \
     src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
     src/controller/jsoncommandhandler.h \
+    src/controller/jsonresponsebuilder.h \
     src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
     src/model/commandContext.h \
@@ -76,6 +77,7 @@ SOURCES += \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
     src/controller/jsoncommandhandler.cpp \
+    src/controller/jsonresponsebuilder.cpp \
     src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \
     src/main.cpp \
