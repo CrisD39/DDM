@@ -20,4 +20,7 @@ private:
     QString name_;
     QLocalSocket* sock_ = nullptr;
     QByteArray buf_;
+
+private slots:
+    void attemptConnect();
 };

@@ -38,6 +38,16 @@ void OverlayHandler::onNewQEK(const QString& qekStr) {
     executeQEK(qek);
 }
 
+void OverlayHandler::onNewCursor()
+{
+
+}
+
+void OverlayHandler::ownCursOn()
+{
+
+}
+
 std::unique_ptr<QEK> OverlayHandler::instanceNewQEK(const QString& overlayName) {
     if (overlayName.compare("SPC", Qt::CaseInsensitive) == 0) return std::make_unique<SPC>();
     if (overlayName.compare("LINCO", Qt::CaseInsensitive) == 0) return std::make_unique<LINCO>();

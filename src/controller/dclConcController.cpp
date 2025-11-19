@@ -14,9 +14,6 @@ DclConcController::DclConcController(ITransport* link,
     Q_ASSERT(m_link);
     Q_ASSERT(m_decoder);
 
-    connect(m_link, SIGNAL(messageReceived(QByteArray)),
-            this,   SLOT(onDatagram(QByteArray)));
-
     // Timer a 100 ms para enviar PEDIDO_DCL_CONC
     m_timer.setInterval(50);
     connect(&m_timer, &QTimer::timeout, this, &DclConcController::askForConcentrator);

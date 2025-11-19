@@ -1,5 +1,6 @@
 #include "LocalIpcClient.h"
 #include <QDataStream>
+#include <QTimer>
 
 LocalIpcClient::LocalIpcClient(QString name, QObject* parent)
     : ITransport(parent), name_(std::move(name)) {}
@@ -7,11 +8,29 @@ LocalIpcClient::LocalIpcClient(QString name, QObject* parent)
 void LocalIpcClient::start() {
     if (sock_) return;
     sock_ = new QLocalSocket(this);
-    //connect(sock_, &QLocalSocket::connected,    this, &LocalIpcClient::connected);
-    //connect(sock_, &QLocalSocket::disconnected, this, &LocalIpcClient::disconnected);
+
+//     connect(sock_, &QLocalSocket::connected,    this, &LocalIpcClient::connected);
+//     connect(sock_, &QLocalSocket::disconnected, this, &LocalIpcClient::disconnected);
+// #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+//     connect(sock_, &QLocalSocket::errorOccurred, this, [this](auto){ emit error(sock_->errorString()); });
+// #endif
     connect(sock_, &QLocalSocket::readyRead,    this, &LocalIpcClient::onReadyRead);
 
+    // Primer intento inmediato (encola al event loop)
+    QTimer::singleShot(0, this, &LocalIpcClient::attemptConnect);
+}
+
+void LocalIpcClient::attemptConnect() {
+    if (!sock_) return;
+    if (sock_->state() == QLocalSocket::ConnectedState) return;
+
+    sock_->abort();                      // limpia intentos previos
     sock_->connectToServer(name_);
+
+    // Si no conecta rápido, reintenta en 400 ms
+    if (!sock_->waitForConnected(200)) {
+        QTimer::singleShot(400, this, &LocalIpcClient::attemptConnect);
+    }
 }
 
 void LocalIpcClient::stop() {

@@ -98,6 +98,9 @@ void ConcDecoder::decodeWord2()
     QVector<bool> decoded(16, false);
     const QJsonObject centerJson = jsonFile["CENTER_MASTER_DECODE"].toObject();
 
+    // Guardamos el estado anterior del bit 7 para detectar flanco descendente
+    bool prevBit7 = prevCenterLeft[7];
+
     // ---------- LADO IZQUIERDO: bits 0..7 ----------
     for (int i = 0; i < 8; ++i) {
         const bool now = inComingMessage->testBit(currentBit);
@@ -112,8 +115,8 @@ void ConcDecoder::decodeWord2()
             }
         }
 
-        // Flanco ascendente SOLO para índices 0..5 (los 6 items del enum)
-        if (i <= 5 && !prevCenterLeft[i] && now) {
+        // Flanco ascendente para los bits 0..6 (señales del enum)
+        if (i <= 6 && !prevCenterLeft[i] && now) {
             switch (i) {
             case 0: emit cuOrOffCentLeft(); break;
             case 1: emit cuOrCentLeft();    break;
@@ -121,14 +124,28 @@ void ConcDecoder::decodeWord2()
             case 3: emit centLeft();        break;
             case 4: emit resetObmLeft();    break;
             case 5: emit dataReqLeft();     break;
+            case 6: emit trueMotion();      break;
             }
         }
 
-        // Actualizar memoria
+        // Bit 7: detectar ambos flancos → true al subir, false al bajar
+        if (i == 7) {
+            if (!prevBit7 && now) {
+                emit ownCurs(true);   // flanco ascendente: activar
+            } else if (prevBit7 && !now) {
+                emit ownCurs(false);  // flanco descendente: desactivar
+            }
+        }
+
+        // Actualizar memoria y avanzar
         prevCenterLeft[i] = now;
         ++currentBit;
     }
+
+    // Si querés **forzar** el estado cada ciclo (no solo en cambios), descomentá:
+    // if (!decoded[7]) emit ownCurs(false);
 }
+
 
 // ====================== MENSAJE 4 ======================
 void ConcDecoder::decodeWord4()
@@ -307,7 +324,7 @@ void ConcDecoder::decodeWord6()
     //qDebug() << "[Decodificación] Handwheel ΔΦ:" << phiValue
     //         << " Δρ:" << rhoValue;
 
-    emit signalOBM(deltasHandwhell);
+    emit newHandWheel(deltasHandwhell);
 }
 
 

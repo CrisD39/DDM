@@ -1,11 +1,10 @@
 #include "ITransport.h"
-#include "LocalIpcClient.h"
 #include "TransportFactory.h"
-#include "UdpClientAdapter.h"
+#include "jsoncommandhandler.h"
 #include "lpdEncoder.h"
+#include "messagerouter.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
-#include "clientSocket.h"
 #include "concDecoder.h"
 #include "overlayHandler.h"
 #include <QCoreApplication>
@@ -27,6 +26,9 @@
 #include "commandContext.h"
 #include "QTimer"
 #include "configuration.h"
+#include "addCursor.h"
+#include "listcursorscommand.h"
+#include "deletecursorscommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -62,6 +64,10 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
+    registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
+
     CommandDispatcher dispatcher(registry, parser, *ctx);
 
 
@@ -81,9 +87,20 @@ int main(int argc, char* argv[]) {
     encoderLPD *encoder = new encoderLPD();
     auto* decoder = new ConcDecoder();
 
-    auto transport = makeTransport(TransportKind::Udp, TransportOpts{}, &app).release();
+    bool useLocalIpc = Configuration::instance().useLocalIpc;
 
-    auto* controller = new DclConcController(transport, decoder, &app);
+    TransportOpts opts;
+    if (useLocalIpc) {
+        opts.localName = "siag_ddm";  // debe coincidir con el nombre que use el servidor (juego)
+    }
+
+    // Mantené vivo el unique_ptr (no uses release), y usá get() para el crudo
+    std::unique_ptr<ITransport> transportGuard = useLocalIpc
+        ? makeTransport(TransportKind::LocalIpc, opts, &app)
+        : makeTransport(TransportKind::Udp,       TransportOpts{}, &app);
+
+    ITransport* transport = transportGuard.get();
+    transport->start();
 
     QTimer timer;
 
@@ -93,15 +110,34 @@ int main(int argc, char* argv[]) {
 
 
     auto* obmHandler = new OBMHandler();
-    new DclConcController(transport, decoder, &app);
+    auto* ownCurs = new OwnCurs(ctx,obmHandler);
+
+    // 1. Crear los controladores
+    auto* dclConcController = new DclConcController(transport, decoder, &app);
+    auto* jsonHandler = new JsonCommandHandler(ctx, transport, &app);
+
+    // 2. Crear el Router y pasarle los controladores
+    auto* router = new MessageRouter(dclConcController, jsonHandler, &app);
+
+    // 3. Conectar el transporte ÚNICAMENTE al router
+    QObject::connect(transport, &ITransport::messageReceived,
+                     router, &MessageRouter::onMessageReceived);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
     overlayHandler->setOBMHandler(obmHandler);
 
+    //conectar señales del decoder con ownCurse
+    QObject::connect(decoder, &ConcDecoder::newHandWheel, ownCurs, &OwnCurs::updateHandwheel);
+    QObject::connect(decoder, &ConcDecoder::cuOrOffCentLeft, ownCurs, &OwnCurs::cuOrOffCent);
+    QObject::connect(decoder, &ConcDecoder::cuOrCentLeft, ownCurs, &OwnCurs::cuOrCent);
+    QObject::connect(decoder, &ConcDecoder::ownCurs, ownCurs, &OwnCurs::ownCursActive);
+
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
     QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
+
+
 
 
     QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);

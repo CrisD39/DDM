@@ -23,16 +23,23 @@ HEADERS += \
     src/controller/commandRegistry.h \
     src/controller/commanddispatcher.h \
     src/controller/commands/addCommand.h \
+    src/controller/commands/addCursor.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
+    src/controller/commands/deletecursorscommand.h \
     src/controller/commands/iCommand.h \
     src/controller/commands/listCommand.h \
+    src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
+    src/controller/jsoncommandhandler.h \
+    src/controller/jsonresponsebuilder.h \
+    src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
     src/model/commandContext.h \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
+    src/model/entities/cursorEntity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
@@ -48,6 +55,7 @@ HEADERS += \
     src/model/overlays/heco.h \
     src/model/overlays/ops.h \
     src/model/overlays/spc.h \
+    src/model/ownCursor/owncurs.h \
     src/model/overlays/linco.h \
     src/model/qek.h \
     src/model/utils/configuration.h \
@@ -61,14 +69,21 @@ HEADERS += \
 SOURCES += \
     src/controller/commandDispatcher.cpp \
     src/controller/commands/addCommand.cpp \
+    src/controller/commands/addCursor.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
+    src/controller/commands/deletecursorscommand.cpp \
     src/controller/commands/listCommand.cpp \
+    src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
+    src/controller/jsoncommandhandler.cpp \
+    src/controller/jsonresponsebuilder.cpp \
+    src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \
     src/main.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
+    src/model/entities/cursorEntity.cpp \
     src/model/network/clientSocket.cpp \
     src/model/network/localipcclient.cpp \
     src/model/network/transportFactory.cpp \
@@ -83,6 +98,7 @@ SOURCES += \
     src/model/overlays/spc.cpp \
     src/model/overlays/linco.cpp \
     src/model/entities/track.cpp \
+    src/model/ownCursor/owncurs.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 
