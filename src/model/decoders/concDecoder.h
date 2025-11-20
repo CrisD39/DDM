@@ -25,15 +25,22 @@ public:
 signals:
     void signalOBM(QPair<float,float> delta);
     void newRollingBall(QPair<float,float>);
+    void newHandWheel(QPair<float,float>);
     void newRange(int);
     void newQEK(QString);
     void newOverlay(QString);
-    void cuOrOffCentLeft();
-    void cuOrCentLeft();
-    void offCentLeft();
+
     void centLeft();
     void resetObmLeft();
     void dataReqLeft();
+
+    //-- OwnCurs--//
+    void cuOrOffCentLeft();
+    void cuOrCentLeft();
+    void offCentLeft();
+
+    void trueMotion();
+    void ownCurs(bool value);
 
 private:
     // Métodos de decodificación por palabra

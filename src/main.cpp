@@ -1,6 +1,8 @@
 #include "ITransport.h"
 #include "TransportFactory.h"
+#include "jsoncommandhandler.h"
 #include "lpdEncoder.h"
+#include "messagerouter.h"
 #include "obmHandler.h"
 #include "dclConcController.h"
 #include "concDecoder.h"
@@ -25,6 +27,9 @@
 #include "commandContext.h"
 #include "QTimer"
 #include "configuration.h"
+#include "addCursor.h"
+#include "listcursorscommand.h"
+#include "deletecursorscommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -60,7 +65,10 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-    registry->registerCommand(QSharedPointer<ICommand>(new EstCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
+    registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
+
     CommandDispatcher dispatcher(registry, parser, *ctx);
 
 
@@ -103,15 +111,34 @@ int main(int argc, char* argv[]) {
 
 
     auto* obmHandler = new OBMHandler();
-    new DclConcController(transport, decoder, &app);
+    auto* ownCurs = new OwnCurs(ctx,obmHandler);
+
+    // 1. Crear los controladores
+    auto* dclConcController = new DclConcController(transport, decoder, &app);
+    auto* jsonHandler = new JsonCommandHandler(ctx, transport, &app);
+
+    // 2. Crear el Router y pasarle los controladores
+    auto* router = new MessageRouter(dclConcController, jsonHandler, &app);
+
+    // 3. Conectar el transporte ÚNICAMENTE al router
+    QObject::connect(transport, &ITransport::messageReceived,
+                     router, &MessageRouter::onMessageReceived);
 
     auto* overlayHandler = new OverlayHandler();
     overlayHandler->setContext(ctx);
     overlayHandler->setOBMHandler(obmHandler);
 
+    //conectar señales del decoder con ownCurse
+    QObject::connect(decoder, &ConcDecoder::newHandWheel, ownCurs, &OwnCurs::updateHandwheel);
+    QObject::connect(decoder, &ConcDecoder::cuOrOffCentLeft, ownCurs, &OwnCurs::cuOrOffCent);
+    QObject::connect(decoder, &ConcDecoder::cuOrCentLeft, ownCurs, &OwnCurs::cuOrCent);
+    QObject::connect(decoder, &ConcDecoder::ownCurs, ownCurs, &OwnCurs::ownCursActive);
+
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
     QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
+
+
 
 
     QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);
