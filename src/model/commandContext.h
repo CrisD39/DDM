@@ -44,7 +44,7 @@ struct CommandContext {
 
     template<typename... Args>
     inline Track& emplaceTrackFront(Args&&... args) {
-        tracks.emplace_front(std::forward<Args>(args)...); // O(1)
+        tracks.emplace_front(std::for ward<Args>(args)...); // O(1)
         return tracks.front();
     }
 
