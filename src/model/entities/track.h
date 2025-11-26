@@ -1,7 +1,7 @@
 // Track.h
 #pragma once
 #include <QString>
-#include "enums/enums.h"
+#include "enums/enumsTrack.h"
 
 class Track {
 

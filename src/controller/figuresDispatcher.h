@@ -7,7 +7,7 @@
 
 #include "commandContext.h"
 #include "model/entities/track.h"
-#include "enums/enums.h"   // mismo include que usa Track.h
+#include "enumsTrack.h"   // mismo include que usa Track.h
 
 class FiguresDispatcher : public QObject
 {

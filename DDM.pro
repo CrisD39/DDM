@@ -1,4 +1,5 @@
-QT += core network
+QT += core network \
+    widgets
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
@@ -20,14 +21,15 @@ INCLUDEPATH += \
 
 
 HEADERS += \
+    src/controller/commandDispatcher.h \
     src/controller/commandRegistry.h \
-    src/controller/commanddispatcher.h \
+    src/controller/commands/ICommand.h \
     src/controller/commands/addCommand.h \
     src/controller/commands/addCursor.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
-    src/controller/commands/iCommand.h \
+    src/controller/commands/estcommand.h \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
@@ -39,6 +41,8 @@ HEADERS += \
     src/model/decoders/lpdEncoder.h \
     src/model/entities/cursorEntity.h \
     src/model/enums/enums.h \
+    src/model/enums/enumsOwnShip.h \
+    src/model/enums/enumsTrack.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
     src/model/network/localipcclient.h \
@@ -55,10 +59,13 @@ HEADERS += \
     src/model/overlays/spc.h \
     src/model/ownCursor/owncurs.h \
     src/model/overlays/linco.h \
+    src/model/ownShip/ownship.h \
     src/model/qek.h \
+    src/model/ownship.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
+    src/model/utils/geometry.h \
     src/view/CommandParser.h \
     src/view/ansi.h \
     src/view/iInputParser.h \
@@ -71,6 +78,7 @@ SOURCES += \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
+    src/controller/commands/estcommand.cpp \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
@@ -95,6 +103,7 @@ SOURCES += \
     src/model/overlays/linco.cpp \
     src/model/entities/track.cpp \
     src/model/ownCursor/owncurs.cpp \
+    src/model/ownShip/ownship.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 
