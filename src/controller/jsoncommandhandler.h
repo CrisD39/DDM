@@ -28,4 +28,5 @@ private:
     
     // Helper para enviar respuestas
     void sendResponse(const QByteArray& responseData);
+    void handleStartCPA(QJsonObject);
 };

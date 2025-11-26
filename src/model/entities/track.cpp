@@ -9,7 +9,11 @@ Track::Track(
     TrackMode mode,
     double x,
     double y
-    ): m_id(id), m_type(type), m_mode(mode), m_identity(identity), m_x(x), m_y(y) {}
+    ): m_id(id), m_type(type), m_mode(mode), m_identity(identity), m_x(x), m_y(y)
+{
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &Track::actualizarPos);
+}
 
 // Getters
 int Track::getId() const { return m_id; }
@@ -26,6 +30,34 @@ void Track::setIdentity(Identity identity) { m_identity = identity; }
 void Track::setTrackMode(TrackMode mode) { m_mode = mode; }
 void Track::setX(double x) { m_x = x; }
 void Track::setY(double y) { m_y = y; }
+
+double Track::setCourse(double c)
+{
+    m_course = c;
+}
+
+double Track::setVelocity(double v)
+{
+    if(!m_timer->isActive()){
+        m_timer->stop();
+    }
+    m_timer->start(INTERVAL);
+
+}
+
+void Track::actualizarPos()
+{
+    QPair<double, double> = {getX(), getY()};
+
+    if(m_course > 0.0 && m_course < 360.0 && m_velocity >=0){
+        double dtSec = INTERVAL / 1000.0;  // milisegundos → segundos
+        double theta = qDegreesToRadians(90.0 - rumbo);
+        double new_x = getX() + m_velocity * dtSec * std::cos(theta);
+        double new_y = getY() + m_velocity * dtSec * std::sin(theta);
+        setX(new_x);
+        setY(new_y);
+    }
+}
 
 template <typename Enum>
 static inline QString enumToQString(Enum value) {

@@ -2,7 +2,9 @@
 #pragma once
 #include <QString>
 #include "enums/enums.h"
+#include <QTimer>
 
+#define INTERVAL 5000
 class Track {
 
     using Type      = TrackData::Type;
@@ -20,6 +22,8 @@ public:
     TrackMode getTrackMode()const;
     double getX() const;
     double getY() const;
+    double getCourse() const;
+    double getVelocity() const;
 
     // Setters (sin noexcept)
     void setId(int id);
@@ -28,6 +32,10 @@ public:
     void setTrackMode(TrackMode mode);
     void setX(double x);
     void setY(double y);
+    double setCourse(double c);
+    double setVelocity(double v);
+
+    void actualizarPos();
 
     QString toString() const;
 private:
@@ -36,6 +44,11 @@ private:
     Type m_type;                      // vacío = “no informado”
     TrackMode m_mode;
 
+    double m_course;
+    double m_velocity;
+    QTimer *m_timer;
+
     double m_x{0.0};
     double m_y{0.0};
+
 };

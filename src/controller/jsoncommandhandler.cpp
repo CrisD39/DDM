@@ -9,6 +9,9 @@
 #include <QJsonValue>
 #include <QDebug>
 #include <qfloat16.h>
+#include <QTimer>
+#include <QElapsedTimer>
+#include <qmath.h>
 
 JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* transport, QObject *parent)
     : QObject(parent), m_context(context), m_transport(transport)
@@ -50,6 +53,10 @@ void JsonCommandHandler::processJsonCommand(const QByteArray& jsonData)
     QString command = obj.value("command").toString();
     QJsonObject args = obj.value("args").toObject();
 
+    if(command == "start_cpa"){
+        handleStartCPA(args);
+    }
+
     if (command == "create_line") {
         handleCreateLine(args);
     } else if (command == "delete_line") {
@@ -86,7 +93,7 @@ void JsonCommandHandler::handleCreateLine(const QJsonObject& args)
     double length = length_val.toDouble();
     
     // 2. Validar rango de azimut [0.0, 359.9]
-    if (azimut < 0.0 || azimut > 359.9) {
+    if ((azimut < 0.0) || (azimut > 359.9)) {
         qWarning() << "[JsonCommandHandler] Error de validación: Azimut" << azimut << "fuera de rango [0.0, 359.9]";
         
         QJsonObject details;
@@ -105,7 +112,7 @@ void JsonCommandHandler::handleCreateLine(const QJsonObject& args)
     }
     
     // 3. Validar rango de length [0.1, 256.0]
-    if (length < 0.1 || length > 256.0) {
+    if ((length < 0.1) || (length > 256.0)) {
         qWarning() << "[JsonCommandHandler] Error de validación: Length" << length << "fuera de rango [0.1, 256.0]";
         
         QJsonObject details;
@@ -129,7 +136,7 @@ void JsonCommandHandler::handleCreateLine(const QJsonObject& args)
     double y = args.value("y").toDouble(0.0);
     
     // 5. Validar type [0, 7]
-    if (type < 0 || type > 7) {
+    if ((type < 0) || (type > 7)) {
         qWarning() << "[JsonCommandHandler] Error de validación: Type" << type << "fuera de rango [0, 7]";
         
         QJsonObject details;
@@ -324,3 +331,70 @@ void JsonCommandHandler::sendResponse(const QByteArray& responseData)
         qWarning() << "[JsonCommandHandler] No se puede enviar respuesta: transport es nullptr";
     }
 }
+
+void JsonCommandHandler::handleStartCPA(QJsonObject){
+    // 1. Extraer argumentos requeridos
+    QJsonValue cpa_id_val = args.value("id");
+    QJsonValue TN_Source_val = args.value("track-a");
+    QJsonValue TN_Target_val = args.value("track-b");
+
+    int cpa_id = cpa_id_val.toInt();
+    int TN_Source = TN_Source_val.toInt();
+    int TN_Target = TN_Target_val.toInt();
+    Track *trackA = m_context->findTrackById(TN_Source);
+    Track *trackB = m_context->findTrackById(TN_Target);
+
+    QPair<double, double> start_posA = {trackA->getX(), trackA->getY()};
+    QPair<double, double> start_posB = {trackB->getX(), trackB->getY()};
+
+    QElapsedTimer elapsedTime;
+
+    QTimer *start_timer = new QTimerEvent(this);
+    connect(start_timer, qOverload<>(&QTimer::start),
+            this, [this]() {
+
+        //QPair<double, double> start_posA = {trackA->getX(), trackA->getY()};
+        //QPair<double, double> start_posB = {trackB->getX(), trackB->getY()};
+        double timeA;
+        double timeB;
+
+        //tiene que pasar un tiempo
+        QPair<double, double> final_posA = {trackA->getX(), trackA->getY()};
+        QPair<double, double> final_posB = {trackB->getX(), trackB->getY()};
+
+        QPair<double, double> deltaA = (final_posA - start_posA);
+        QPair<double, double> deltaB = (final_posB - start_posB);
+
+        QPair<double, double> velocityA =
+            deltaA / timeInterval;
+
+        QPair<double, double> velocityB =
+            deltaB / timeInterval;
+
+        QPair<QPair<double,double>, double> rPol_a = {deltaA, timeA};
+        //         |   (x , y)    | time |
+
+        QPair<QPair<double,double>, double> rPol_b = {deltaB, timeB};
+        //         |   (x , y)    | time |
+
+
+        double timeCPA = (deltaB - deltaA)/ (velocityA - velocityB);
+
+        int timeInterval = start_timer->interval()
+
+
+        QPair<double, double> posInTimeA = deltaA + velocityA * timeInterval;
+        QPair<double, double> posInTimeB = deltaB + velocityB * timeInterval;
+
+        QPair<double, double> cpaInCurrentTime =
+            (final_posA - final_posB) / (velocityA-velocityB);
+
+
+    });
+
+    start_timer->start(5000);
+    elapsedTime.start();
+
+}
+
+
