@@ -1,5 +1,4 @@
 #include "addCursor.h"
-#include "enums.h"
 
 // helper como en add: parseo numérico robusto
 static bool takeNumber(const QString& s, double& out) {

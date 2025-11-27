@@ -9,6 +9,7 @@
 #include <utility>            // ← por std::forward
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
+#include "entities/stationEntity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -30,6 +31,7 @@ struct CommandContext {
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
     std::set<int>     freeIds;
+    std::map<int, StationEntity> stationSlots;
     int               nextTrackId = 1;
     int               nextCursorId = 2;
 
@@ -131,5 +133,21 @@ struct CommandContext {
         if (i == tracks.size()) return nullptr;
         const std::size_t j = (i + 1) % tracks.size();
         return &tracks[j];
+    }
+
+    inline void setStationingSlot(const StationEntity& st) {
+        qDebug() << "Actualizando Slot Estacionamiento:" << st.slotId;
+
+        // Guardamos/Sobrescribimos el slot (1 al 10)
+        stationSlots[st.slotId] = st;
+
+        qDebug() << "Slot" << st.slotId << "actualizado con Rumbo:" << st.rumboResultado;
+    }
+
+    // Para que la GUI recupere la info (OverlayHandler lo usará)
+    inline const StationEntity* getStationingSlot(int id) const {
+        auto it = stationSlots.find(id);
+        if (it != stationSlots.end()) return &it->second;
+        return nullptr;
     }
 };

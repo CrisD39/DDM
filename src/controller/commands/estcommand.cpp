@@ -1,97 +1,110 @@
-#include "EstCommand.h"
-#include <algorithm>
-#include <cmath>
+#include "estCommand.h"
+#include "../../model/commandContext.h"
+#include "../../model/entities/stationEntity.h"
+#include <QtMath>      // Para senos, cosenos y radianes
+#include <QVector2D>   // <--- ¡AGREGA ESTA LÍNEA!
+#include <QDebug>
 
-// Calcula azimut en grados [0, 360)
-static double calcAzimut(double dx, double dy) {
-    double ang = std::atan2(dx, dy) * 180.0 / M_PI;
-    return (ang < 0) ? ang + 360.0 : ang;
+// FIX: La función execute es 'const', así que resolverCinematica también debe serlo.
+CommandResult EstCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
+
+    // FIX: Acceder a 'args' directamente si es un miembro público de la struct
+    // Si inv.args es un QVector/QList, usamos .size()
+    if (inv.args.size() < 7) {
+        // FIX: Uso de llaves {} para inicializar el struct CommandResult
+        return CommandResult{false, "Faltan argumentos. Uso: " + usage()};
+    }
+
+    bool ok;
+    // 2. Parsing
+    // FIX: Cambiado getArgs() por args
+    int slotId = inv.args[0].toInt(&ok);
+
+    // FIX: Inicialización con llaves
+    if (!ok || slotId < 1 || slotId > 10) return CommandResult{false, "Slot invalido (1-10)"};
+
+    int trkA = inv.args[1].toInt(&ok);
+    int trkB = inv.args[2].toInt(&ok);
+    double az = inv.args[3].toDouble(&ok);
+    double dt = inv.args[4].toDouble(&ok);
+    QString modoStr = inv.args[5].toUpper();
+    double valor = inv.args[6].toDouble(&ok);
+
+    // 3. Entidad
+    StationEntity st(slotId, trkA, trkB, az, dt);
+
+    if (modoStr == "VD") {
+        st.esModoVD = true;
+        st.velocidadRequerida = valor;
+    } else if (modoStr == "DU") {
+        st.esModoVD = false;
+        st.tiempoResultado = valor;
+    } else {
+        return CommandResult{false, "Modo desconocido. Use VD o DU."};
+    }
+
+    // 4. Lógica
+    // Ahora esto funcionará porque resolverCinematica es 'const'
+    resolverCinematica(st, ctx);
+
+    // 5. Insertar
+    ctx.setStationingSlot(st);
+
+    // 6. Retorno
+    QString msg = QString("STA Calculado Slot %1 -> Rumbo: %2").arg(slotId).arg(st.rumboResultado);
+    return CommandResult{true, msg};
 }
 
-static double calcDist(double dx, double dy) {
-    return std::sqrt(dx*dx + dy*dy);
-}
+// FIX: Agregado 'const' al final de la firma para coincidir con execute
+void EstCommand::resolverCinematica(StationEntity& ent, CommandContext& ctx) const   {
+    // NOTA: Recuerda implementar el getter real de tracks en commandContext.h
+    // Simulamos datos si no existen los getters aún
+    double rumboGuia = 90.0;
+    double velGuia = 10.0;
 
-CommandResult EstCommand::execute(const CommandInvocation& inv,
-                                  CommandContext& ctx) const
-{
-    // 1) Validación de argumentos mínimos: est <id> [-v vel] [-t tiempo]
-    if (inv.args.size() < 2) {
-        return { false, QString("Uso incorrecto. ") + usage() };
+    // Ahora QVector2D ya no dará error de incomplete type
+    QVector2D posA(0, 0);
+    QVector2D posB(10, 10);
+
+    double radGuia = qDegreesToRadians(rumboGuia);
+    QVector2D vecVelGuia(sin(radGuia) * velGuia, cos(radGuia) * velGuia);
+
+    double azEstacionVerdadero = rumboGuia + ent.azimut;
+    double radEst = qDegreesToRadians(azEstacionVerdadero);
+
+    QVector2D offsetEstacion(sin(radEst) * ent.distancia, cos(radEst) * ent.distancia);
+    QVector2D posEstacion = posB + offsetEstacion;
+
+    QVector2D deltaP = posEstacion - posA;
+    double distTotal = deltaP.length();
+
+    if (ent.esModoVD) {
+        double miVel = ent.velocidadRequerida;
+        double tiempoHoras = distTotal / (qAbs(miVel - velGuia) + 0.0001); // Evitar div 0
+
+        ent.tiempoResultado = tiempoHoras * 3600;
+
+        QVector2D puntoFuturo = posEstacion + (vecVelGuia * tiempoHoras);
+        QVector2D vectorRumbo = puntoFuturo - posA;
+
+        double anguloMath = std::atan2(vectorRumbo.y(), vectorRumbo.x());
+        double azGeo = 90.0 - qRadiansToDegrees(anguloMath);
+        while (azGeo < 0) azGeo += 360.0;
+
+        ent.rumboResultado = azGeo;
+    } else {
+        double tiempoHoras = ent.tiempoResultado / 3600.0;
+        if(tiempoHoras <= 0) tiempoHoras = 0.001;
+
+        QVector2D puntoFuturo = posEstacion + (vecVelGuia * tiempoHoras);
+        QVector2D vecVelNec = (puntoFuturo - posA) / tiempoHoras;
+
+        ent.velocidadRequerida = vecVelNec.length();
+
+        double anguloMath = std::atan2(vecVelNec.y(), vecVelNec.x());
+        double azGeo = 90.0 - qRadiansToDegrees(anguloMath);
+        while (azGeo < 0) azGeo += 360.0;
+
+        ent.rumboResultado = azGeo;
     }
-
-    // 2) Parseo del id
-    bool ok = false;
-    const int id = inv.args[0].toInt(&ok);
-    if (!ok) {
-        return {false, "ID inválido"};
-    }
-
-    // 3) Buscar el track por id en ctx.tracks (std::deque<Track>)
-    auto it = std::find_if(ctx.tracks.begin(), ctx.tracks.end(),
-                           [id](const Track& tr) {
-                               return tr.getId() == id;
-                           });
-
-    if (it == ctx.tracks.end()) {
-        return { false, QString("No existe el track con id %1").arg(id) };
-    }
-
-    const Track& t = *it;
-
-    // 4) Parseo de -v y -t
-    double velocidad = -1.0;
-    double tiempo    = -1.0;
-
-    // AHORA EMPIEZA EN 1, NO EN 2
-    for (int i = 1; i < inv.args.size(); ++i) {
-        const QString& arg = inv.args[i];
-
-        if (arg == "-v" && i + 1 < inv.args.size()) {
-            double v = inv.args[i + 1].toDouble(&ok);
-            if (!ok || v <= 0) {
-                return { false, QStringLiteral("Velocidad inválida.") };
-            }
-            velocidad = v;
-        } else if (arg == "-t" && i + 1 < inv.args.size()) {
-            double t_h = inv.args[i + 1].toDouble(&ok);
-            if (!ok || t_h <= 0) {
-                return { false, QStringLiteral("Tiempo inválido.") };
-            }
-            tiempo = t_h;
-        }
-    }
-
-    if (velocidad < 0 && tiempo < 0) {
-        return { false,
-                QStringLiteral("Debe especificar -v <velocidad> o -t <tiempo_horas>") };
-    }
-
-    // 5) Geometría: por ahora OwnShip en (0,0)
-    double dx = t.getX();
-    double dy = t.getY();
-
-    double distancia = calcDist(dx, dy);
-    double azimut    = calcAzimut(dx, dy);
-
-    // 6) Completar datos: si viene v, saco t; si viene t, saco v.
-    if (velocidad > 0 && tiempo < 0) {
-        tiempo = distancia / velocidad;
-    } else if (tiempo > 0 && velocidad < 0) {
-        velocidad = distancia / tiempo;
-    }
-
-    double rumbo = azimut;
-
-    // 7) Mensaje
-    QString msg;
-    msg += QString("EST para track id %1\n").arg(id);
-    msg += QString("Distancia: %1\n").arg(distancia);
-    msg += QString("Azimut: %1°\n").arg(QString::number(azimut, 'f', 1));
-    msg += QString("Rumbo: %1°\n").arg(QString::number(rumbo, 'f', 1));
-    msg += QString("Velocidad: %1 kn\n").arg(QString::number(velocidad, 'f', 2));
-    msg += QString("Tiempo: %1 h").arg(QString::number(tiempo, 'f', 3));
-
-    // 8) Éxito
-    return { true, msg };
 }

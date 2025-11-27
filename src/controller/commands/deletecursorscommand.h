@@ -1,5 +1,5 @@
 #pragma once
-#include "iCommand.h"
+#include "ICommand.h"
 #include "commandContext.h"
 
 class DeleteCursorsCommand : public ICommand {

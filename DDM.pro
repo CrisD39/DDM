@@ -29,7 +29,7 @@ HEADERS += \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
-    src/controller/commands/iCommand.h \
+    src/controller/commands/estcommand.h \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
@@ -42,7 +42,9 @@ HEADERS += \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
     src/model/entities/cursorEntity.h \
-    src/model/enums/enums.h \
+    src/model/entities/stationEntity.h \
+    src/model/enums/enumsTrack.h \
+    src/model/enums/enumsOwnShip.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
     src/model/network/localipcclient.h \
@@ -77,8 +79,8 @@ SOURCES += \
     src/controller/commands/addCursor.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
-    src/controller/commands/estcommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
+    src/controller/commands/estcommand.cpp \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
