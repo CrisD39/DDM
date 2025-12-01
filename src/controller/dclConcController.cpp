@@ -14,7 +14,6 @@ DclConcController::DclConcController(ITransport* link,
     Q_ASSERT(m_link);
     Q_ASSERT(m_decoder);
 
-    // Timer a 100 ms para enviar PEDIDO_DCL_CONC
     m_timer.setInterval(50);
     connect(&m_timer, &QTimer::timeout, this, &DclConcController::askForConcentrator);
     m_timer.start();
@@ -27,7 +26,6 @@ void DclConcController::askForConcentrator()
 
 void DclConcController::onDatagram(const QByteArray& datagram)
 {
-    // Necesitamos al menos la primera palabra (3 bytes) para extraer secuencia
     if (datagram.size() < 3) return;
 
     // w1 = B0 B1 B2 (big-endian a 24 bits)
@@ -38,10 +36,9 @@ void DclConcController::onDatagram(const QByteArray& datagram)
                        (static_cast<quint32>(b1) << 8)  |
                        (static_cast<quint32>(b2));
 
-    const quint16 seq = static_cast<quint16>(w1 & 0x7FFF); // últimos 15 bits
+    const quint16 seq = static_cast<quint16>(w1 & 0x7FFF);
 
     const QByteArray ack = buildAckFromSeq(seq);
-    // Antes: m_socket->sendMessage(ack)
     m_link->send(ack);
 
     if (datagram.size() > 3) {

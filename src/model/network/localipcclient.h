@@ -12,6 +12,7 @@ public:
     void start() override;
     void stop() override;
     bool send(const QByteArray& data) override;
+    bool isConnected() const override;
 
 private:
     void onReadyRead();

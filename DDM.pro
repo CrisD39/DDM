@@ -10,6 +10,9 @@ INCLUDEPATH += \
     src/ \
     src/controller/ \
     src/controller/commands/ \
+    src/controller/json/ \
+    src/controller/json/validators/ \
+    src/controller/handlers/ \
     src/model/ \
     src/model/decoders/ \
     src/model/network/ \
@@ -33,10 +36,13 @@ HEADERS += \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
     src/controller/dclConcController.h \
-    src/controller/jsoncommandhandler.h \
-    src/controller/jsonresponsebuilder.h \
+    src/controller/json/jsoncommandhandler.h \
+    src/controller/json/jsonresponsebuilder.h \
+    src/controller/json/jsonserializer.h \
+    src/controller/handlers/linecommandhandler.h \
     src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
+    src/controller/json/validators/jsonvalidator.h \
     src/model/commandContext.h \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
@@ -84,10 +90,13 @@ SOURCES += \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/dclConcController.cpp \
-    src/controller/jsoncommandhandler.cpp \
-    src/controller/jsonresponsebuilder.cpp \
+    src/controller/json/jsoncommandhandler.cpp \
+    src/controller/json/jsonresponsebuilder.cpp \
+    src/controller/json/jsonserializer.cpp \
+    src/controller/handlers/linecommandhandler.cpp \
     src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \
+    src/controller/json/validators/jsonvalidator.cpp \
     src/main.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \

@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QByteArray>
 
-class ITransport;   // interfaz de transporte (UDP, Local IPC, etc.)
+class ITransport;
 class ConcDecoder;
 
 class DclConcController : public QObject

@@ -1,6 +1,6 @@
 #include "messagerouter.h"
 #include "dclConcController.h"  // Definiciones completas
-#include "jsoncommandhandler.h"
+#include "json/jsoncommandhandler.h"
 #include <QDebug>
 
 MessageRouter::MessageRouter(DclConcController* dclController,
