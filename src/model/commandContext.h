@@ -38,6 +38,9 @@ struct CommandContext {
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
 
+    inline std::deque<CursorEntity>& getCursors() { return cursors; }
+    inline const std::deque<CursorEntity>& getCursors() const { return cursors; }
+
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
         qDebug() << "agregando cursor";
         cursors.push_front(c);
@@ -113,6 +116,13 @@ struct CommandContext {
         }
     }
     
+    inline bool eraseCursorById(int id) {
+        for (auto it = cursors.begin(); it != cursors.end(); ++it) {
+            if (it->getCursorId() == id) { cursors.erase(it); return true; }
+        }
+        return false;
+    }
+
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
         std::size_t i = 0;

@@ -12,28 +12,30 @@ using Type      = TrackData::Type;
 using Identity  = TrackData::Identity;
 using TrackMode = TrackData::TrackMode;
 
-class encoderLPD : public QObject
+class encoderLPD
 {
-    Q_OBJECT
 public:
-    explicit encoderLPD();
+    explicit encoderLPD() = default;
     QByteArray buildFullMessage(const CommandContext &ctx);
-    void setOBMHandler(OBMHandler* oh){this->obmHandler = oh;}
+    void setOBMHandler(OBMHandler* oh){obmHandler = oh;}
 
 private:
-    QByteArray buildAB2Message(const Track &track);
-    QByteArray buildAB3Message(const CursorEntity &cursor);
-    QByteArray encodeCoordinate(double value, uint8_t idBits, bool AP = true, bool PV = false, bool LS = false);
-    QByteArray encodeAngle(double value, bool e, bool v);
-    QByteArray encodeCursorLong(double value,int type);
-    QByteArray buildSymbolBytes(const Track &track) const;
+    void appendAB2Message(QByteArray& dst, const Track &track);
+    void appendAB3Message(QByteArray& dst, const CursorEntity &cursor);
+    void appendCoordinate(QByteArray& dst, double value, uint8_t idBits, bool AP=true, bool PV=false, bool LS=false);
+    void appendAngle(QByteArray& dst, double value, bool e, bool v);
+    void appendCursorLong(QByteArray& dst, double value, int type);
+    void appendSymbolBytes(QByteArray& dst, const Track &track) const;
+    void appendOBM(QByteArray& dst);
+
+    // Helpers puros (sin cambios)
     QPair<uint8_t, uint8_t> symbolFor(const Track &track) const;
     uint8_t trackModeFor(const Track &track) const;
-    QByteArray negateData(const QByteArray &data);
 
-    OBMHandler *obmHandler;
-    QByteArray buildOBM();
+    // Invertir in-place
+    void negateDataInPlace(QByteArray &data, int startPos);
 
+    OBMHandler *obmHandler{nullptr};
 };
 
 constexpr uint8_t BIT_LS = 1 << 6;
@@ -58,9 +60,9 @@ constexpr uint8_t AB1_ID_Y = 0x0B;
 
 constexpr uint8_t EOMM = 0x17;
 
-constexpr uint8_t HEADER_BYTES[2]       = { 0x00, 0x00 };
-constexpr uint8_t DESCENTRADO_BYTES[6]  = { 0x00, 0x00, 0x19, 0x00, 0x00, 0x0B };
-constexpr uint8_t PADDING_BYTES[9]      = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-constexpr uint8_t INVALID_OWNSHIP[9]   = { 0x00, 0x00, 0x61, 0x00, 0x00, 0x23, 0x1C, 0x00, 0x17 };
+constexpr char HEADER_BYTES[]       = { 0x00, 0x00 };
+constexpr char DESCENTRADO_BYTES[]  = { 0x00, 0x00, 0x19, 0x00, 0x00, 0x0B };
+constexpr char PADDING_BYTES[]      = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+constexpr char INVALID_OWNSHIP[]   = { 0x00, 0x00, 0x61, 0x00, 0x00, 0x23, 0x1C, 0x00, 0x17 };
 
 #endif // LPDENCODER_H

@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QByteArray>
 
-class ITransport;   // interfaz de transporte (UDP, Local IPC, etc.)
+class ITransport;
 class ConcDecoder;
 
 class DclConcController : public QObject
@@ -19,6 +19,7 @@ public:
     QByteArray negateData(const QByteArray &data);
 private slots:
     void askForConcentrator();
+public slots:
     void onDatagram(const QByteArray&);
 
 private:
