@@ -32,6 +32,9 @@ struct CommandContext {
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
 
+    inline std::deque<CursorEntity>& getCursors() { return cursors; }
+    inline const std::deque<CursorEntity>& getCursors() const { return cursors; }
+
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
         qDebug() << "agregando cursor";
         cursors.push_front(c);

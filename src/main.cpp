@@ -1,6 +1,6 @@
 #include "ITransport.h"
 #include "TransportFactory.h"
-#include "jsoncommandhandler.h"
+#include "json/jsoncommandhandler.h"
 #include "lpdEncoder.h"
 #include "messagerouter.h"
 #include "obmHandler.h"
