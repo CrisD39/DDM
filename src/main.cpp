@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
 
     auto* obmHandler = new OBMHandler();
     auto* ownCurs = new OwnCurs(ctx,obmHandler);
+    auto* ownShip = new OwnShip();
 
     // 1. Crear los controladores
     auto* dclConcController = new DclConcController(transport, decoder, &app);
@@ -168,23 +169,52 @@ int main(int argc, char* argv[]) {
 
     timer.start(40);
 
-    //probando figuras
-    FiguresDispatcher figureDispatcher(ctx);
+    // //probando figuras
+    FiguresDispatcher figureDispatcher(ctx,ownShip);
 
-    FiguresDispatcher::Circle circle;
+    // FiguresDispatcher::Circle circle;
 
-    // Asignar campos
-    circle.radio  = 50.0; // por ejemplo, radio 50
-    circle.center = QPair<qfloat16, qfloat16>(
-        qfloat16(0.0f),   // x
-        qfloat16(0.0f)    // y
-        );
+    // // Asignar campos
+    // circle.radio  = 50.0; // por ejemplo, radio 50
+    // circle.center = QPair<qfloat16, qfloat16>(
+    //     qfloat16(0.0f),   // x
+    //     qfloat16(0.0f)    // y
+    //     );
 
-    circle.type   = TrackData::Type::Surface; // o el tipo que corresponda
-    circle.color  = 0;                        // si usás color de alguna forma
+    // circle.type   = TrackData::Type::Surface; // o el tipo que corresponda
+    // circle.color  = 0;                        // si usás color de alguna forma
 
-    // Llamar al método
-    figureDispatcher.createCircle(circle);
+    // // Llamar al método
+    // figureDispatcher.createCircle(circle);
+
+
+    // TESTEO DE RECTANGLE
+
+    FiguresDispatcher::Rectangle testRect;
+    // Esquina A (Noroeste)
+    testRect.pointA.first = "45-00.0N";  // Lat A
+    testRect.pointA.second = "010-00.0W"; // Lon A
+
+    // Esquina B (Noreste)
+    testRect.pointB.first = "45-00.0N";  // Lat B
+    testRect.pointB.second = "011-00.0W"; // Lon B
+
+    // Esquina C (Sureste)
+    testRect.pointC.first = "44-00.0N";  // Lat C
+    testRect.pointC.second = "011-00.0W"; // Lon C
+
+    // Esquina D (Suroeste)
+    testRect.pointD.first = "44-00.0N";  // Lat D
+    testRect.pointD.second = "010-00.0W"; // Lon D
+
+    testRect.type = TrackData::Type::Surface;  // Ejemplo de tipo
+    testRect.color = 1;                     // Ejemplo de color
+
+    // 3. Llamar a la función
+    figureDispatcher.createArea(testRect);
+
+    qDebug() << "--- Prueba finalizada. Verifica el debug output ---";
+
 
 
     ioThread.start();
