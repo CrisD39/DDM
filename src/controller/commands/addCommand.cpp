@@ -1,107 +1,103 @@
-/*
-    Comando `add`: crea un `Track` con flags `-s|-a|-b` (identidad) y `-f|-e|-u` (tipo),
-    y coordenadas `<x> <y>`; actualiza `ctx.tracks`.
-*/
-#include "commands/addCommand.h"
-#include "enumsTrack.h"
-#include <algorithm> // por las dudas, aunque no lo usemos acá
+#include "addCommand.h"
+#include "enums/enumsTrack.h"
+#include <QtMath>
 
+// Helper para parsear números (ya lo tenías parecido)
 static bool takeNumber(const QString& s, double& out) {
-    bool ok = false; double v = s.toDouble(&ok);
+    bool ok = false;
+    double v = s.toDouble(&ok);
     if (ok) out = v;
     return ok;
 }
 
-CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
-    const QStringList& args = inv.args;
-    if (args.isEmpty()) {
-        return {false, "Uso: " + usage()};
+CommandResult AddCommand::execute(const CommandInvocation& inv,
+                                  CommandContext& ctx) const
+{
+    // Esperamos:
+    //  add <idFlag> <typeFlag> <x> <y> [<rumbo> <vel>]
+    const int n = inv.args.size();
+    if (n != 4 && n != 6) {
+        return {false, "Cantidad de argumentos invalida. Uso: " + usage()};
     }
 
-    int idx = 0;
-    bool hasType = false;       // -f | -e | -u (obligatorio, TIPO)
-    bool hasIdent = false;      // -s | -a | -b (opcional, IDENTIDAD)
-    Type type = Type::Surface;          // default
-    Identity ident = Identity::Pending; // default
+    const QString medioFlag = inv.args[0].toLower();  // -s | -a | -b
+    const QString identFlag = inv.args[1].toLower();  // -f | -e | -u
 
-    auto isNumericToken = [](const QString& tok) {
-        // Token numérico permite "-12", "-12.3", "12", "12.3", ".5", "-.5"
-        bool digitLike = (!tok.isEmpty() && (tok[0].isDigit() || tok[0] == '-' || tok[0] == '.'));
-        if (!digitLike) return false;
-        bool okX=false; tok.toDouble(&okX);
-        return okX;
-    };
+    // 1) Mapear medio (-s|-a|-b) -> TrackData::Type
+    TrackData::Type type;
 
-    // ---------- PARSEO DE FLAGS ----------
-    while (idx < args.size()) {
-        const QString tok = args[idx];
-        if (isNumericToken(tok) || !tok.startsWith('-')) break;
+    if (medioFlag == "-s") {
+        type = TrackData::Type::Surface;     // Superficie
+    } else if (medioFlag == "-a") {
+        type = TrackData::Type::Air;         // Aéreo
+    } else if (medioFlag == "-b") {
+        type = TrackData::Type::Subsurface;  // Subsuperficie
+    } else {
+        return {false, "Medio invalido. Use -s (superficie), -a (aéreo) o -b (subsuperficie)"};
+    }
 
-        const QString f = tok.toLower();
+    // 2) Mapear tipo (-f|-e|-u) a tu enum
+    TrackData::Identity identity;
 
-        // Identidad: -s | -a | -b
-        if (f == "-s" || f == "-a" || f == "-b") {
-            hasIdent = true;
-            if      (f == "-s") type = Type::Surface;
-            else if (f == "-a") type = Type::Air;
-            else                type = Type::Subsurface;
-            ++idx;
-            continue;
+    if (identFlag == "-f") {
+        identity = TrackData::Identity::ConfFriend;   // amigo confirmado
+    } else if (identFlag == "-e") {
+        identity = TrackData::Identity::ConfHostile;  // enemigo confirmado
+    } else if (identFlag == "-u") {
+        identity = TrackData::Identity::EvalUnknown;  // desconocido / a evaluar
+    } else {
+        return {false, "Identidad invalida. Use -f (friend), -e (enemy) o -u (unknown)"};
+    }
+
+    // 3) TrackMode por defecto
+    TrackData::TrackMode mode = TrackData::TrackMode::Auto;  // o FC1 si preferís
+
+    // 4) Parsear posición
+    double x = 0.0, y = 0.0;
+    if (!takeNumber(inv.args[2], x)) {
+        return {false, "x invalido (no es numero)"};
+    }
+    if (!takeNumber(inv.args[3], y)) {
+        return {false, "y invalido (no es numero)"};
+    }
+
+    // 5) Parsear rumbo y velocidad (opcionales)
+    double rumbo = 0.0;
+    double velocidad = 0.0;
+
+    if (n == 6) {
+        if (!takeNumber(inv.args[4], rumbo)) {
+            return {false, "Rumbo invalido (no es numero)"};
+        }
+        if (!takeNumber(inv.args[5], velocidad)) {
+            return {false, "Velocidad invalida (no es numero)"};
         }
 
-        // Tipo: -f | -e | -u
-        if (f == "-f" || f == "-e" || f == "-u") {
-            if (hasType) return {false, "Solo un flag de tipo permitido (-f|-e|-u)."};
-            hasType = true;
-            if      (f == "-f") ident = Identity::ConfFriend;
-            else if (f == "-e") ident = Identity::ConfHostile;
-            else                ident = Identity::EvalUnknown;
-            ++idx;
-            continue;
+        // Normalizar rumbo a [0, 360)
+        while (rumbo < 0.0)   rumbo += 360.0;
+        while (rumbo >= 360.) rumbo -= 360.0;
+
+        if (velocidad < 0.0) {
+            return {false, "La velocidad no puede ser negativa"};
         }
-
-        return {false, QString("Flag no soportada: %1").arg(tok)};
     }
 
-    // ---------- COORDENADAS ----------
-    if (!hasType) {
-        return {false, "Falta tipo (-f|-e|-u). Uso: " + usage()};
-    }
-    if (idx + 1 >= args.size()) {
-        return {false, "Faltan coordenadas <x> <y>. Uso: " + usage()};
-    }
+    // 6) Generar ID de track
+    const int id = ctx.acquireId();
 
-    double x = 0, y = 0;
-    if (!takeNumber(args[idx], x) || !takeNumber(args[idx + 1], y)) {
-        return {false, "Coordenadas inválidas. Deben ser números (x y)."};
-    }
-    idx += 2;
-    if (idx < args.size()) {
-        return {false, "Argumentos de más. Uso: " + usage()};
-    }
-    if (x < -256 || x > 256 || y < -256 || y > 256) {
-        return {false, "Coordenadas fuera de rango. Deben estar entre -256 y 256."};
-    }
+    // 7) Crear y guardar el track en el contexto
+    // Usamos el ctor extendido: (id, type, identity, mode, x, y, rumbo, velocidad)
+    Track& t = ctx.emplaceTrackFront(id, type, identity, mode, x, y, rumbo, velocidad);
 
-    // ---------- ALTA DEL TRACK ----------
-    const int id = ctx.acquireId();   // toma menor ID libre o nextTrackId
+    // 8) Mensaje de salida
+    QString msg = QString("Track creado: id=%1, pos=(%2,%3), rumbo=%4, vel=%5")
+                      .arg(t.getId())
+                      .arg(t.getX(), 0, 'f', 2)
+                      .arg(t.getY(), 0, 'f', 2)
+                      .arg(t.getRumbo(), 0, 'f', 1)
+                      .arg(t.getVelocidad(), 0, 'f', 1);
 
-    Track& t = ctx.emplaceTrackFront(
-        id,
-        type,
-        ident,            // si no vino flag, queda el default
-        TrackMode::Auto,  // ajustá si tu diseño lo define distinto
-        x,
-        y
-        );
+    ctx.out << msg << Qt::endl;
 
-    return {
-        true,
-        QString("OK add → id=%1 ident=%3 type=%2 x=%4 y=%5")
-            .arg(t.getId())
-            .arg(TrackData::toQString(t.getType()))
-            .arg(TrackData::toQString(t.getIdentity()))
-            .arg(t.getX(), 0, 'f', 3)
-            .arg(t.getY(), 0, 'f', 3)
-    };
+    return {true, msg};
 }

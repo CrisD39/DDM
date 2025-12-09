@@ -21,9 +21,6 @@ struct CommandContext {
     QTextStream out;
     QTextStream err;
 
-
-
-
     QString     lastCommandLine;
     quint64     lastCommandHash = 0;
     int         commandCounter  = 1;
