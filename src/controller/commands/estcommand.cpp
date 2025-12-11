@@ -155,32 +155,38 @@ void EstCommand::resolverCinematica(StationEntity& ent,
                                     const Track& trkA,
                                     const Track& trkB) const
 {
-    // 1) Posiciones actuales en XY
-    const QVector2D posA(trkA.getX(), trkA.getY());
-    const QVector2D posB(trkB.getX(), trkB.getY());
+    // SISTEMA DE UNIDADES INTERNO:
+    //  - X, Y de los tracks están en Data Mile (DM)
+    //  - ent.distancia también está en DM
+    //  - ent.velocidadRequerida está en DM/h
+    //  - ent.tiempoResultado está en segundos
 
-    // 2) Posicion destino del estacionamiento:
-    //    P_dest = P_B + rot(AZ) * Dist
+    // 1) Posiciones actuales en XY (en DM)
+    const QVector2D posA(trkA.getX(), trkA.getY()); // DM
+    const QVector2D posB(trkB.getX(), trkB.getY()); // DM
+
+    // 2) Posición destino del estacionamiento (en DM):
+    //    P_dest = P_B + rot(AZ) * Dist_DM
     //
-    //    Convención: 0° = norte(+Y), 90° = este(+X)
+    //    Convención angular: 0° = norte(+Y), 90° = este(+X)
     //
     const double azRad = qDegreesToRadians(ent.azimut);
-    const QVector2D offset(qSin(azRad) * ent.distancia,
-                           qCos(azRad) * ent.distancia);
-    const QVector2D posDest = posB + offset;
+    const QVector2D offset(qSin(azRad) * ent.distancia,  // DM
+                           qCos(azRad) * ent.distancia); // DM
+    const QVector2D posDest = posB + offset;             // DM
 
-    // 3) Vector desde A hacia la posición destino
+    // 3) Vector desde A hacia la posición destino (en DM)
     const QVector2D delta = posDest - posA;
-    const double dist = delta.length();
+    const double distDm = delta.length(); // distancia en Data Mile
 
-    if (dist < 1e-6) {
+    if (distDm < 1e-6) {
         // Ya está prácticamente estacionado; usamos rumbo actual de A
         ent.rumboResultado = trkA.getRumbo();
         if (ent.esModoVD) {
-            // si VD, con dist ~0 el tiempo es 0
+            // Modo VD: con dist ~0 el tiempo es 0
             ent.tiempoResultado = 0.0;
         } else {
-            // si DU, ya tenemos tiempo, la vel requerida es 0
+            // Modo DU: ya tenemos tiempo, la velocidad requerida es 0 DM/h
             ent.velocidadRequerida = 0.0;
         }
         return;
@@ -188,9 +194,9 @@ void EstCommand::resolverCinematica(StationEntity& ent,
 
     // 4) Rumbo necesario para ir de A a la posición destino
     //
-    //    Usamos la misma convención que antes:
-    //    - atan2(y, x) da el ángulo desde el eje +X (este)
-    //    - convertimos a rumbo 0°=norte, 90°=este:
+    //    Usamos la convención:
+    //    - atan2(y, x) da el ángulo desde el eje +X (este), CCW
+    //    - convertimos a rumbo: 0°=norte(+Y), 90°=este(+X)
     //
     double angMath = std::atan2(delta.y(), delta.x());
     double rumbo = 90.0 - qRadiansToDegrees(angMath);
@@ -199,19 +205,18 @@ void EstCommand::resolverCinematica(StationEntity& ent,
 
     ent.rumboResultado = rumbo;
 
-    // 5) Modo VD: tenemos velocidad, calculamos tiempo.
-    //    Distancia en millas náuticas, velocidad en nudos (mn/h).
+    // 5) Modo VD: tenemos velocidad (en DM/h), calculamos tiempo (en segundos).
     //
     if (ent.esModoVD) {
-        const double vel = ent.velocidadRequerida;  // nudos
-        if (vel <= 0.0) {
+        const double velDmPorHora = ent.velocidadRequerida;  // DM/h
+        if (velDmPorHora <= 0.0) {
             ent.tiempoResultado = 0.0;
             return;
         }
-        const double tiempoHoras = dist / vel;       // h = mn / (mn/h)
-        ent.tiempoResultado = tiempoHoras * 3600.0; // segundos
+        const double tiempoHoras = distDm / velDmPorHora;  // h = DM / (DM/h)
+        ent.tiempoResultado = tiempoHoras * 3600.0;        // segundos
     }
-    // 6) Modo DU: tenemos tiempo, calculamos velocidad requerida.
+    // 6) Modo DU: tenemos tiempo (segundos), calculamos velocidad requerida (DM/h).
     else {
         const double tiempoSeg = ent.tiempoResultado;
         const double tiempoHoras = tiempoSeg / 3600.0;
@@ -219,7 +224,15 @@ void EstCommand::resolverCinematica(StationEntity& ent,
             ent.velocidadRequerida = 0.0;
             return;
         }
-        const double vel = dist / tiempoHoras;    // nudos
-        ent.velocidadRequerida = vel;
+        const double velDmPorHora = distDm / tiempoHoras;  // DM/h
+        ent.velocidadRequerida = velDmPorHora;
     }
+
+    // OPCIONAL: si en algún momento quisieras tener también los valores
+    // en millas náuticas y nudos para mostrar en GUI:
+    //
+    // constexpr double DM_TO_NM = 0.97;
+    // const double distNm  = distDm * DM_TO_NM;
+    // const double velKt   = ent.velocidadRequerida * DM_TO_NM;
 }
+
