@@ -23,6 +23,7 @@
 #include "deleteCommand.h"
 #include "centerCommand.h"
 #include "listCommand.h"
+#include "estcommand.h"
 #include "commandContext.h"
 #include "QTimer"
 #include "configuration.h"
@@ -67,6 +68,7 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new EstCommand()));
 
     CommandDispatcher dispatcher(registry, parser, *ctx);
 
@@ -137,9 +139,6 @@ int main(int argc, char* argv[]) {
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
     QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
 
-
-
-
     QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);
     QObject::connect(decoder, &ConcDecoder::newRollingBall, obmHandler, &OBMHandler::updatePosition);
     encoder->setOBMHandler(obmHandler);
@@ -160,9 +159,6 @@ int main(int argc, char* argv[]) {
         Track* t = obmHandler->OBMAssociationProcess(ctx);
         if(t) qDebug() << t->toString();
     });
-
-
-
 
     timer.start(40);
 

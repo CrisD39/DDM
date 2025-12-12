@@ -6,7 +6,7 @@
 #define COMMANDPARSER_H
 
 #include "iInputParser.h"   // ⬅️ imprescindible (antes NO estaba)
-#include "iCommand.h"
+#include "ICommand.h"
 #include <QRegularExpression>
 #include <QStringList>
 

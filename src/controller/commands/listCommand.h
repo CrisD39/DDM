@@ -3,7 +3,7 @@ Comando `list`/`ls`: imprime tabla con `id`, `type`, `ident`, `x`, `y` de los tr
 */
 
 #pragma once
-#include "iCommand.h"
+#include "ICommand.h"
 #include "commandContext.h"
 
 class ListCommand : public ICommand {
