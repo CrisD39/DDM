@@ -14,6 +14,7 @@ INCLUDEPATH += \
     src/controller/handlers/ \
     src/model/ \
     src/model/decoders/ \
+    src/model/sitrep/ \
     src/model/network/ \
     src/model/obm/ \
     src/model/overlays/ \
@@ -64,6 +65,7 @@ HEADERS += \
     src/model/ownCursor/owncurs.h \
     src/model/overlays/linco.h \
     src/model/qek.h \
+    src/model/sitrep/sitrep.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
@@ -108,6 +110,7 @@ SOURCES += \
     src/model/overlays/linco.cpp \
     src/model/entities/track.cpp \
     src/model/ownCursor/owncurs.cpp \
+    src/model/sitrep/sitrep.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 
