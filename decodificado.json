@@ -1,0 +1,112 @@
+{
+  "RANGE_SCALE_DECODE": {
+    "000": "RANGE_2_DM",
+    "001": "RANGE_4_DM",
+    "010": "RANGE_8_DM",
+    "011": "RANGE_16_DM",
+    "100": "RANGE_32_DM",
+    "101": "RANGE_64_DM",
+    "110": "RANGE_128_DM",
+    "111": "RANGE_256_DM"
+  },
+  "DISPLAY_SELECTION_DECODE": {
+    "3": "AIR",
+    "4": "SURF",
+    "5": "SUB_SURF",
+    "6": "REF_POS",
+    "7": "BEAR_SEL",
+    "8": "LINK_SEL",
+    "9": "WARF_SEL",
+    "10": "FIG"
+  },
+  "THREAT_ASSESMENT_DECODE": {
+    "11": "THREAT_12_SEC",
+    "12": "THREAT_30_SEC",
+    "13": "THREAT_6_MIN",
+    "14": "THREAT_15_MIN",
+    "15": "THREAT_RESET"
+  },
+  "LABEL_SELECTION_DECODE": {},
+  "ICM_DECODE": {
+    "000": "ICM_1",
+    "001": "ICM_2",
+    "010": "ICM_3",
+    "011": "ICM_4",
+    "100": "ICM_5",
+    "101": "ICM_6",
+    "110": "ICM_7"
+  },
+  "CENTER_DECODE": {
+    "0": "CU_OR_OFF_CENT",
+    "1": "CU_OR_CENT",
+    "2": "OFF_CENT",
+    "3": "CENT",
+    "4": "RESET_OBM",
+    "5": "DATA_REQ"
+  },
+  "DISPLAY_MODE_SLAVE_DECODE": {
+    "32": "CU_OR_OFF_CENT",
+    "33": "CU_OR_CENT",
+    "34": "OFF_CENT",
+    "35": "CENT",
+    "36": "RESET_OBM",
+    "37": "DATA_REQ",
+    "38": "SYST_ALARM",
+    "39": "RANGE_RINGS"
+  },
+  "DISPLAY_MODE_MASTER_DECODE": {
+    "24": "CU_OR_OFF_CENT",
+    "25": "CU_OR_CENT",
+    "26": "OFF_CENT",
+    "27": "CENT",
+    "28": "RESET_OBM",
+    "29": "DATA_REQ",
+    "30": "TRUE_MOTION",
+    "31": "OWN_CURSOR"
+  },
+  "QEK_DECODE": {
+    "00000000": "QEK_NONE",
+    "00010000": "QEK_20",
+    "00010001": "QEK_21",
+    "00010010": "QEK_22",
+    "00010011": "QEK_23",
+    "00010100": "QEK_24",
+    "00010101": "QEK_25",
+    "00010110": "QEK_26",
+    "00010111": "QEK_27",
+    "00011000": "QEK_30",
+    "00011001": "QEK_31",
+    "00011010": "QEK_32",
+    "00011011": "QEK_33",
+    "00011100": "QEK_34",
+    "00011101": "QEK_35",
+    "00011110": "QEK_36",
+    "00011111": "QEK_37",
+    "00100000": "QEK_40",
+    "00100001": "QEK_41",
+    "00100010": "QEK_42",
+    "00100011": "QEK_43",
+    "00100100": "QEK_44",
+    "00100101": "QEK_45",
+    "00100110": "QEK_46",
+    "00100111": "QEK_47",
+    "00101000": "QEK_50",
+    "00101001": "QEK_51",
+    "00101010": "QEK_52",
+    "00101011": "QEK_53",
+    "00101100": "QEK_54",
+    "00101101": "QEK_55",
+    "00101110": "QEK_56",
+    "00101111": "QEK_57"
+  },
+  "OVERLAY_DECODE": {
+      "0001": "SPC",
+      "0010": "LINCO",
+      "0011": "ASW",
+      "0100": "OPS",
+      "0101": "HECO",
+      "0110": "APC",
+      "0111": "AAW",
+      "1000": "EW"
+  }
+}

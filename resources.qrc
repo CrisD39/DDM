@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/jsons">
+        <file>decodificado.json</file>
+    </qresource>
+</RCC>
