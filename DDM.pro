@@ -34,6 +34,7 @@ HEADERS += \
     src/controller/commands/iCommand.h \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
+    src/controller/commands/sitrepcommand.h \
     src/controller/dclConcController.h \
     src/controller/json/jsoncommandhandler.h \
     src/controller/json/jsonresponsebuilder.h \
@@ -83,6 +84,7 @@ SOURCES += \
     src/controller/commands/deletecursorscommand.cpp \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
+    src/controller/commands/sitrepcommand.cpp \
     src/controller/dclConcController.cpp \
     src/controller/json/jsoncommandhandler.cpp \
     src/controller/json/jsonresponsebuilder.cpp \
