@@ -1,11 +1,13 @@
 #pragma once
 #include <QTextStream>
-#include <QStringConverter>   // Qt6; si usas Qt5, ver nota abajo
+#include <QStringConverter>
 #include <QString>
 #include <QPointF>
-#include <QPair>              // ← por QPair<float,float>
+#include <QPair>
 #include <deque>
-#include <utility>            // ← por std::forward
+#include <utility>
+#include <unordered_map>
+
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
 
@@ -13,6 +15,19 @@ struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
         out.setEncoding(QStringConverter::Utf8);
         err.setEncoding(QStringConverter::Utf8);
+    }
+
+    // --- SITREP extra ---
+    struct SitrepExtra { QString info; };
+    std::unordered_map<int, SitrepExtra> sitrepExtra;
+
+    inline QString sitrepInfo(int trackId) const {
+        auto it = sitrepExtra.find(trackId);
+        return (it != sitrepExtra.end()) ? it->second.info : QString("-");
+    }
+
+    inline void setSitrepInfo(int trackId, const QString& text) {
+        sitrepExtra[trackId].info = text;
     }
 
     QTextStream out;
@@ -24,6 +39,7 @@ struct CommandContext {
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
     int               nextTrackId = 1;
+
     int               nextCursorId = 2;
 
     double centerX = 0.0;
@@ -105,3 +121,5 @@ struct CommandContext {
         return &tracks[j];
     }
 };
+
+
