@@ -2,7 +2,11 @@
 
 #include "enums.h"     // TrackData::Type / Identity / TrackMode
 #include <QString>
+#include <QString>
+#include "enums/enums.h"
+#include <QTimer>
 
+#define INTERVAL 5000
 class Track {
     // Alias para escribir menos
     using Type      = TrackData::Type;
@@ -12,15 +16,19 @@ class Track {
 public:
     Track() = default;
 
-    // Constructor
-    Track(int id, Type type, Identity identity, TrackMode mode, float x, float y)
+    // Constructor: Usamos float en lugar de double para coincidir con el almacenamiento
+    Track(int id, Type type, Identity identity, TrackMode mode, float x, float y, double speed = 0.0f, double course = 0.0f)
         : m_id(id)
         , m_type(static_cast<uint8_t>(type))
         , m_identity(static_cast<uint8_t>(identity))
         , m_mode(static_cast<uint8_t>(mode))
         , m_x(x)
         , m_y(y)
-    {}
+        , m_speedKnots(speed)
+        , m_course(course)
+    {
+        // El padding se inicializa solo o es basura irrelevante
+    }
 
     // --- Getters ---
     int getId() const              { return m_id; }
@@ -45,6 +53,17 @@ public:
     void setTrackMode(TrackMode m)     { m_mode = static_cast<uint8_t>(m); }
     void setX(float x)                 { m_x = x; }
     void setY(float y)                 { m_y = y; }
+    // --- Setters INLINE ---
+    void setId(int id)                { m_id = id; }
+    void setType(Type t)              { m_type = static_cast<uint8_t>(t); }
+    void setIdentity(Identity i)      { m_identity = static_cast<uint8_t>(i); }
+    void setTrackMode(TrackMode m)    { m_mode = static_cast<uint8_t>(m); }
+    void setX(float x)                { m_x = x; }
+    void setY(float y)                { m_y = y; }
+    //void setVelocityX(double vx)      { m_velocityX = vx; }
+    //void setVelocityY(double vy)      { m_velocityY = vy; }
+
+    void updatePosition(double deltaTime);
 
     QString toString() const;
 
@@ -55,6 +74,10 @@ private:
     uint8_t m_mode{0};
     uint8_t _padding{0};
 
-    float m_x{0.0f}; // DM
-    float m_y{0.0f}; // DM
+    double m_course;
+    double m_speedKnots;
+    //double m_velocityY;
+
+    float m_x{0.0f};
+    float m_y{0.0f};
 };

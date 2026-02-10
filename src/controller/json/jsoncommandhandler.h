@@ -40,4 +40,5 @@ private:
     void sendResponse(const QByteArray& responseData);
     void sendParseError(const QString& errorDetail);
     void sendUnknownCommandError(const QString& command);
+    void handleStartCPA(QJsonObject);
 };

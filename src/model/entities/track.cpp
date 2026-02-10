@@ -16,6 +16,30 @@ double Track::getDistanceDm() const
 }
 
 // Lógica "lenta" de formateo de texto
+// Solo implementamos la lógica "lenta" de formateo de texto
+void Track::updatePosition(double deltaTime)
+{
+    /*
+    m_x += m_velocityX * (deltaTime / 3600.0);
+    m_y += m_velocityY * (deltaTime / 3600.0);
+    */
+    if (m_speedKnots<= 0.0)
+        return;
+
+    // Distancia recorrida en Data Miles
+    double distanceDM = m_speedKnots * (deltaTime / 3600.0);
+
+    double courseRad = qDegreesToRadians(m_course);
+
+    double dx = distanceDM * std::sin(courseRad);
+    double dy = distanceDM * std::cos(courseRad);
+
+    m_x += dx;
+    m_y += dy;
+
+    //qDebug()<< "[track.cpp] Posicion Actiulizada: ["<< m_x << ", " << m_y <<"]";
+}
+
 QString Track::toString() const
 {
     return QStringLiteral("Track{id=%1, type=%2, identity=%3, mode=%4, pos=(%5, %6)}")

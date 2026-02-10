@@ -105,6 +105,12 @@ int main(int argc, char* argv[]) {
     transport->start();
 
     QTimer timer;
+    QTimer updatePositionTimer;
+    QObject::connect(&updatePositionTimer, &QTimer::timeout, [ctx, &updatePositionTimer](){
+
+        double deltaTime = updatePositionTimer.interval() / 1000.0;
+        ctx->updateTracks(deltaTime);
+    });
 
     QObject::connect(&timer, &QTimer::timeout, &timer, [ctx, encoder, transport]() {
         transport->send(encoder->buildFullMessage(*ctx));
@@ -163,10 +169,8 @@ int main(int argc, char* argv[]) {
         if(t) qDebug() << t->toString();
     });
 
-
-
-
     timer.start(40);
+    updatePositionTimer.start(80);
 
     ioThread.start();
     const int code = app.exec();

@@ -120,6 +120,12 @@ struct CommandContext {
         const std::size_t j = (i + 1) % tracks.size();
         return &tracks[j];
     }
+
+    inline void updateTracks(double deltaTime){
+        for(Track& track : tracks){
+            track.updatePosition(deltaTime);
+        }
+    }
 };
 
 
