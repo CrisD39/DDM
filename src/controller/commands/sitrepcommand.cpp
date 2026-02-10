@@ -16,8 +16,7 @@ static double norm360(double deg) {
     return deg;
 }
 
-// Azimut desde "Norte" sentido horario asumiendo:
-// x: derecha, y: arriba. Az = atan2(x,y).
+//Sacar la matematica de cada comando, y hacerla en utilidad.
 static double computeAzDeg(float x, float y) {
     const double rad = std::atan2((double)x, (double)y);
     return norm360(rad * 180.0 / M_PI);

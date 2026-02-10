@@ -70,6 +70,7 @@ HEADERS += \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
+    src/model/utils/maths.h \
     src/view/CommandParser.h \
     src/view/ansi.h \
     src/view/iInputParser.h \
@@ -114,5 +115,6 @@ SOURCES += \
     src/model/ownCursor/owncurs.cpp \
     src/model/sitrep/sitrep.cpp \
     src/model/utils/configuration.cpp \
+    src/model/utils/maths.cpp \
     src/view/stdinreader.cpp
 
