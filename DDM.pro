@@ -67,10 +67,10 @@ HEADERS += \
     src/model/overlays/linco.h \
     src/model/qek.h \
     src/model/sitrep/sitrep.h \
+    src/model/utils/RadarMath.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
-    src/model/utils/maths.h \
     src/view/CommandParser.h \
     src/view/ansi.h \
     src/view/iInputParser.h \
@@ -114,7 +114,7 @@ SOURCES += \
     src/model/entities/track.cpp \
     src/model/ownCursor/owncurs.cpp \
     src/model/sitrep/sitrep.cpp \
+    src/model/utils/RadarMath.cpp \
     src/model/utils/configuration.cpp \
-    src/model/utils/maths.cpp \
     src/view/stdinreader.cpp
 

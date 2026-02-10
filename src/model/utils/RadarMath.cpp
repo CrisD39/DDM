@@ -1,4 +1,4 @@
-#include "maths.h"
+#include "RadarMath.h"
 #include <cmath>
 
 double RadarMath::normalizeDeg360(double deg)

@@ -1,6 +1,6 @@
 #include "Commands/sitrepCommand.h"
-#include "model/utils/maths.h"  // ajustá ruta si está en utils/...
 
+// Ya no hace falta incluir RadarMath acá: el Track encapsula Az/Dt usando RadarMath
 #include <QThread>
 #include <QTextStream>
 #include <QStringList>
@@ -14,19 +14,16 @@ static void clearScreen(QTextStream& out) {
 // Render de la tabla (snapshot para evitar iterar sobre contenedor vivo)
 static void printSitrep(QTextStream& out, const CommandContext& ctx, const std::deque<Track>& tracksSnap) {
     out << "SITREP (refresh=2000ms)  Tracks=" << tracksSnap.size() << "\n";
-    out << "Track  Identidad        Az/Dt(DM)        Info Ampliatoria\n";
-    out << "---------------------------------------------------------------\n";
+    out << "+-------+--------------+-------------+---------------------------+\n";
+    out << "| Track | Identidad     | Az / Dt (DM)| Info Ampliatoria          |\n";
+    out << "+-------+--------------+-------------+---------------------------+\n";
 
     for (const Track& t : tracksSnap) {
         const int id = t.getId();
 
-        // Coordenadas en Data Miles (DM)
-        const double xDm = static_cast<double>(t.getX());
-        const double yDm = static_cast<double>(t.getY());
-
-        // Cálculos 100% en DM
-        const double azDeg  = RadarMath::azimuthDeg(xDm, yDm);
-        const double distDm = RadarMath::distanceDm(xDm, yDm);
+        // Cálculos 100% en DM (ahora encapsulados en Track)
+        const double azDeg  = t.getAzimuthDeg();
+        const double distDm = t.getDistanceDm();
 
         const QString ident = TrackData::toQString(t.getIdentity());
         const QString info  = ctx.sitrepInfo(id);
