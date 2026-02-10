@@ -71,13 +71,19 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     if (!takeNumber(args[idx], x) || !takeNumber(args[idx + 1], y)) {
         return {false, "Coordenadas inválidas. Deben ser números (x y)."};
     }
-    idx += 2;
+
+    double vel = 0, cour = 0;
+    takeNumber(args[idx + 2],vel);
+    takeNumber(args[idx + 3],cour);
+
+    idx += 4;
     if (idx < args.size()) {
         return {false, "Argumentos de más. Uso: " + usage()};
     }
     if (x < -255 || x > 255 || y < -255 || y > 255) {
         return {false, "Coordenadas fuera de rango. Deben estar entre -256 y 256."};
     }
+
 
     // ---------- ALTA DEL TRACK (in-place al frente, O(1)) ----------
     const int id = ctx.nextTrackId++;
@@ -87,7 +93,9 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         ident,          // Identity (si no vino flag, queda lo que seteaste como default)
         TrackMode::Auto, // si en tu diseño viene de otro lado, reemplazalo
         x,
-        y
+        y,
+        vel,
+        cour
         );
 
     // (si necesitás tocar algo más del track, podés hacerlo ahora con 't')

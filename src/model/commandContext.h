@@ -14,7 +14,6 @@ struct CommandContext {
         out.setEncoding(QStringConverter::Utf8);
         err.setEncoding(QStringConverter::Utf8);
     }
-
     QTextStream out;
     QTextStream err;
     QString     lastCommandLine;
@@ -103,5 +102,11 @@ struct CommandContext {
         if (i == tracks.size()) return nullptr;
         const std::size_t j = (i + 1) % tracks.size();
         return &tracks[j];
+    }
+
+    inline void updateTracks(double deltaTime){
+        for(Track& track : tracks){
+            track.updatePosition(deltaTime);
+        }
     }
 };
