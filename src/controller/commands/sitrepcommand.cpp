@@ -1,54 +1,40 @@
 #include "Commands/sitrepCommand.h"
-#include "enums.h"
+#include "model/utils/maths.h"  // ajustá ruta si está en utils/...
 
 #include <QThread>
-#include <QtMath>
-#include <cmath>
+#include <QTextStream>
+#include <QStringList>
+#include <deque>
 
 // Limpieza de pantalla ANSI (Windows 10+ / Linux / la mayoría de terminales modernas)
 static void clearScreen(QTextStream& out) {
     out << "\x1B[2J\x1B[H";
 }
 
-static double norm360(double deg) {
-    while (deg < 0.0) deg += 360.0;
-    while (deg >= 360.0) deg -= 360.0;
-    return deg;
-}
-
-//Sacar la matematica de cada comando, y hacerla en utilidad.
-static double computeAzDeg(float x, float y) {
-    const double rad = std::atan2((double)x, (double)y);
-    return norm360(rad * 180.0 / M_PI);
-}
-
-static double computeDistDM(float x, float y) {
-    return std::sqrt((double)x*(double)x + (double)y*(double)y);
-}
-
 // Render de la tabla (snapshot para evitar iterar sobre contenedor vivo)
 static void printSitrep(QTextStream& out, const CommandContext& ctx, const std::deque<Track>& tracksSnap) {
     out << "SITREP (refresh=2000ms)  Tracks=" << tracksSnap.size() << "\n";
-    out << "Track  Ident       Az/Dt(DM)        X         Y        Info\n";
-    out << "-----------------------------------------------------------------------\n";
+    out << "Track  Identidad        Az/Dt(DM)        Info Ampliatoria\n";
+    out << "---------------------------------------------------------------\n";
 
     for (const Track& t : tracksSnap) {
         const int id = t.getId();
-        const float x = t.getX();
-        const float y = t.getY();
 
-        const double az = computeAzDeg(x, y);
-        const double dt = computeDistDM(x, y);
+        // Coordenadas en Data Miles (DM)
+        const double xDm = static_cast<double>(t.getX());
+        const double yDm = static_cast<double>(t.getY());
+
+        // Cálculos 100% en DM
+        const double azDeg  = RadarMath::azimuthDeg(xDm, yDm);
+        const double distDm = RadarMath::distanceDm(xDm, yDm);
 
         const QString ident = TrackData::toQString(t.getIdentity());
         const QString info  = ctx.sitrepInfo(id);
 
         out
             << QString("%1").arg(id, 5) << "  "
-            << QString("%1").arg(ident, 10) << "  "
-            << QString("%1/%2").arg(az, 6, 'f', 1).arg(dt, 8, 'f', 2) << "  "
-            << QString("%1").arg(x, 8, 'f', 3) << "  "
-            << QString("%1").arg(y, 8, 'f', 3) << "  "
+            << QString("%1").arg(ident, 14) << "  "
+            << QString("%1/%2").arg(azDeg, 6, 'f', 1).arg(distDm, 8, 'f', 2) << "  "
             << info
             << "\n";
     }
@@ -60,23 +46,16 @@ static void printSitrep(QTextStream& out, const CommandContext& ctx, const std::
 CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     const QStringList& args = inv.args;
 
-    // subcomando: por cómo está AddCommand, args NO incluye el nombre del comando,
-    // entonces para "sitrep watch" args[0] = "watch".
+    // args NO incluye el nombre del comando: "sitrep watch" => args[0]="watch"
     const QString sub = args.isEmpty() ? "list" : args[0].toLower();
 
     if (sub == "list") {
         const std::deque<Track> snap = ctx.getTracks();
 
-        // En list, yo NO limpiaría pantalla para no molestar,
-        // pero si querés consistencia visual, podés limpiar también.
-        // clearScreen(ctx.out);
-
         QString outMsg;
         QTextStream oss(&outMsg);
 
-        // Reutilizamos la misma rutina, pero escribiendo en string para devolver por CommandResult
         printSitrep(oss, ctx, snap);
-
         return {true, outMsg};
     }
 
@@ -90,7 +69,7 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
             QThread::msleep(REFRESH_MS);
         }
 
-        // no retorna: se corta con CTRL+C
+        // No retorna: se corta con CTRL+C
     }
 
     if (sub == "delete") {

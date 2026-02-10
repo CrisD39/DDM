@@ -1,11 +1,15 @@
 #pragma once
 
-namespace RadarMath {
+class RadarMath {
+public:
+    // Distancia desde (0,0) hasta (x,y) en Data Miles (DM)
+    static double distanceDm(double xDm, double yDm);
 
-// Calcula la distancia en Data Miles (DM)
-// desde el origen (0,0) hasta el punto (x, y).
-double distanceDm(double x, double y);
+    // Azimut desde (0,0) hacia (x,y)
+    // 0° = Norte (+Y), 90° = Este (+X), sentido horario
+    static double azimuthDeg(double xDm, double yDm);
 
-double azimuthDeg(double x, double y);
-
-} // namespace RadarMath
+private:
+    // Helper interno
+    static double normalizeDeg360(double deg);
+};
