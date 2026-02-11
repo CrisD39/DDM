@@ -53,15 +53,6 @@ public:
     void setTrackMode(TrackMode m)     { m_mode = static_cast<uint8_t>(m); }
     void setX(float x)                 { m_x = x; }
     void setY(float y)                 { m_y = y; }
-    // --- Setters INLINE ---
-    void setId(int id)                { m_id = id; }
-    void setType(Type t)              { m_type = static_cast<uint8_t>(t); }
-    void setIdentity(Identity i)      { m_identity = static_cast<uint8_t>(i); }
-    void setTrackMode(TrackMode m)    { m_mode = static_cast<uint8_t>(m); }
-    void setX(float x)                { m_x = x; }
-    void setY(float y)                { m_y = y; }
-    //void setVelocityX(double vx)      { m_velocityX = vx; }
-    //void setVelocityY(double vy)      { m_velocityY = vy; }
 
     void updatePosition(double deltaTime);
 
