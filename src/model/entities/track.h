@@ -1,74 +1,70 @@
 #pragma once
+#include <limits>
 
-#include "enums.h"     // TrackData::Type / Identity / TrackMode
+#include "enums/enums.h"   // o "enums.h", pero uno solo
 #include <QString>
-#include <QString>
-#include "enums/enums.h"
-#include <QTimer>
+#include <cstdint>
 
-#define INTERVAL 5000
-class Track {
-    // Alias para escribir menos
+
+
+class Track
+{
+public:
     using Type      = TrackData::Type;
     using Identity  = TrackData::Identity;
     using TrackMode = TrackData::TrackMode;
 
-public:
     Track() = default;
 
-    // Constructor: Usamos float en lugar de double para coincidir con el almacenamiento
-    Track(int id, Type type, Identity identity, TrackMode mode, float x, float y, double speed = 0.0f, double course = 0.0f)
-        : m_id(id)
-        , m_type(static_cast<uint8_t>(type))
-        , m_identity(static_cast<uint8_t>(identity))
-        , m_mode(static_cast<uint8_t>(mode))
-        , m_x(x)
-        , m_y(y)
-        , m_speedKnots(speed)
-        , m_course(course)
-    {
-        // El padding se inicializa solo o es basura irrelevante
-    }
+    Track(int id,
+          Type type,
+          Identity identity,
+          TrackMode mode,
+          float xDm,
+          float yDm,
+          double speedKnots = 0.0,
+          double courseDeg  = 0.0);
 
     // --- Getters ---
-    int getId() const              { return m_id; }
-    Type getType() const           { return static_cast<Type>(m_type); }
-    Identity getIdentity() const   { return static_cast<Identity>(m_identity); }
-    TrackMode getTrackMode() const { return static_cast<TrackMode>(m_mode); }
+    int getId() const;
+    Type getType() const;
+    Identity getIdentity() const;
+    TrackMode getTrackMode() const;
 
-    float getX() const             { return m_x; }   // DM
-    float getY() const             { return m_y; }   // DM
+    float  getX() const;              // DM
+    float  getY() const;              // DM
+    double getSpeedKnots() const;
+    double getCourseDeg() const;
 
-    // --- Derivados (todo en DM) ---
-    // Azimut desde (0,0) hacia (x,y) en grados [0,360)
-    double getAzimuthDeg() const;
-
-    // Distancia desde (0,0) hacia (x,y) en Data Miles (DM)
-    double getDistanceDm() const;
+    double getAzimuthDeg() const;      // deg [0..360)
+    double getDistanceDm() const;      // DM
 
     // --- Setters ---
-    void setId(int id)                 { m_id = id; }
-    void setType(Type t)               { m_type = static_cast<uint8_t>(t); }
-    void setIdentity(Identity i)       { m_identity = static_cast<uint8_t>(i); }
-    void setTrackMode(TrackMode m)     { m_mode = static_cast<uint8_t>(m); }
-    void setX(float x)                 { m_x = x; }
-    void setY(float y)                 { m_y = y; }
+    void setId(int id);
+    void setType(Type t);
+    void setIdentity(Identity i);
+    void setTrackMode(TrackMode m);
 
-    void updatePosition(double deltaTime);
+    void setX(float xDm);
+    void setY(float yDm);
+    void setSpeedKnots(double kt);
+    void setCourseDeg(double deg);
+
+    // deltaTimeSeconds: segundos transcurridos
+    void updatePosition(double deltaTimeSeconds);
 
     QString toString() const;
 
 private:
-    int32_t m_id{0};
-    uint8_t m_type{0};
-    uint8_t m_identity{0};
-    uint8_t m_mode{0};
-    uint8_t _padding{0};
+    int32_t  m_id{0};
+    uint8_t  m_type{0};
+    uint8_t  m_identity{0};
+    uint8_t  m_mode{0};
 
-    double m_course;
-    double m_speedKnots;
-    //double m_velocityY;
+    float    m_xDm{0.0f};
+    float    m_yDm{0.0f};
 
-    float m_x{0.0f};
-    float m_y{0.0f};
+    double   m_speedKnots{std::numeric_limits<double>::quiet_NaN()};
+    double   m_courseDeg{std::numeric_limits<double>::quiet_NaN()};
+
 };
