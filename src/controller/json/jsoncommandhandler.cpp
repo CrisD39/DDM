@@ -62,6 +62,7 @@ void JsonCommandHandler::initializeCommandMap()
     };
 
     // Agregar nuevos comandos ACA.
+    //URI ACA HAY QUE REMAPEAR PARA EMPEZAR LOS CPA
 }
 
 void JsonCommandHandler::routeCommand(const QString& command, const QJsonObject& args)
@@ -109,3 +110,68 @@ void JsonCommandHandler::sendUnknownCommandError(const QString& command)
     );
     sendResponse(errorResponse);
 }
+
+// void JsonCommandHandler::handleStartCPA(QJsonObject args){
+//     // 1. Extraer argumentos requeridos
+//     QJsonValue cpa_id_val = args.value("id");
+//     QJsonValue TN_Source_val = args.value("track-a");
+//     QJsonValue TN_Target_val = args.value("track-b");
+
+//     int cpa_id = cpa_id_val.toInt();
+//     int TN_Source = TN_Source_val.toInt();
+//     int TN_Target = TN_Target_val.toInt();
+//     Track *trackA = m_context->findTrackById(TN_Source);
+//     Track *trackB = m_context->findTrackById(TN_Target);
+
+//     QPair<double, double> start_posA = {trackA->getX(), trackA->getY()};
+//     QPair<double, double> start_posB = {trackB->getX(), trackB->getY()};
+
+//     QElapsedTimer elapsedTime;
+
+//     QTimer *start_timer = new QTimerEvent(this);
+//     connect(start_timer, qOverload<>(&QTimer::start),
+//             this, [this]() {
+
+//         //QPair<double, double> start_posA = {trackA->getX(), trackA->getY()};
+//         //QPair<double, double> start_posB = {trackB->getX(), trackB->getY()};
+//         double timeA;
+//         double timeB;
+
+//         //tiene que pasar un tiempo
+//         QPair<double, double> final_posA = {trackA->getX(), trackA->getY()};
+//         QPair<double, double> final_posB = {trackB->getX(), trackB->getY()};
+
+//         QPair<double, double> deltaA = (final_posA - start_posA);
+//         QPair<double, double> deltaB = (final_posB - start_posB);
+
+//         QPair<double, double> velocityA =
+//             deltaA / timeInterval;
+
+//         QPair<double, double> velocityB =
+//             deltaB / timeInterval;
+
+//         QPair<QPair<double,double>, double> rPol_a = {deltaA, timeA};
+//         //         |   (x , y)    | time |
+
+//         QPair<QPair<double,double>, double> rPol_b = {deltaB, timeB};
+//         //         |   (x , y)    | time |
+
+
+//         double timeCPA = (deltaB - deltaA)/ (velocityA - velocityB);
+
+//         int timeInterval = start_timer->interval()
+
+
+//         QPair<double, double> posInTimeA = deltaA + velocityA * timeInterval;
+//         QPair<double, double> posInTimeB = deltaB + velocityB * timeInterval;
+
+//         QPair<double, double> cpaInCurrentTime =
+//             (final_posA - final_posB) / (velocityA-velocityB);
+
+
+//     });
+
+//     start_timer->start(5000);
+//     elapsedTime.start();
+
+// }
