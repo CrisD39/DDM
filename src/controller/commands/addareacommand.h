@@ -2,18 +2,22 @@
 #define ADDAREACOMMAND_H
 
 #include "iCommand.h"
+#include <QPointF>
+#include <QString>
+#include <vector>
 
-struct areaFigures{
-
-};
-
-class AddAreaCommand: public ICommand
-{
+class AddAreaCommand : public ICommand {
 public:
-    QString getName() const override {return "addArea";}
-    QString getDescription() const override {return "Crea un area (x1,y1,x2,y2,x3,y3,x4,y4,tipo,color)";}
-    QString usage() const override{return "addArea <x1> <y1> <x2> <y2> <x3> <y3> <x4> <y4>";
+    QString getName() const override { return "addArea"; }
+    QString getDescription() const override { return "Crea un área interactiva definiendo puntos A, B, C, D, tipo y color."; }
+    QString usage() const override { return "addArea"; }
     CommandResult execute(const CommandInvocation& inv, CommandContext& ctx) const override;
-    };
+
+    static std::vector<CursorEntity> calculateArea(const QPointF& a, const QPointF& b, const QPointF& c, const QPointF& d, CommandContext& ctx);
+
+private:
+    QPointF requestPoint(const QString& pointName, CommandContext& ctx) const;
+    QString requestString(const QString& prompt, CommandContext& ctx) const;
+};
 
 #endif // ADDAREACOMMAND_H

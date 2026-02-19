@@ -26,7 +26,7 @@ public:
      * @return QByteArray con la respuesta JSON a enviar
      */
     QByteArray deleteLine(const QJsonObject& args);
-    
+
 private:
     CommandContext* m_context;
     ITransport* m_transport;

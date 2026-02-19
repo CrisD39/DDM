@@ -10,6 +10,7 @@
 
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
+#include "entities/areaEntity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -120,6 +121,42 @@ struct CommandContext {
         const std::size_t j = (i + 1) % tracks.size();
         return &tracks[j];
     }
+
+    std::deque<AreaEntity> areas;
+    int nextAreaId = 1;
+
+    inline AreaEntity& addArea(const AreaEntity& area) {
+        areas.push_back(area);
+        return areas.back();
+    }
+
+    inline void updateArea(int areaId, const QPointF& newPointA, const QPointF& newPointB, const QPointF& newPointC, const QPointF& newPointD) {
+        for (auto& area : areas) {
+            if (area.getId() == areaId) {
+                area.setPointA(newPointA);
+                area.setPointB(newPointB);
+                area.setPointC(newPointC);
+                area.setPointD(newPointD);
+                break;
+            }
+        }
+    }
+
+    // inline void deleteArea(int areaId) {
+    //     areas.erase(std::remove_if(areas.begin(), areas.end(), [this, areaId](const AreaEntity& area) {
+    //         if (area.getId() == areaId) {
+    //             for (int cursorId : area.getCursorIds()) {
+    //                 cursors.erase(std::remove_if(cursors.begin(), cursors.end(), [cursorId](const CursorEntity& cursor) {
+    //                     return cursor.id == cursorId;
+    //                 }), cursors.end());
+    //             }
+    //             return true;
+    //         }
+    //         return false;
+    //     }), areas.end());
+    // }
+
+    inline const std::deque<AreaEntity>& getAreas() const { return areas; }
 };
 
 

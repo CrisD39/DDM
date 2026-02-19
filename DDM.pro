@@ -2,6 +2,8 @@ QT += core network
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
+INCLUDEPATH += $$PWD/src
+QT += core gui
 
 RESOURCES += resources.qrc
 
@@ -49,6 +51,7 @@ HEADERS += \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
     src/model/entities/cursorEntity.h \
+    src/model/entities/areaEntity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
@@ -100,6 +103,7 @@ SOURCES += \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \
+    src/model/entities/areaEntity.cpp \
     src/model/network/clientSocket.cpp \
     src/model/network/localipcclient.cpp \
     src/model/network/transportFactory.cpp \

@@ -19,7 +19,7 @@ double RadarMath::azimuthDeg(double xDm, double yDm)
     if (xDm == 0.0 && yDm == 0.0)
         return 0.0;
 
-    const double rad = std::atan2(xDm, yDm);
-    const double deg = rad * (180.0 / M_PI);
-    return normalizeDeg360(deg);
+    // const double rad = std::atan2(xDm, yDm);
+    // const double deg = rad * (180.0 / M_PI);
+    // return normalizeDeg360(deg);
 }

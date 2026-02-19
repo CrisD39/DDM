@@ -7,6 +7,7 @@
 #include "iInputParser.h"
 #include "iCommand.h"
 #include "commandContext.h"
+#include "commands/addareacommand.h"
 #include <QStringList>
 #include "consoleUtils.h"
 #include "ansi.h"
