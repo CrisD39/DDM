@@ -58,6 +58,12 @@ public:
 
     QString toString() const;
 
+    double speedKnots() const;
+    void setSpeedKnots(double newSpeedKnots);
+
+    double course() const;
+    void setCourse(double newCourse);
+
 private:
     int32_t m_id{0};
     uint8_t m_type{0};

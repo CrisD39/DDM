@@ -29,6 +29,7 @@ HEADERS += \
     src/controller/commands/addCommand.h \
     src/controller/commands/addCursor.h \
     src/controller/commands/centerCommand.h \
+    src/controller/commands/cpacommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
     src/controller/commands/iCommand.h \
@@ -44,6 +45,7 @@ HEADERS += \
     src/controller/overlayHandler.h \
     src/controller/json/validators/jsonvalidator.h \
     src/model/commandContext.h \
+    src/model/cpa.h \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
@@ -81,6 +83,7 @@ SOURCES += \
     src/controller/commands/addCommand.cpp \
     src/controller/commands/addCursor.cpp \
     src/controller/commands/centerCommand.cpp \
+    src/controller/commands/cpacommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
     src/controller/commands/listCommand.cpp \
@@ -95,6 +98,7 @@ SOURCES += \
     src/controller/overlayHandler.cpp \
     src/controller/json/validators/jsonvalidator.cpp \
     src/main.cpp \
+    src/model/cpa.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \

@@ -30,6 +30,7 @@
 #include "listcursorscommand.h"
 #include "deletecursorscommand.h"
 #include "sitrepcommand.h"
+#include "cpacommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -69,6 +70,8 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new CpaCommand()));
+
 
     CommandDispatcher dispatcher(registry, parser, *ctx);
 

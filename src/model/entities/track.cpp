@@ -50,3 +50,23 @@ QString Track::toString() const
         .arg(double(m_x), 0, 'f', 2)
         .arg(double(m_y), 0, 'f', 2);
 }
+
+double Track::speedKnots() const
+{
+    return m_speedKnots;
+}
+
+void Track::setSpeedKnots(double newSpeedKnots)
+{
+    m_speedKnots = newSpeedKnots;
+}
+
+double Track::course() const
+{
+    return m_course;
+}
+
+void Track::setCourse(double newCourse)
+{
+    m_course = newCourse;
+}
