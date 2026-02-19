@@ -1,56 +1,70 @@
 #pragma once
+#include <limits>
+
+#include "enums/enums.h"   // o "enums.h", pero uno solo
 #include <QString>
-#include "enums/enumsTrack.h"
+#include <cstdint>
 
-class Track {
 
+
+class Track
+{
+public:
     using Type      = TrackData::Type;
     using Identity  = TrackData::Identity;
     using TrackMode = TrackData::TrackMode;
 
-public:
     Track() = default;
 
     Track(int id,
           Type type,
           Identity identity,
           TrackMode mode,
-          double x,
-          double y,
-          double rumbo = 0.0,
-          double velocidad = 0.0);
+          float xDm,
+          float yDm,
+          double speedKnots = 0.0,
+          double courseDeg  = 0.0);
 
-    // Getters
+    // --- Getters ---
     int getId() const;
     Type getType() const;
     Identity getIdentity() const;
     TrackMode getTrackMode() const;
-    double getX() const;
-    double getY() const;
-    double getRumbo() const;        // NUEVO
-    double getVelocidad() const;    // NUEVO
 
-    // Setters
+    float  getX() const;              // DM
+    float  getY() const;              // DM
+    double getSpeedKnots() const;
+    double getCourseDeg() const;
+
+    double getAzimuthDeg() const;      // deg [0..360)
+    double getDistanceDm() const;      // DM
+
+    // --- Setters ---
     void setId(int id);
-    void setType(Type type);
-    void setIdentity(Identity identity);
-    void setTrackMode(TrackMode mode);
-    void setX(double x);
-    void setY(double y);
-    void setRumbo(double r);        // NUEVO
-    void setVelocidad(double v);    // NUEVO
+    void setType(Type t);
+    void setIdentity(Identity i);
+    void setTrackMode(TrackMode m);
+
+    void setX(float xDm);
+    void setY(float yDm);
+    void setSpeedKnots(double kt);
+    void setCourseDeg(double deg);
+
+    // deltaTimeSeconds: segundos transcurridos
+    void updatePosition(double deltaTimeSeconds);
 
     QString toString() const;
 
 private:
-    int m_id{0};
-    Identity m_identity{Identity::Pending};
-    Type m_type;
-    TrackMode m_mode;
+    int32_t  m_id{0};
+    uint8_t  m_type{0};
+    uint8_t  m_identity{0};
+    uint8_t  m_mode{0};
 
-    double m_x{0.0};
-    double m_y{0.0};
+    float    m_xDm{0.0f};
+    float    m_yDm{0.0f};
 
-    double m_rumbo{0.0};      // grados 0–360
-    double m_velocidad{0.0};  // nudos
+    double   m_speedKnots{std::numeric_limits<double>::quiet_NaN()};
+    double   m_courseDeg{std::numeric_limits<double>::quiet_NaN()};
+
 };

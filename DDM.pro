@@ -15,6 +15,7 @@ INCLUDEPATH += \
     src/controller/handlers/ \
     src/model/ \
     src/model/decoders/ \
+    src/model/sitrep/ \
     src/model/network/ \
     src/model/obm/ \
     src/model/overlays/ \
@@ -35,6 +36,7 @@ HEADERS += \
     src/controller/commands/estcommand.h \
     src/controller/commands/listCommand.h \
     src/controller/commands/listcursorscommand.h \
+    src/controller/commands/sitrepcommand.h \
     src/controller/dclConcController.h \
     src/controller/json/jsoncommandhandler.h \
     src/controller/json/jsonresponsebuilder.h \
@@ -70,6 +72,8 @@ HEADERS += \
     src/model/ownShip/ownship.h \
     src/model/qek.h \
     src/model/ownship.h \
+    src/model/sitrep/sitrep.h \
+    src/model/utils/RadarMath.h \
     src/model/utils/configuration.h \
     src/model/entities/track.h \
     src/model/utils/consoleUtils.h \
@@ -89,6 +93,7 @@ SOURCES += \
     src/controller/commands/estcommand.cpp \
     src/controller/commands/listCommand.cpp \
     src/controller/commands/listcursorscommand.cpp \
+    src/controller/commands/sitrepcommand.cpp \
     src/controller/dclConcController.cpp \
     src/controller/json/jsoncommandhandler.cpp \
     src/controller/json/jsonresponsebuilder.cpp \
@@ -117,6 +122,8 @@ SOURCES += \
     src/model/entities/track.cpp \
     src/model/ownShip/ownship.cpp \
     src/model/ownCursor/owncurs.cpp \
+    src/model/sitrep/sitrep.cpp \
+    src/model/utils/RadarMath.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
 
