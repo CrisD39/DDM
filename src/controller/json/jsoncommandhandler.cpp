@@ -1,5 +1,6 @@
 #include "jsoncommandhandler.h"
 #include "../handlers/linecommandhandler.h"
+#include "../handlers/trackcommandhandler.h"
 #include "jsonresponsebuilder.h"
 #include "commandContext.h"
 #include "network/iTransport.h"
@@ -11,6 +12,7 @@ JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* tran
     : QObject(parent), m_transport(transport){
     Q_ASSERT(context);
     Q_ASSERT(m_transport);
+    m_context = context;
     
     // Crea un puntero único a LineCommandHandler y se asegura ownership
     m_lineHandler = std::make_unique<LineCommandHandler>(context, transport);
@@ -61,8 +63,20 @@ void JsonCommandHandler::initializeCommandMap()
         return m_lineHandler->deleteLine(args);
     };
 
-    // Agregar nuevos comandos ACA.
-    //URI ACA HAY QUE REMAPEAR PARA EMPEZAR LOS CPA
+    // Registrar TrackCommandHandler y mapear comandos relacionados
+    m_trackHandler = std::make_unique<TrackCommandHandler>(m_context, m_transport);
+
+    m_commandMap["create_track"] = [this](const QJsonObject& args) {
+        return m_trackHandler->createTrack(args);
+    };
+
+    m_commandMap["delete_track"] = [this](const QJsonObject& args) {
+        return m_trackHandler->deleteTrack(args);
+    };
+
+    m_commandMap["list_tracks"] = [this](const QJsonObject& args) {
+        return m_trackHandler->listTracks(args);
+    };
 }
 
 void JsonCommandHandler::routeCommand(const QString& command, const QJsonObject& args)

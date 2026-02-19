@@ -15,6 +15,7 @@
 class CommandContext;
 class ITransport;
 class LineCommandHandler;
+class TrackCommandHandler;
 
 class JsonCommandHandler : public QObject
 {
@@ -31,6 +32,8 @@ private:
     using CommandHandler = std::function<QByteArray(const QJsonObject&)>;
     
     ITransport* m_transport;
+    CommandContext* m_context;
+    std::unique_ptr<TrackCommandHandler> m_trackHandler;
     std::unique_ptr<LineCommandHandler> m_lineHandler;
     QMap<QString, CommandHandler> m_commandMap;
     

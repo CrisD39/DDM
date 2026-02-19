@@ -40,6 +40,7 @@ HEADERS += \
     src/controller/json/jsonresponsebuilder.h \
     src/controller/json/jsonserializer.h \
     src/controller/handlers/linecommandhandler.h \
+    src/controller/handlers/trackcommandhandler.h \
     src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
     src/controller/json/validators/jsonvalidator.h \
@@ -91,6 +92,7 @@ SOURCES += \
     src/controller/json/jsonresponsebuilder.cpp \
     src/controller/json/jsonserializer.cpp \
     src/controller/handlers/linecommandhandler.cpp \
+    src/controller/handlers/trackcommandhandler.cpp \
     src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \
     src/controller/json/validators/jsonvalidator.cpp \

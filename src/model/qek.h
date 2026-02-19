@@ -4,6 +4,9 @@
 #include "obmHandler.h"
 #include <QString>
 #include <QDebug>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 using Type      = TrackData::Type;
 using Identity  = TrackData::Identity;
@@ -77,6 +80,55 @@ public:
             pos.first,              // x
             pos.second              // y
             );
+        // Si hay transport disponible, notificamos al frontend
+        if (ctx && ctx->transport) {
+            // Helper lambda para traducir identidad
+            auto identityToString = [](const Track& tr) -> QString {
+                const char* names[] = {
+                    "Pending", "PossFriend", "Unknown", "ConfHostile", 
+                    "ConfFriend", "Unknown", "EvalUnknown", "Heli"
+                };
+                auto ident = tr.getIdentity();
+                if (ident >= 0 && ident <= 7) {
+                    return QString::fromLatin1(names[ident]);
+                }
+                return "Desconocida";
+            };
+            
+            QJsonObject argsObj;
+            // created id es el id del primer elemento (emplace front)
+            if (!ctx->getTracks().empty()) {
+                argsObj["created_id"] = QString::number(ctx->getTracks().front().getId());
+            } else {
+                argsObj["created_id"] = "";
+            }
+
+            QJsonArray arr;
+            for (const Track& tr : ctx->getTracks()) {
+                QJsonObject trackObj;
+                trackObj["id"] = tr.getId();
+                trackObj["identity"] = identityToString(tr);
+                trackObj["azimut"] = tr.getAzimuthDeg();
+                trackObj["distancia"] = tr.getDistanceDm();
+                trackObj["rumbo"] = tr.getCursoInt();
+                trackObj["velocidad"] = tr.getVelocidadDmPerHour();
+                trackObj["link"] = tr.getEstadoLinkY() == Track::LinkY_Invalid ? "--" :
+                                   QString(QChar("RCTS"[int(tr.getEstadoLinkY())]));
+                trackObj["lat"] = tr.getY();
+                trackObj["lon"] = tr.getX();
+                trackObj["info"] = tr.getInformacionAmpliatoria();
+                arr.append(trackObj);
+            }
+            argsObj["tracks"] = arr;
+
+            QJsonObject response;
+            response["status"] = "success";
+            response["command"] = "create_track";
+            response["args"] = argsObj;
+
+            QJsonDocument doc(response);
+            ctx->transport->send(doc.toJson(QJsonDocument::Compact));
+        }
     }
 
     bool wipeTrack() {

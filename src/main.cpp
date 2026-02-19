@@ -103,6 +103,9 @@ int main(int argc, char* argv[]) {
 
     ITransport* transport = transportGuard.get();
     transport->start();
+    // Hacemos disponible el transport en el contexto para que comandos CLI
+    // y otros componentes puedan notificar al frontend (si está conectado)
+    ctx->transport = transport;
 
     QTimer timer;
     QTimer updatePositionTimer;

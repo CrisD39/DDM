@@ -1,5 +1,9 @@
 #include "Commands/addCommand.h"
 #include "enums.h"
+#include "../json/jsonresponsebuilder.h"
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 #include <cmath>
 #include <limits>
@@ -334,6 +338,50 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
     // (por compatibilidad: también guardamos el info en el map viejo si querés)
     if (hasInfo) ctx.setSitrepInfo(id, info);
+    // Notificar al frontend vía transport si está disponible
+    if (ctx.transport) {
+        // Helper lambda para traducir identidad
+        auto identityToString = [](const Track& tr) -> QString {
+            const char* names[] = {
+                "Pending", "PossFriend", "Unknown", "ConfHostile", 
+                "ConfFriend", "Unknown", "EvalUnknown", "Heli"
+            };
+            auto ident = tr.getIdentity();
+            if (ident >= 0 && ident <= 7) {
+                return QString::fromLatin1(names[ident]);
+            }
+            return "Desconocida";
+        };
+        
+        QJsonObject argsObj;
+        argsObj["created_id"] = QString::number(t.getId());
+
+        QJsonArray arr;
+        for (const Track& tr : ctx.getTracks()) {
+            QJsonObject trackObj;
+            trackObj["id"] = tr.getId();
+            trackObj["identity"] = identityToString(tr);
+            trackObj["azimut"] = tr.getAzimuthDeg();
+            trackObj["distancia"] = tr.getDistanceDm();
+            trackObj["rumbo"] = tr.getCursoInt();
+            trackObj["velocidad"] = tr.getVelocidadDmPerHour();
+            trackObj["link"] = tr.getEstadoLinkY() == Track::LinkY_Invalid ? "--" :
+                               QString(QChar("RCTS"[int(tr.getEstadoLinkY())]));
+            trackObj["lat"] = tr.getY();
+            trackObj["lon"] = tr.getX();
+            trackObj["info"] = tr.getInformacionAmpliatoria();
+            arr.append(trackObj);
+        }
+        argsObj["tracks"] = arr;
+
+        QJsonObject response;
+        response["status"] = "success";
+        response["command"] = "create_track";
+        response["args"] = argsObj;
+
+        QJsonDocument doc(response);
+        ctx.transport->send(doc.toJson(QJsonDocument::Compact));
+    }
 
     return {
         true,
