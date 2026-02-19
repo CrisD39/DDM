@@ -19,52 +19,75 @@ La arquitectura sigue principios SOLID y está organizada por responsabilidades 
 
 ## Estructura Real del Proyecto (`src/`)
 
-```text
-src/
-├── controller/
-│   ├── routing/                # Enrutamiento de mensajes
-│   │   └── messageRouter.*
-│   │
-│   ├── json/                   # Pipeline JSON
-│   │   ├── jsoncommandhandler.*
-│   │   ├── jsonresponsebuilder.*
-│   │   ├── jsonserializer.*
-│   │   └── validators/
-│   │       └── jsonvalidator.*
-│   │
-│   ├── handlers/               # Handlers de dominio
-│   │   └── linecommandhandler.*
-│   │
-│   ├── commands/               # Comandos de consola
-│   │   ├── iCommand.h
-│   │   ├── addCommand.*
-│   │   ├── deleteCommand.*
-│   │   ├── centerCommand.*
-│   │   ├── listCommand.*
-│   │   ├── addCursor.*
-│   │   ├── listcursorscommand.*
-│   │   └── deletecursorscommand.*
-│   │
-│   ├── dclConcController.*
-│   ├── commandDispatcher.*
-│   └── commandRegistry.h
-│
-├── model/
-│   ├── commandContext.h
-│   ├── entities/
-│   │   ├── cursorEntity.*
-│   │   └── track.*
-│   ├── decoders/
-│   │   ├── concDecoder.*
-│   │   └── lpdEncoder.*
-│   └── network/
-│       └── iTransport.h
-│
-└── view/
-    ├── stdinreader.*
-    ├── commandParser.h
-    └── iInputParser.h
+```mermaid
+graph TD
+
+    %% ROOT
+    SRC[src/]
+
+    %% CONTROLLER
+    CTRL[controller/]
+    SRC --> CTRL
+
+    ROUT[routing/]
+    CTRL --> ROUT
+    ROUT --> MR[messageRouter.*]
+
+    JSON[json/]
+    CTRL --> JSON
+    JSON --> JCH[jsoncommandhandler.*]
+    JSON --> JRB[jsonresponsebuilder.*]
+    JSON --> JS[jsonserializer.*]
+    JSON --> VAL[validators/]
+    VAL --> JV[jsonvalidator.*]
+
+    HANDLERS[handlers/]
+    CTRL --> HANDLERS
+    HANDLERS --> LCH[linecommandhandler.*]
+
+    COMMANDS[commands/]
+    CTRL --> COMMANDS
+    COMMANDS --> ICMD[iCommand.h]
+    COMMANDS --> ADD[addCommand.*]
+    COMMANDS --> DEL[deleteCommand.*]
+    COMMANDS --> CENTER[centerCommand.*]
+    COMMANDS --> LIST[listCommand.*]
+    COMMANDS --> ADDC[addCursor.*]
+    COMMANDS --> LISTC[listcursorscommand.*]
+    COMMANDS --> DELC[deletecursorscommand.*]
+
+    CTRL --> DCL[dclConcController.*]
+    CTRL --> DISP[commandDispatcher.*]
+    CTRL --> REG[commandRegistry.h]
+
+    %% MODEL
+    MODEL[model/]
+    SRC --> MODEL
+
+    MODEL --> CTX[commandContext.h]
+
+    ENT[entities/]
+    MODEL --> ENT
+    ENT --> CUR[cursorEntity.*]
+    ENT --> TRK[track.*]
+
+    DEC[decoders/]
+    MODEL --> DEC
+    DEC --> CONC[concDecoder.*]
+    DEC --> LPD[lpdEncoder.*]
+
+    NET[network/]
+    MODEL --> NET
+    NET --> ITRANS[iTransport.h]
+
+    %% VIEW
+    VIEW[view/]
+    SRC --> VIEW
+    VIEW --> STDIN[stdinreader.*]
+    VIEW --> PARSER[commandParser.h]
+    VIEW --> IINPUT[iInputParser.h]
 ```
+
 
 ---
 
