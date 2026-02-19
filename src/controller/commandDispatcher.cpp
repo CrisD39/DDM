@@ -5,7 +5,7 @@
 #include "CommandDispatcher.h"
 #include "commandRegistry.h"
 #include "iInputParser.h"
-#include "iCommand.h"
+#include "ICommand.h"
 #include "commandContext.h"
 #include <QStringList>
 #include "consoleUtils.h"
@@ -36,7 +36,6 @@ void CommandDispatcher::onLine(const QString& line) {
         ctx_.out.flush();
         ctx_.commandCounter++;
     };
-
 
     // Intento parsear
     CommandInvocation inv;

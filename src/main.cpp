@@ -23,6 +23,7 @@
 #include "deleteCommand.h"
 #include "centerCommand.h"
 #include "listCommand.h"
+#include "estcommand.h"
 #include "commandContext.h"
 #include "QTimer"
 #include "configuration.h"
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
     registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new EstCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
 
     CommandDispatcher dispatcher(registry, parser, *ctx);
@@ -144,9 +146,6 @@ int main(int argc, char* argv[]) {
     // Conecta señales que emite el decoder
     QObject::connect(decoder, &ConcDecoder::newOverlay, overlayHandler, &OverlayHandler::onNewOverlay);
     QObject::connect(decoder, &ConcDecoder::newQEK, overlayHandler, &OverlayHandler::onNewQEK);
-
-
-
 
     QObject::connect(decoder, &ConcDecoder::newRange, obmHandler, &OBMHandler::updateRange);
     QObject::connect(decoder, &ConcDecoder::newRollingBall, obmHandler, &OBMHandler::updatePosition);

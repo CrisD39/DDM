@@ -3,13 +3,15 @@
 #include <QStringConverter>
 #include <QString>
 #include <QPointF>
-#include <QPair>
+#include <set> 
+#include <QPair>              // ← por QPair<float,float>
 #include <deque>
 #include <utility>
 #include <unordered_map>
 
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
+#include "entities/stationEntity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -32,18 +34,22 @@ struct CommandContext {
 
     QTextStream out;
     QTextStream err;
+
     QString     lastCommandLine;
     quint64     lastCommandHash = 0;
     int         commandCounter  = 1;
 
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
+    std::set<int>     freeIds;
+    std::map<int, StationEntity> stationSlots;
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
 
     double centerX = 0.0;
     double centerY = 0.0;
+
 
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
@@ -103,6 +109,29 @@ struct CommandContext {
         return false;
     }
 
+    // Toma el menor ID libre si existe si no, usa nextTrackId y lo incrementa
+    inline int acquireId() {
+        if (!freeIds.empty()) {
+            int id = *freeIds.begin();
+            freeIds.erase(freeIds.begin());
+            return id;
+        }
+        return nextTrackId++;
+    }
+
+    inline void releaseId(int id) {
+        if (id == nextTrackId - 1) {            nextTrackId--;
+            while (!freeIds.empty()) {
+                auto it = freeIds.find(nextTrackId - 1);
+                if (it == freeIds.end()) break;
+                freeIds.erase(it);
+                nextTrackId--;
+            }
+        } else {
+            freeIds.insert(id);
+        }
+    }
+    
     inline bool eraseCursorById(int id) {
         for (auto it = cursors.begin(); it != cursors.end(); ++it) {
             if (it->getCursorId() == id) { cursors.erase(it); return true; }
@@ -121,6 +150,20 @@ struct CommandContext {
         return &tracks[j];
     }
 
+    inline void setStationingSlot(const StationEntity& st) {
+        qDebug() << "Actualizando Slot Estacionamiento:" << st.slotId;
+
+        // Guardamos/Sobrescribimos el slot (1 al 10)
+        stationSlots[st.slotId] = st;
+
+        qDebug() << "Slot" << st.slotId << "actualizado con Rumbo:" << st.rumboResultado;
+    }
+
+    // Para que la GUI recupere la info (OverlayHandler lo usará)
+    inline const StationEntity* getStationingSlot(int id) const {
+        auto it = stationSlots.find(id);
+        if (it != stationSlots.end()) return &it->second;
+        return nullptr;
     inline void updateTracks(double deltaTime){
         for(Track& track : tracks){
             track.updatePosition(deltaTime);
