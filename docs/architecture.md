@@ -128,3 +128,13 @@ am
     - `CommandDispatcher` parses and executes console commands.
     - `CommandContext` maintains the application state (tracks, cursors).
 - **Overlay/OBM**: Handles display overlays and "Own Own Bearing Marker" (OBM) logic.
+
+---
+
+## Cambios recientes (Feb 2026)
+
+- `DDMController` formatea los `tracks` antes de exponerlos a QML y añade campos numéricos auxiliares (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
+- Se añadió `deleteTrack(int)` invocable en `DDMController` para que la interfaz envíe `{ "command": "delete_track", "args": { "id": <id> } }` al backend, evitando la manipulación local directa del modelo.
+- `SitrepWorkspace.qml` incluye filtros en cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda; el filtrado es únicamente visual.
+- Normalización de `identity` en backend con `TrackData::toQString(...)` para alinear nomenclatura entre CLI y GUI.
+- Correcciones de compilación: añadidos `QJsonDocument`, `QJsonObject`, `QVariant` en `ddmcontroller` para resolver tipos incompletos.
