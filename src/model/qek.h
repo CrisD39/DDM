@@ -82,17 +82,9 @@ public:
             );
         // Si hay transport disponible, notificamos al frontend
         if (ctx && ctx->transport) {
-            // Helper lambda para traducir identidad
+            // Helper: translate identity using TrackData helpers
             auto identityToString = [](const Track& tr) -> QString {
-                const char* names[] = {
-                    "Pending", "PossFriend", "Unknown", "ConfHostile", 
-                    "ConfFriend", "Unknown", "EvalUnknown", "Heli"
-                };
-                auto ident = tr.getIdentity();
-                if (ident >= 0 && ident <= 7) {
-                    return QString::fromLatin1(names[ident]);
-                }
-                return "Desconocida";
+                return TrackData::toQString(tr.getIdentity());
             };
             
             QJsonObject argsObj;

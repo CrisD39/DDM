@@ -82,11 +82,7 @@ QByteArray TrackCommandHandler::buildCreateTrackResponse(int createdId)
     args["created_id"] = QString::number(createdId);
     
     auto identityToString = [](const Track& t) -> QString {
-        const char* names[] = { "Pending", "PossFriend", "Unknown", "ConfHostile",
-                               "ConfFriend", "Unknown", "EvalUnknown", "Heli" };
-        auto ident = t.getIdentity();
-        if (ident >= 0 && ident <= 7) return QString::fromLatin1(names[ident]);
-        return "Desconocida";
+        return TrackData::toQString(t.getIdentity());
     };
     
     QJsonArray arr;
@@ -115,11 +111,7 @@ QByteArray TrackCommandHandler::buildDeleteTrackResponse(int deletedId)
     args["deleted_id"] = deletedId;
     
     auto identityToString = [](const Track& t) -> QString {
-        const char* names[] = { "Pending", "PossFriend", "Unknown", "ConfHostile",
-                               "ConfFriend", "Unknown", "EvalUnknown", "Heli" };
-        auto ident = t.getIdentity();
-        if (ident >= 0 && ident <= 7) return QString::fromLatin1(names[ident]);
-        return "Desconocida";
+        return TrackData::toQString(t.getIdentity());
     };
     
     QJsonArray arr;
@@ -147,11 +139,7 @@ QByteArray TrackCommandHandler::buildListTracksResponse()
     QJsonObject args;
     
     auto identityToString = [](const Track& t) -> QString {
-        const char* names[] = { "Pending", "PossFriend", "Unknown", "ConfHostile",
-                               "ConfFriend", "Unknown", "EvalUnknown", "Heli" };
-        auto ident = t.getIdentity();
-        if (ident >= 0 && ident <= 7) return QString::fromLatin1(names[ident]);
-        return "Desconocida";
+        return TrackData::toQString(t.getIdentity());
     };
     
     QJsonArray arr;
