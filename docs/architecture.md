@@ -133,8 +133,16 @@ am
 
 ## Cambios recientes (Feb 2026)
 
+<<<<<<< HEAD
 - `DDMController` formatea los `tracks` antes de exponerlos a QML y añade campos numéricos auxiliares (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
 - Se añadió `deleteTrack(int)` invocable en `DDMController` para que la interfaz envíe `{ "command": "delete_track", "args": { "id": <id> } }` al backend, evitando la manipulación local directa del modelo.
 - `SitrepWorkspace.qml` incluye filtros en cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda; el filtrado es únicamente visual.
 - Normalización de `identity` en backend con `TrackData::toQString(...)` para alinear nomenclatura entre CLI y GUI.
 - Correcciones de compilación: añadidos `QJsonDocument`, `QJsonObject`, `QVariant` en `ddmcontroller` para resolver tipos incompletos.
+=======
+- `DDMController` ahora formatea los `tracks` antes de exponerlos a la UI QML (ej.: `azimut`, `distancia`, `rumbo`, `velocidad`) y mantiene copias numéricas (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
+- Implementado `deleteTrack(int)` invocable en `DDMController` que envía el comando JSON `{ "command": "delete_track", "args": { "id": <id> } }` al backend en lugar de eliminar localmente en QML.
+- `SitrepWorkspace.qml` incluye filtros de cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda por `id`/`identity`/`info`/`link` (visual-only).
+- Identidad (`identity`) normalizada en backend usando `TrackData::toQString(...)` para alinear etiquetas entre CLI y GUI.
+- Fix de compilación: se añadieron includes en `ddmcontroller` (`QJsonDocument`, `QJsonObject`, `QVariant`) para resolver tipos incompletos.
+>>>>>>> ec1ca9369b65f67a5dbdf749537a1c3e4d179215
