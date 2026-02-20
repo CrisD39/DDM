@@ -398,6 +398,14 @@ Dependencias sobre interfaces:
 
 ---
 
+## Cambios recientes (Feb 2026)
+
+- `DDMController` (frontend bridge) formatea los campos de `tracks` antes de entregarlos a la vista QML (p. ej. `azimut`, `distancia`, `rumbo`, `velocidad`) y conserva versiones numéricas para procesamiento (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
+- Se implementó `deleteTrack(int)` como invokable en `DDMController`; la UI envía `{ "command": "delete_track", "args": {"id": <id>} }` al backend en lugar de mutar el modelo localmente.
+- `SitrepWorkspace.qml` añade filtros cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda; el filtrado es únicamente visual.
+- `identity` ahora se normaliza en el backend con `TrackData::toQString(...)` para evitar discrepancias entre la CLI y la GUI.
+- Fix de compilación: incluidas cabeceras faltantes en `ddmcontroller` para resolver errores de tipo con `QJsonDocument`/`QJsonObject`/`QVariant`.
+
 ## Resumen Final
 
 El backend actual implementa una arquitectura limpia donde:
