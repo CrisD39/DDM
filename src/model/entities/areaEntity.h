@@ -34,8 +34,8 @@ public:
     const QPointF& getPointD() const;
     void setPointD(const QPointF& point);
 
-    const QString& getType() const;
-    void setType(const QString& type);
+    const int getType() const;
+    void setType(int type);
 
     const QString& getColor() const;
     void setColor(const QString& color);
@@ -68,7 +68,7 @@ private:
     int cursorIdDA;
 
     qfloat16 calculateAngle(const QPointF& start, const QPointF& end) const;
-    qfloat16 calculateLength(const QPointF& start, const QPointF& end);
+    qfloat16 calculateLength(const QPointF& start, const QPointF& end) const;
 };
 
 #endif // AREAENTITY_H

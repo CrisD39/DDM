@@ -39,6 +39,7 @@ struct CommandContext {
 
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
@@ -122,26 +123,6 @@ struct CommandContext {
         return &tracks[j];
     }
 
-    std::deque<AreaEntity> areas;
-    int nextAreaId = 1;
-
-    inline AreaEntity& addArea(const AreaEntity& area) {
-        areas.push_back(area);
-        return areas.back();
-    }
-
-    inline void updateArea(int areaId, const QPointF& newPointA, const QPointF& newPointB, const QPointF& newPointC, const QPointF& newPointD) {
-        for (auto& area : areas) {
-            if (area.getId() == areaId) {
-                area.setPointA(newPointA);
-                area.setPointB(newPointB);
-                area.setPointC(newPointC);
-                area.setPointD(newPointD);
-                break;
-            }
-        }
-    }
-
     // inline void deleteArea(int areaId) {
     //     areas.erase(std::remove_if(areas.begin(), areas.end(), [this, areaId](const AreaEntity& area) {
     //         if (area.getId() == areaId) {
@@ -156,7 +137,6 @@ struct CommandContext {
     //     }), areas.end());
     // }
 
-    inline const std::deque<AreaEntity>& getAreas() const { return areas; }
 };
 
 

@@ -4,20 +4,19 @@
 #include "iCommand.h"
 #include <QPointF>
 #include <QString>
-#include <vector>
 
 class AddAreaCommand : public ICommand {
 public:
     QString getName() const override { return "addArea"; }
     QString getDescription() const override { return "Crea un área interactiva definiendo puntos A, B, C, D, tipo y color."; }
-    QString usage() const override { return "addArea"; }
+    QString usage() const override { return "addArea(ax,ay,bx,by,cx,cy,dx,dy,tipo,color)"; }
+
+    // El método execute es const por interfaz, no se puede cambiar
     CommandResult execute(const CommandInvocation& inv, CommandContext& ctx) const override;
 
-    static std::vector<CursorEntity> calculateArea(const QPointF& a, const QPointF& b, const QPointF& c, const QPointF& d, CommandContext& ctx);
-
 private:
-    QPointF requestPoint(const QString& pointName, CommandContext& ctx) const;
-    QString requestString(const QString& prompt, CommandContext& ctx) const;
+    // Este método debe ser const para ser llamado desde execute
+    QPointF requestPoint(const std::string& label) const;
 };
 
-#endif // ADDAREACOMMAND_H
+#endif
