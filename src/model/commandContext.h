@@ -54,7 +54,9 @@ struct CommandContext {
     inline const std::deque<CursorEntity>& getCursors() const { return cursors; }
 
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
-        qDebug() << "agregando cursor";
+        qDebug() << "agregando cursor ID:" << c.getCursorId()
+                 << " Angle:" << c.getCursorAngle()
+                 << " Length:" << c.getCursorLength();
         cursors.push_front(c);
         qDebug() << "termine de agregar";
         return cursors.front();

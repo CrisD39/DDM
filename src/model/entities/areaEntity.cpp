@@ -1,4 +1,5 @@
 #include "areaEntity.h"
+#include "model/utils/RadarMath.h"
 struct CommandContext;
 
 AreaEntity::AreaEntity(int id, const std::vector<QPointF>& points, int type, const QString& color)
@@ -140,33 +141,34 @@ void AreaEntity::setCursorIdDA(int cursorId) {
 }
 
 void AreaEntity::calculateAndStoreCursors(CommandContext& ctx) {
+    using RadarMath = RadarMath; // Or just use RadarMath::
     // Calculate and store cursor IDs for each edge
-    CursorEntity cursorAB(QPair<qfloat16, qfloat16>(pointA.x(), pointA.y()), calculateAngle(pointA, pointB), calculateLength(pointA, pointB), type, ctx.nextCursorId++, true);
+    CursorEntity cursorAB(QPair<qfloat16, qfloat16>(pointA.x(), pointA.y()), RadarMath::calculateAngle(pointA, pointB), RadarMath::calculateLength(pointA, pointB), type, ctx.nextCursorId++, true);
     ctx.addCursorFront(cursorAB);
     cursorIdAB = cursorAB.getCursorId();
 
-    CursorEntity cursorBC(QPair<qfloat16, qfloat16>(pointB.x(), pointB.y()), calculateAngle(pointB, pointC), calculateLength(pointB, pointC), type, ctx.nextCursorId++, true);
+    CursorEntity cursorBC(QPair<qfloat16, qfloat16>(pointB.x(), pointB.y()), RadarMath::calculateAngle(pointB, pointC), RadarMath::calculateLength(pointB, pointC), type, ctx.nextCursorId++, true);
     ctx.addCursorFront(cursorBC);
     cursorIdBC = cursorBC.getCursorId();
 
-    CursorEntity cursorCD(QPair<qfloat16, qfloat16>(pointC.x(), pointC.y()), calculateAngle(pointC, pointD), calculateLength(pointC, pointD), type, ctx.nextCursorId++, true);
+    CursorEntity cursorCD(QPair<qfloat16, qfloat16>(pointC.x(), pointC.y()), RadarMath::calculateAngle(pointC, pointD), RadarMath::calculateLength(pointC, pointD), type, ctx.nextCursorId++, true);
     ctx.addCursorFront(cursorCD);
     cursorIdCD = cursorCD.getCursorId();
 
-    CursorEntity cursorDA(QPair<qfloat16, qfloat16>(pointD.x(), pointD.y()), calculateAngle(pointD, pointA), calculateLength(pointD, pointA), type, ctx.nextCursorId++, true);
+    CursorEntity cursorDA(QPair<qfloat16, qfloat16>(pointD.x(), pointD.y()), RadarMath::calculateAngle(pointD, pointA), RadarMath::calculateLength(pointD, pointA), type, ctx.nextCursorId++, true);
     ctx.addCursorFront(cursorDA);
     cursorIdDA = cursorDA.getCursorId();
 }
 
-qfloat16 AreaEntity::calculateAngle(const QPointF& start, const QPointF& end) const {
-    // Invertimos Y porque en coordenadas de pantalla Y crece hacia abajo,
-    // mientras que atan2 asume coordenadas cartesianas donde Y crece hacia arriba.
-    return qAtan2(-(end.y() - start.y()), end.x() - start.x()) * (180.0 / M_PI);
-}
+// qfloat16 AreaEntity::calculateAngle(const QPointF& start, const QPointF& end) const {
+//     // Invertimos Y porque en coordenadas de pantalla Y crece hacia abajo,
+//     // mientras que atan2 asume coordenadas cartesianas donde Y crece hacia arriba.
+//     return qAtan2(-(end.y() - start.y()), end.x() - start.x()) * (180.0 / M_PI);
+// }
 
-qfloat16 AreaEntity::calculateLength(const QPointF& start, const QPointF& end) const {
-    return qSqrt(qPow(end.x() - start.x(), 2) + qPow(end.y() - start.y(), 2));
-}
+// qfloat16 AreaEntity::calculateLength(const QPointF& start, const QPointF& end) const {
+//     return qSqrt(qPow(end.x() - start.x(), 2) + qPow(end.y() - start.y(), 2));
+// }
 
 
 

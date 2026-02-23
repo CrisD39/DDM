@@ -67,8 +67,8 @@ private:
     int cursorIdCD;
     int cursorIdDA;
 
-    qfloat16 calculateAngle(const QPointF& start, const QPointF& end) const;
-    qfloat16 calculateLength(const QPointF& start, const QPointF& end) const;
+    // qfloat16 calculateAngle(const QPointF& start, const QPointF& end) const;
+    // qfloat16 calculateLength(const QPointF& start, const QPointF& end) const;
 };
 
 #endif // AREAENTITY_H
