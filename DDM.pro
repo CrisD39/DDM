@@ -31,6 +31,7 @@ HEADERS += \
     src/controller/commands/addCommand.h \
     src/controller/commands/addCursor.h \
     src/controller/commands/addareacommand.h \
+    src/controller/commands/addpolygonocommand.h \
     src/controller/commands/centerCommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
@@ -52,6 +53,7 @@ HEADERS += \
     src/model/decoders/lpdEncoder.h \
     src/model/entities/cursorEntity.h \
     src/model/entities/areaEntity.h \
+    src/model/entities/polygonoentity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
@@ -85,6 +87,7 @@ SOURCES += \
     src/controller/commands/addCommand.cpp \
     src/controller/commands/addCursor.cpp \
     src/controller/commands/addareacommand.cpp \
+    src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
@@ -104,6 +107,7 @@ SOURCES += \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \
     src/model/entities/areaEntity.cpp \
+    src/model/entities/polygonoentity.cpp \
     src/model/network/clientSocket.cpp \
     src/model/network/localipcclient.cpp \
     src/model/network/transportFactory.cpp \

@@ -31,6 +31,7 @@
 #include "deletecursorscommand.h"
 #include "sitrepcommand.h"
 #include "addAreaCommand.h"
+#include "addpolygonocommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
     registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddAreaCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new AddPolygonoCommand()));
 
     CommandDispatcher dispatcher(registry, parser, *ctx);
 
