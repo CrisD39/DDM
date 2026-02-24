@@ -168,7 +168,7 @@ void ConcDecoder::decodeWord4()
             for (QChar bit : qekMasterBits) {
                 quickEntryKeyboardMaster.append(bit == '1');
             }
-            qDebug() << "[Decodificación] QEK Master:" << qekMasterBits << "→" << decodedQEK;
+            // qDebug() << "[Decodificación] QEK Master:" << qekMasterBits << "→" << decodedQEK;
             emit newQEK(decodedQEK);
         }
     } else {
