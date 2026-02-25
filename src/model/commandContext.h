@@ -10,6 +10,7 @@
 
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
+#include "network/iTransport.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -44,6 +45,10 @@ struct CommandContext {
 
     double centerX = 0.0;
     double centerY = 0.0;
+
+    // Transport opcional: si está seteado, los comandos CLI/backend pueden
+    // notificar eventos JSON al frontend via transport->send()
+    ITransport* transport = nullptr;
 
     inline std::deque<Track>& getTracks() { return tracks; }
     inline const std::deque<Track>& getTracks() const { return tracks; }
@@ -109,7 +114,7 @@ struct CommandContext {
         }
         return false;
     }
-
+    // transport is declared above; do not redeclare here.
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
         std::size_t i = 0;
