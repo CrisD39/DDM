@@ -5,7 +5,6 @@
 #include <QPointF>
 #include <vector>
 #include "model/entities/cursorEntity.h"
-#include "model/commandContext.h"
 #include <QtMath>
 
 // Cambiar class por struct para que coincida con la definición en commandContext.h

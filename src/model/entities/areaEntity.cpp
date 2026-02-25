@@ -1,6 +1,6 @@
 #include "areaEntity.h"
 #include "model/utils/RadarMath.h"
-struct CommandContext;
+#include "model/commandContext.h"
 
 AreaEntity::AreaEntity(int id, const std::vector<QPointF>& points, int type, const QString& color)
     : id(id), type(type), color(color) {

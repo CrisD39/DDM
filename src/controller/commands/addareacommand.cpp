@@ -83,6 +83,7 @@ CommandResult AddAreaCommand::execute(const CommandInvocation& inv, CommandConte
 
         // 6. Procesar y guardar
         area.calculateAndStoreCursors(ctx);
+        ctx.addArea(area);
 
         return {true, QString("Área %1 creada exitosamente con los argumentos provistos.").arg(area.getId())};
 
