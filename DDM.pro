@@ -2,6 +2,8 @@ QT += core network
 CONFIG += console c++17
 TEMPLATE = app
 TARGET = DDM
+INCLUDEPATH += $$PWD/src
+QT += core gui
 
 RESOURCES += resources.qrc
 
@@ -28,7 +30,12 @@ HEADERS += \
     src/controller/commanddispatcher.h \
     src/controller/commands/addCommand.h \
     src/controller/commands/addCursor.h \
+    src/controller/commands/addareacommand.h \
+    src/controller/commands/addCircleCommand.h \
+    src/controller/commands/addpolygonocommand.h \
     src/controller/commands/centerCommand.h \
+    src/controller/commands/deleteAreaCommand.h \
+    src/controller/commands/deleteCircleCommand.h \
     src/controller/commands/cpaCommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
@@ -51,6 +58,9 @@ HEADERS += \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
     src/model/entities/cursorEntity.h \
+    src/model/entities/areaEntity.h \
+    src/model/entities/circleEntity.h \
+    src/model/entities/polygonoentity.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
@@ -83,8 +93,13 @@ SOURCES += \
     src/controller/commandDispatcher.cpp \
     src/controller/commands/addCommand.cpp \
     src/controller/commands/addCursor.cpp \
+    src/controller/commands/addareacommand.cpp \
+    src/controller/commands/addCircleCommand.cpp \
+    src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
+    src/controller/commands/deleteAreaCommand.cpp \
+    src/controller/commands/deleteCircleCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
     src/controller/commands/listCommand.cpp \
@@ -104,6 +119,9 @@ SOURCES += \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \
+    src/model/entities/areaEntity.cpp \
+    src/model/entities/circleEntity.cpp \
+    src/model/entities/polygonoentity.cpp \
     src/model/network/clientSocket.cpp \
     src/model/network/localipcclient.cpp \
     src/model/network/transportFactory.cpp \

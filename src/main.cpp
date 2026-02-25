@@ -33,6 +33,11 @@
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
 
+#include "addAreaCommand.h"
+#include "addpolygonocommand.h"
+#include "addCircleCommand.h"
+#include "deleteAreaCommand.h"
+#include "deleteCircleCommand.h"
 
 static void enableAnsiColorsOnWindows() {
   DWORD mode = 0;
@@ -72,6 +77,11 @@ int main(int argc, char *argv[]) {
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CpaCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new AddAreaCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new AddPolygonoCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new AddCircleCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new DeleteAreaCommand()));
+    registry->registerCommand(QSharedPointer<ICommand>(new DeleteCircleCommand()));
 
   CommandDispatcher dispatcher(registry, parser, *ctx);
 

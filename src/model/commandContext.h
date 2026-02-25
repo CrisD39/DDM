@@ -11,6 +11,8 @@
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
 #include "network/iTransport.h"
+#include "entities/areaEntity.h"
+#include "entities/circleEntity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -39,9 +41,13 @@ struct CommandContext {
 
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
+
+    std::deque<AreaEntity> areas;
+    std::deque<CircleEntity> circles;
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -56,8 +62,24 @@ struct CommandContext {
     inline std::deque<CursorEntity>& getCursors() { return cursors; }
     inline const std::deque<CursorEntity>& getCursors() const { return cursors; }
 
+    inline std::deque<AreaEntity>& getAreas() { return areas; }
+    inline const std::deque<AreaEntity>& getAreas() const { return areas; }
+
+    inline std::deque<CircleEntity>& getCircles() { return circles; }
+    inline const std::deque<CircleEntity>& getCircles() const { return circles; }
+
+    inline void addArea(const AreaEntity& area) {
+        areas.push_back(area);
+    }
+
+    inline void addCircle(const CircleEntity& circle) {
+        circles.push_back(circle);
+    }
+
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
-        qDebug() << "agregando cursor";
+        qDebug() << "agregando cursor ID:" << c.getCursorId()
+                 << " Angle:" << c.getCursorAngle()
+                 << " Length:" << c.getCursorLength();
         cursors.push_front(c);
         qDebug() << "termine de agregar";
         return cursors.front();
@@ -130,6 +152,36 @@ struct CommandContext {
         for(Track& track : tracks){
             track.updatePosition(deltaTime);
         }
+    }
+
+    inline bool deleteArea(int areaId) {
+        for (auto it = areas.begin(); it != areas.end(); ++it) {
+            if (it->getId() == areaId) {
+                // Eliminar cursores asociados
+                eraseCursorById(it->getCursorIdAB());
+                eraseCursorById(it->getCursorIdBC());
+                eraseCursorById(it->getCursorIdCD());
+                eraseCursorById(it->getCursorIdDA());
+                // Eliminar area de la lista
+                areas.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline bool deleteCircle(int circleId) {
+        for (auto it = circles.begin(); it != circles.end(); ++it) {
+            if (it->getId() == circleId) {
+                // Eliminar cursores asociados
+                for(int cid : it->getCursorIds()) {
+                    eraseCursorById(cid);
+                }
+                circles.erase(it);
+                return true;
+            }
+        }
+        return false;
     }
 };
 
