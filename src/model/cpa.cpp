@@ -30,7 +30,7 @@ CPAResult CPA::computeCPA(const Track& a, const Track& b)
     };
 
     // Posición relativa
-    QPair<double,double> Pr {
+    QPair<double,double> Pos_rel {
         Pb.first - Pa.first,
         Pb.second - Pa.second
     };
@@ -45,20 +45,20 @@ CPAResult CPA::computeCPA(const Track& a, const Track& b)
     double vr2 = Vr.first * Vr.first + Vr.second * Vr.second;
 
     if (vr2 < 1e-9) {
-        double dist = std::sqrt(Pr.first*Pr.first + Pr.second*Pr.second);
+        double dist = std::sqrt(Pos_rel.first*Pos_rel.first + Pos_rel.second*Pos_rel.second);
         return {0.0, dist, false};
     }
 
     // TCPA
-    double tcpa = - ((Pr.first * Vr.first) + (Pr.second * Vr.second)) / vr2;
+    double tcpa = - ((Pos_rel.first * Vr.first) + (Pos_rel.second * Vr.second)) / vr2;
 
     if (tcpa < 0)
         tcpa = 0;
 
     // Posición relativa en CPA
     QPair<double,double> Pcpa {
-        Pr.first + Vr.first * tcpa,
-        Pr.second + Vr.second * tcpa
+        Pos_rel.first + Vr.first * tcpa,
+        Pos_rel.second + Vr.second * tcpa
     };
 
     // DCPA
@@ -68,4 +68,16 @@ CPAResult CPA::computeCPA(const Track& a, const Track& b)
     qDebug() << "\nRESULTADO CPA:" << tcpa << "-" << dcpa;
 
     return { tcpa, dcpa, true };
+}
+
+CPAResult CPA::fromCLI(int idTrack1, int idTrack2, CommandContext &ctx)
+{
+    const Track *track1 = ctx.findTrackById(idTrack1);
+    const Track *track2 = ctx.findTrackById(idTrack2);
+
+    if (!track1 || !track2) {
+        return {0,0,false};
+    }
+
+    return computeCPA(*track1,*track2);
 }

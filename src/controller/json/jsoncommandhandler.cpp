@@ -61,6 +61,10 @@ void JsonCommandHandler::initializeCommandMap()
         return m_lineHandler->deleteLine(args);
     };
 
+    m_commandMap["cpa"] = [this](const QJsonObject& args) {
+        return
+    };
+
     // Agregar nuevos comandos ACA.
     //URI ACA HAY QUE REMAPEAR PARA EMPEZAR LOS CPA
 }

@@ -1,5 +1,5 @@
-#include "cpacommand.h"
-#include "cpa.h"
+#include "cpaCommand.h"
+#include "src/model/cpa.h"
 
 CommandResult CpaCommand::execute(const CommandInvocation &inv, CommandContext &ctx) const
 {
@@ -10,30 +10,25 @@ CommandResult CpaCommand::execute(const CommandInvocation &inv, CommandContext &
     }
 
     bool ok1 = false, ok2 = false;
-    int id1 = args[0].toInt(&ok1);
-    int id2 = args[1].toInt(&ok2);
+    int idTrack1 = args[0].toInt(&ok1);
+    int idTrack2 = args[1].toInt(&ok2);
 
     if (!ok1 || !ok2) {
         return {false, "IDs invalidos"};
     }
 
-    const Track *t1 = ctx.findTrackById(id1);
-    const Track *t2 = ctx.findTrackById(id2);
+    CPA _cpa;
+    CPAResult ret = _cpa.fromCLI(idTrack1,idTrack2,ctx);
 
-    if (!t1 || !t2) {
-        return {false, "Uno o ambos tracks no existen"};
+    if(ret.valid == false && ret.tcpa == 0 && ret.dcpa){
+        return {false, "Contactos no encontrados"};
     }
-
-    CPA ccppaa;
-    CPAResult ret = ccppaa.computeCPA(*t1,*t2);
-
-
 
     QString out;
     QTextStream oss(&out);
 
     oss << "CPA RESULT\n";
-    oss << "Tracks: " << id1 << " vs " << id2 << "\n";
+    oss << "Tracks: " << idTrack1 << " vs " << idTrack2 << "\n";
     oss << "TCPA: " << ret.tcpa << " s\n";
     oss << "CPA Distance: " << ret.dcpa << " DM\n";
 

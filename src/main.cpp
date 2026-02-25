@@ -30,7 +30,7 @@
 #include "listcursorscommand.h"
 #include "deletecursorscommand.h"
 #include "sitrepcommand.h"
-#include "cpacommand.h"
+#include "cpaCommand.h"
 
 static void enableAnsiColorsOnWindows() {
     DWORD mode = 0;

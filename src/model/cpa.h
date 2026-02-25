@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "src/model/entities/track.h"
+#include "commandContext.h"
 
 struct CPAResult {
     double tcpa;  // segundos
@@ -15,6 +16,7 @@ class CPA : public QObject
 public:
     explicit CPA(QObject *parent = nullptr);
     CPAResult computeCPA(const Track& a, const Track& b);
+    CPAResult fromCLI(int idTrack1, int idTrack2, CommandContext &ctx);
 signals:
 };
 
