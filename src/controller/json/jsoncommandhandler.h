@@ -16,6 +16,7 @@ class CommandContext;
 class ITransport;
 class LineCommandHandler;
 class TrackCommandHandler;
+class CpaCommandHandler;
 
 class JsonCommandHandler : public QObject
 {
@@ -35,6 +36,7 @@ private:
     CommandContext* m_context;
     std::unique_ptr<TrackCommandHandler> m_trackHandler;
     std::unique_ptr<LineCommandHandler> m_lineHandler;
+    std::unique_ptr<CpaCommandHandler> m_cpaHandler;
     QMap<QString, CommandHandler> m_commandMap;
     
     void initializeCommandMap();

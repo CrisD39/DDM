@@ -44,6 +44,7 @@ HEADERS += \
     src/controller/commands/listcursorscommand.h \
     src/controller/commands/sitrepcommand.h \
     src/controller/dclConcController.h \
+    src/controller/handlers/cpacommandhandler.h \
     src/controller/json/jsoncommandhandler.h \
     src/controller/json/jsonresponsebuilder.h \
     src/controller/json/jsonserializer.h \
@@ -106,6 +107,7 @@ SOURCES += \
     src/controller/commands/listcursorscommand.cpp \
     src/controller/commands/sitrepcommand.cpp \
     src/controller/dclConcController.cpp \
+    src/controller/handlers/cpacommandhandler.cpp \
     src/controller/json/jsoncommandhandler.cpp \
     src/controller/json/jsonresponsebuilder.cpp \
     src/controller/json/jsonserializer.cpp \

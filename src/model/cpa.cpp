@@ -1,8 +1,12 @@
 #include "cpa.h"
 
-CPA::CPA(QObject *parent)
+CPA::CPA(QObject *parent, int index)
     : QObject{parent}
-{}
+{
+    if(index < 10 && index >= 0){
+        cant_calc[index] = {0,0,false};
+    }
+}
 
 CPAResult CPA::computeCPA(const Track& a, const Track& b)
 {

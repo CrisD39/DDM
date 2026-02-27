@@ -14,9 +14,10 @@ class CPA : public QObject
 {
     Q_OBJECT
 public:
-    explicit CPA(QObject *parent = nullptr);
+    explicit CPA(QObject *parent = nullptr, int index);
     CPAResult computeCPA(const Track& a, const Track& b);
     CPAResult fromCLI(int idTrack1, int idTrack2, CommandContext &ctx);
+    CPAResult cant_calc[10];
 signals:
 };
 
