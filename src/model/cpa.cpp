@@ -1,12 +1,9 @@
 #include "cpa.h"
 
-CPA::CPA(QObject *parent, int index)
+std::array<CPA, 10> CPA::m_instances;
+CPA::CPA(QObject *parent)
     : QObject{parent}
-{
-    if(index < 10 && index >= 0){
-        cant_calc[index] = {0,0,false};
-    }
-}
+{}
 
 CPAResult CPA::computeCPA(const Track& a, const Track& b)
 {
@@ -69,10 +66,36 @@ CPAResult CPA::computeCPA(const Track& a, const Track& b)
     double dcpa = std::sqrt(Pcpa.first * Pcpa.first +
                             Pcpa.second * Pcpa.second);
 
+    // Posiciones absolutas en CPA
+    QPair<double,double> Pa_cpa {
+        Pa.first  + Va_vec.first  * tcpa,
+        Pa.second + Va_vec.second * tcpa
+    };
+
+    QPair<double,double> Pb_cpa {
+        Pb.first  + Vb_vec.first  * tcpa,
+        Pb.second + Vb_vec.second * tcpa
+    };
+
+    // Vector desde A hacia B en CPA
+    QPair<double,double> Vec_cpa {
+        Pb_cpa.first  - Pa_cpa.first,
+        Pb_cpa.second - Pa_cpa.second
+    };
+
+    // Azimut (0° Norte, sentido horario)
+    double az = std::atan2(Vec_cpa.first, Vec_cpa.second);
+    double az_deg = qRadiansToDegrees(az);
+
+    if (az_deg < 0)
+        az_deg += 360.0;
+
     qDebug() << "\nRESULTADO CPA:" << tcpa << "-" << dcpa;
 
-    return { tcpa, dcpa, true };
+    return { tcpa, dcpa, az_deg, true };
 }
+
+
 
 CPAResult CPA::fromCLI(int idTrack1, int idTrack2, CommandContext &ctx)
 {
@@ -84,4 +107,21 @@ CPAResult CPA::fromCLI(int idTrack1, int idTrack2, CommandContext &ctx)
     }
 
     return computeCPA(*track1,*track2);
+}
+
+CPAResult CPA::fromJSON(int idTrack1, int idTrack2, CommandContext &ctx)
+{
+    const Track *track1 = ctx.findTrackById(idTrack1);
+    const Track *track2 = ctx.findTrackById(idTrack2);
+
+    if (!track1 || !track2) {
+        return {0,0,false};
+    }
+
+    return computeCPA(*track1,*track2);
+}
+
+CPA &CPA::instance(int index)
+{
+     return m_instances.at(index);
 }

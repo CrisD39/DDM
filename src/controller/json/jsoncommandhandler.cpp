@@ -17,6 +17,8 @@ JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* tran
     
     // Crea un puntero único a LineCommandHandler y se asegura ownership
     m_lineHandler = std::make_unique<LineCommandHandler>(context, transport);
+
+    m_cpaHandler = std::make_unique<CpaCommandHandler>(context);
     
     // Inicializar el mapa de comandos
     initializeCommandMap();
@@ -66,7 +68,7 @@ void JsonCommandHandler::initializeCommandMap()
 
     m_commandMap["cpa_start"] = [this](const QJsonObject& args) {
         return m_cpaHandler->startCPA(args);
-     };
+    };
 
     // Agregar nuevos comandos ACA.
     //URI ACA HAY QUE REMAPEAR PARA EMPEZAR LOS CPA

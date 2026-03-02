@@ -3,12 +3,15 @@
 #include <QJsonObject>
 #include <QByteArray>
 #include <QString>
+#include "cpa.h"
 
 class CpaCommandHandler
 {
 public:
-    CpaCommandHandler();
-    QString startCPA(const QJsonObject& args);
-};
+    CpaCommandHandler(CommandContext* c);
+    QByteArray startCPA(const QJsonObject& args);
 
-#endif // CPACOMMANDHANDLER_H
+private:
+    QByteArray buildStartResponse(int index, CPAResult _cpa);
+    CommandContext* ctx;
+};
