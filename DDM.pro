@@ -14,6 +14,7 @@ INCLUDEPATH += \
     src/controller/json/ \
     src/controller/json/validators/ \
     src/controller/handlers/ \
+    src/controller/services/ \
     src/model/ \
     src/model/decoders/ \
     src/model/sitrep/ \
@@ -47,7 +48,11 @@ HEADERS += \
     src/controller/json/jsoncommandhandler.h \
     src/controller/json/jsonresponsebuilder.h \
     src/controller/json/jsonserializer.h \
-    src/controller/handlers/linecommandhandler.h \
+    src/controller/handlers/cursorcommandhandler.h \
+    src/controller/handlers/geometrycommandhandler.h \
+    src/controller/services/cursorservice.h \
+    src/controller/services/geometryservice.h \
+    src/controller/services/trackservice.h \
     src/controller/handlers/trackcommandhandler.h \
     src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
@@ -109,7 +114,11 @@ SOURCES += \
     src/controller/json/jsoncommandhandler.cpp \
     src/controller/json/jsonresponsebuilder.cpp \
     src/controller/json/jsonserializer.cpp \
-    src/controller/handlers/linecommandhandler.cpp \
+    src/controller/handlers/cursorcommandhandler.cpp \
+    src/controller/handlers/geometrycommandhandler.cpp \
+    src/controller/services/cursorservice.cpp \
+    src/controller/services/geometryservice.cpp \
+    src/controller/services/trackservice.cpp \
     src/controller/handlers/trackcommandhandler.cpp \
     src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \

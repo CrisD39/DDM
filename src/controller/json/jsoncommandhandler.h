@@ -14,7 +14,8 @@
 
 class CommandContext;
 class ITransport;
-class LineCommandHandler;
+class CursorCommandHandler;
+class GeometryCommandHandler;
 class TrackCommandHandler;
 
 class JsonCommandHandler : public QObject
@@ -34,7 +35,8 @@ private:
     ITransport* m_transport;
     CommandContext* m_context;
     std::unique_ptr<TrackCommandHandler> m_trackHandler;
-    std::unique_ptr<LineCommandHandler> m_lineHandler;
+    std::unique_ptr<CursorCommandHandler> m_cursorHandler;
+    std::unique_ptr<GeometryCommandHandler> m_geometryHandler;
     QMap<QString, CommandHandler> m_commandMap;
     
     void initializeCommandMap();

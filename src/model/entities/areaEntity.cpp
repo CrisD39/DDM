@@ -39,7 +39,7 @@ const QString& AreaEntity::getColor() const {
     return color;
 }
 
-const int AreaEntity::getType() const {
+int AreaEntity::getType() const {
     return type;
 }
 

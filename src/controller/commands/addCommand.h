@@ -5,6 +5,8 @@
 
 class AddCommand : public ICommand {
 public:
+    // Este comando se usa para iniciar/crear un track (PPP/SITREP) desde CLI.
+    // El frontend AR-TDC puede disparar la misma logica via JSON create_track.
     QString getName() const override { return "add"; }
     QString getDescription() const override { return "Crea un track (modelo SURFACE TRACKS)."; }
 

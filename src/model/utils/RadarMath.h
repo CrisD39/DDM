@@ -17,6 +17,9 @@ public:
     static qfloat16 calculateAngle(const QPointF& start, const QPointF& end);
     static qfloat16 calculateLength(const QPointF& start, const QPointF& end);
 
+    // Normaliza angulos al rango [0, 360).
+    static double normalizeAngle360(double deg);
+
 private:
     // Helper interno
     static double normalizeDeg360(double deg);

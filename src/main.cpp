@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-  registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
+  registry->registerCommand(QSharedPointer<ICommand>(new AddCursorCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));

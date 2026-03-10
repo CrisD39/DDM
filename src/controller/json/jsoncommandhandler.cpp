@@ -1,5 +1,6 @@
 #include "jsoncommandhandler.h"
-#include "../handlers/linecommandhandler.h"
+#include "../handlers/cursorcommandhandler.h"
+#include "../handlers/geometrycommandhandler.h"
 #include "../handlers/trackcommandhandler.h"
 #include "jsonresponsebuilder.h"
 #include "commandContext.h"
@@ -14,8 +15,9 @@ JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* tran
     Q_ASSERT(m_transport);
     m_context = context;
     
-    // Crea un puntero único a LineCommandHandler y se asegura ownership
-    m_lineHandler = std::make_unique<LineCommandHandler>(context, transport);
+    // Crea un puntero unico a CursorCommandHandler y se asegura ownership
+    m_cursorHandler = std::make_unique<CursorCommandHandler>(context, transport);
+    m_geometryHandler = std::make_unique<GeometryCommandHandler>(context, transport);
     
     // Inicializar el mapa de comandos
     initializeCommandMap();
@@ -56,11 +58,40 @@ void JsonCommandHandler::initializeCommandMap()
 {
     // Registrar comandos de línea
     m_commandMap["create_line"] = [this](const QJsonObject& args) {
-        return m_lineHandler->createLine(args);
+        return m_cursorHandler->createLine(args);
     };
     
     m_commandMap["delete_line"] = [this](const QJsonObject& args) {
-        return m_lineHandler->deleteLine(args);
+        return m_cursorHandler->deleteLine(args);
+    };
+
+    // Registrar comandos de figuras geometricas
+    m_commandMap["create_area"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->createArea(args);
+    };
+
+    m_commandMap["delete_area"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->deleteArea(args);
+    };
+
+    m_commandMap["create_circle"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->createCircle(args);
+    };
+
+    m_commandMap["delete_circle"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->deleteCircle(args);
+    };
+
+    m_commandMap["create_polygon"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->createPolygon(args);
+    };
+
+    m_commandMap["delete_polygon"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->deletePolygon(args);
+    };
+
+    m_commandMap["list_shapes"] = [this](const QJsonObject& args) {
+        return m_geometryHandler->listShapes(args);
     };
 
     // m_commandMap["cpa"] = [this](const QJsonObject& args) {

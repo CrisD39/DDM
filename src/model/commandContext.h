@@ -13,6 +13,7 @@
 #include "network/iTransport.h"
 #include "entities/areaEntity.h"
 #include "entities/circleEntity.h"
+#include "entities/polygonoentity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -48,6 +49,7 @@ struct CommandContext {
 
     std::deque<AreaEntity> areas;
     std::deque<CircleEntity> circles;
+    std::deque<PolygonoEntity> polygons;
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -68,12 +70,19 @@ struct CommandContext {
     inline std::deque<CircleEntity>& getCircles() { return circles; }
     inline const std::deque<CircleEntity>& getCircles() const { return circles; }
 
+    inline std::deque<PolygonoEntity>& getPolygons() { return polygons; }
+    inline const std::deque<PolygonoEntity>& getPolygons() const { return polygons; }
+
     inline void addArea(const AreaEntity& area) {
         areas.push_back(area);
     }
 
     inline void addCircle(const CircleEntity& circle) {
         circles.push_back(circle);
+    }
+
+    inline void addPolygon(const PolygonoEntity& polygon) {
+        polygons.push_back(polygon);
     }
 
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
@@ -178,6 +187,19 @@ struct CommandContext {
                     eraseCursorById(cid);
                 }
                 circles.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline bool deletePolygon(int polygonId) {
+        for (auto it = polygons.begin(); it != polygons.end(); ++it) {
+            if (it->getId() == polygonId) {
+                for (int cid : it->getCursorIds()) {
+                    eraseCursorById(cid);
+                }
+                polygons.erase(it);
                 return true;
             }
         }

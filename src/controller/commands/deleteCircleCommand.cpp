@@ -1,5 +1,5 @@
 #include "deleteCircleCommand.h"
-#include "model/commandContext.h"
+#include "../services/geometryservice.h"
 #include <QString>
 
 CommandResult DeleteCircleCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
@@ -13,7 +13,9 @@ CommandResult DeleteCircleCommand::execute(const CommandInvocation& inv, Command
         return {false, "Error: El ID del círculo debe ser un número entero."};
     }
 
-    if (ctx.deleteCircle(circleId)) {
+    GeometryService geometryService(&ctx);
+    GeometryResult result = geometryService.deleteCircle(circleId);
+    if (result.success) {
         return {true, QString("Círculo %1 eliminado exitosamente.").arg(circleId)};
     } else {
         return {false, QString("Error: No se encontró un círculo con ID %1.").arg(circleId)};

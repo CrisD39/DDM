@@ -1,34 +1,5 @@
 #include "addareacommand.h"
-#include "model/commandContext.h"
-#include <iostream>
-#include <string>
-#include <limits> // Necesario para numeric_limits
-
-#include <sstream> // Necesario para std::stringstream
-
-QPointF AddAreaCommand::requestPoint(const std::string& label) const {
-    std::string input;
-    double x = 0, y = 0;
-
-    // Leer X
-    std::cout << "\n[ENTRADA] Punto " << label << " -> x: ";
-    std::getline(std::cin >> std::ws, input); // 'std::ws' elimina espacios/enters iniciales
-    try {
-        x = std::stod(input);
-    } catch (...) { x = 0; }
-
-    // Leer Y
-    std::cout << "[ENTRADA] Punto " << label << " -> y: ";
-    std::getline(std::cin, input);
-    try {
-        y = std::stod(input);
-    } catch (...) { y = 0; }
-
-    return QPointF(x, y);
-}
-
-#include "addareacommand.h"
-#include "model/commandContext.h"
+#include "../services/geometryservice.h"
 #include <QString>
 #include <vector>
 
@@ -71,21 +42,18 @@ CommandResult AddAreaCommand::execute(const CommandInvocation& inv, CommandConte
         // El color ya es QString (según el error anterior inv.args es vector<QString>)
         QString areaColor = inv.args[9]; 
 
-        // 4. Crear los puntos QPointF
-        QPointF pa(ax, ay);
-        QPointF pb(bx, by);
-        QPointF pc(cx, cy);
-        QPointF pd(dx, dy);
+        GeometryService geometryService(&ctx);
+        GeometryResult result = geometryService.createArea(
+            {QPointF(ax, ay), QPointF(bx, by), QPointF(cx, cy), QPointF(dx, dy)},
+            areaType,
+            areaColor
+        );
 
-        // 5. Crear la entidad usando el contador del contexto
-        // Esto mantiene la arquitectura de tu proyecto CLI
-        AreaEntity area(ctx.commandCounter++, {pa, pb, pc, pd}, areaType, areaColor);
+        if (!result.success) {
+            return {false, QString("Error al crear area: %1").arg(result.message)};
+        }
 
-        // 6. Procesar y guardar
-        area.calculateAndStoreCursors(ctx);
-        ctx.addArea(area);
-
-        return {true, QString("Área %1 creada exitosamente con los argumentos provistos.").arg(area.getId())};
+        return {true, QString("Area %1 creada exitosamente con los argumentos provistos.").arg(result.id)};
 
     } catch (const std::exception& e) {
         return {false, QString("Error al procesar argumentos: %1. Asegúrese de usar números para coordenadas y tipo.").arg(e.what())};

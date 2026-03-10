@@ -1,6 +1,5 @@
 #include "addCircleCommand.h"
-#include "model/commandContext.h"
-#include "model/entities/circleEntity.h"
+#include "../services/geometryservice.h"
 #include <QString>
 #include <iostream>
 #include <vector>
@@ -35,17 +34,13 @@ CommandResult AddCircleCommand::execute(const CommandInvocation& inv, CommandCon
 
         QString color = inv.args[4];
 
-        QPointF center(x, y);
+        GeometryService geometryService(&ctx);
+        GeometryResult result = geometryService.createCircle(QPointF(x, y), radius, type, color);
+        if (!result.success) {
+            return {false, QString("Error al crear circulo: %1").arg(result.message)};
+        }
 
-        // Crear la entidad usando el contador del contexto
-        // CircleEntity no se guarda en el contexto (igual que AreaEntity), sólo se usa para calcular los cursores
-        CircleEntity circle(ctx.commandCounter++, center, radius, type, color);
-
-        // Procesar y guardar cursores
-        circle.calculateAndStoreCursors(ctx);
-        ctx.addCircle(circle);
-
-        return {true, QString("Círculo %1 creado exitosamente en (%2, %3) con radio %4.").arg(circle.getId()).arg(x).arg(y).arg(radius)};
+        return {true, QString("Circulo %1 creado exitosamente en (%2, %3) con radio %4.").arg(result.id).arg(x).arg(y).arg(radius)};
 
     } catch (const std::exception& e) {
         return {false, QString("Error al procesar argumentos: %1").arg(e.what())};

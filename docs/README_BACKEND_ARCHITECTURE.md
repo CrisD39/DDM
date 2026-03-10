@@ -43,7 +43,9 @@ graph TD
 
     HANDLERS[handlers/]
     CTRL --> HANDLERS
-    HANDLERS --> LCH[linecommandhandler.*]
+    HANDLERS --> CCH[cursorcommandhandler.*]
+    HANDLERS --> TCH[trackcommandhandler.*]
+    HANDLERS --> GCH[geometrycommandhandler.*]
 
     COMMANDS[commands/]
     CTRL --> COMMANDS
@@ -133,7 +135,12 @@ Componentes:
 | Clase | Responsabilidad |
 |--------|----------------|
 | JsonCommandHandler | Parseo y dispatch |
-| LineCommandHandler | Lógica de líneas |
+| CursorCommandHandler | Adaptador JSON para line/cursor |
+| TrackCommandHandler | Adaptador JSON para tracks |
+| GeometryCommandHandler | Adaptador JSON para area/circle/polygon |
+| CursorService | Lógica compartida de cursor (CLI+JSON) |
+| TrackService | Lógica compartida de tracks (CLI+JSON) |
+| GeometryService | Lógica compartida de figuras (CLI+JSON) |
 | JsonValidator | Validación |
 | JsonSerializer | Serialización |
 | JsonResponseBuilder | Construcción de respuestas |
@@ -160,31 +167,43 @@ Mapa actual:
 ```cpp
 m_commandMap["create_line"];
 m_commandMap["delete_line"];
+m_commandMap["create_track"];
+m_commandMap["delete_track"];
+m_commandMap["list_tracks"];
+m_commandMap["create_area"];
+m_commandMap["delete_area"];
+m_commandMap["create_circle"];
+m_commandMap["delete_circle"];
+m_commandMap["create_polygon"];
 ```
 
 ---
 
-### 2.2 LineCommandHandler
+### 2.2 Cursor/Track/Geometry Handlers
 
 Ubicación:
 ```
-src/controller/handlers/linecommandhandler.*
+src/controller/handlers/cursorcommandhandler.*
+src/controller/handlers/trackcommandhandler.*
+src/controller/handlers/geometrycommandhandler.*
+src/controller/services/*.cpp
 ```
 
-Métodos:
+Responsabilidad:
 
 ```cpp
+// Handler: parseo + respuesta JSON
 QByteArray createLine(const QJsonObject& args);
-QByteArray deleteLine(const QJsonObject& args);
+
+// Service: lógica de negocio compartida (CLI y JSON)
+CursorOperationResult createCursor(const CursorCreateRequest& request);
 ```
 
-Flujo create_line:
+Flujo refactorizado:
 
-1. Validar azimut (0.0 – 359.9)
-2. Validar length (0.1 – 256.0)
-3. Crear CursorEntity
-4. Serializar
-5. Construir respuesta
+1. Adaptador (CLI/JSON) parsea y valida formato
+2. Service ejecuta reglas de negocio y muta CommandContext
+3. Adaptador construye salida (texto CLI o JSON)
 
 ---
 
@@ -308,7 +327,9 @@ MessageRouter
   ↓
 JsonCommandHandler
   ↓
-LineCommandHandler
+CursorCommandHandler / TrackCommandHandler / GeometryCommandHandler
+  ↓
+Services (CursorService / TrackService / GeometryService)
   ↓
 CommandContext
   ↓
