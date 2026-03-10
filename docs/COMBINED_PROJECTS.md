@@ -8,7 +8,24 @@ Este documento reúne la información esencial de los dos proyectos del workspac
 - Backend: "DesformatConcentrator" / DDM — Qt6 C++17, procesa datos binarios del concentrador (DCL), expone comandos JSON y una consola (stdin) con comandos tipo `sitrep`, `add`, `delete`.
 - Frontend: "tdc-botonera" — QML UI (Botonera / DDM) que envía/recibe JSON vía `ITransport` y muestra el SITREP en pantalla.
 
-El flujo principal: Mensajes entrantes → `MessageRouter` (backend) → Handlers (JSON/binary) → `CommandContext` (estado) → encoder (salida hardware) y JSON responses → frontend.
+El flujo principal: Mensajes entrantes → `MessageRouter` (backend) → adaptadores (handlers JSON / dispatcher CLI) → services de dominio → `CommandContext` (estado) → respuestas JSON + encoder binario hacia hardware.
+
+```mermaid
+flowchart TD
+  QML[tdc-botonera QML] -->|JSON| Router[MessageRouter]
+  DCL[DCL Concentrator] -->|Binario| Router
+  CLI[STDIN Console] --> Dispatcher[CommandDispatcher]
+
+  Router --> JsonH[JsonCommandHandler]
+  JsonH --> Handlers[Cursor/Track/Geometry Handlers]
+  Handlers --> Services[CursorService / TrackService / GeometryService]
+  Dispatcher --> Services
+
+  Services --> Ctx[CommandContext]
+  Ctx --> Resp[JsonResponseBuilder]
+  Resp --> QML
+  Ctx --> Enc[lpdEncoder]
+```
 
 ---
 
@@ -47,17 +64,22 @@ El flujo principal: Mensajes entrantes → `MessageRouter` (backend) → Handler
 
 ### Backend (DDM)
 - MessageRouter (`src/controller/messagerouter.cpp`) decide si el mensaje es JSON (frontend) o binario (DCL) y lo enruta.
-- `JsonCommandHandler` mantiene un `m_commandMap` con comandos como `create_line`, `delete_track`, `list_tracks`.
-- `CommandContext` (header-only) es el estado único compartido: listas de `CursorEntity` y `Track`, centro X/Y, etc.
+- `JsonCommandHandler` mantiene un `m_commandMap` con comandos de cursor, track y geometría (`create_line`, `delete_track`, `create_polygon`, `delete_polygon`, `list_shapes`, etc.).
+- Los handlers (`CursorCommandHandler`, `TrackCommandHandler`, `GeometryCommandHandler`) funcionan como adaptadores de entrada/salida y delegan la lógica de negocio en services.
+- `CommandContext` (header-only) es el estado único compartido: `cursors`, `tracks`, `areas`, `circles`, `polygons`, centro X/Y y contadores de IDs.
 - Decoders/Encoders:
   - `concDecoder` decodifica mensajes binarios del hardware.
   - `lpdEncoder` genera paquetes periódicos hacia hardware (cada 40 ms por timer).
-- CLI: hay `sitrep` y otras utilidades en `src/controller/commands/` que imprimen en formato humano.
+- CLI: comandos en `src/controller/commands/` usan el mismo backend de services que JSON, evitando duplicación.
 
 Referencias clave:
-- [src/main.cpp](DesformatConcentrator/src/main.cpp)
-- [src/controller/messagerouter.cpp](DesformatConcentrator/src/controller/messagerouter.cpp)
-- [src/model/commandContext.h](DesformatConcentrator/src/model/commandContext.h)
+- [src/main.cpp](../src/main.cpp)
+- [src/controller/messagerouter.cpp](../src/controller/messagerouter.cpp)
+- [src/controller/json/jsoncommandhandler.cpp](../src/controller/json/jsoncommandhandler.cpp)
+- [src/controller/services/cursorservice.cpp](../src/controller/services/cursorservice.cpp)
+- [src/controller/services/trackservice.cpp](../src/controller/services/trackservice.cpp)
+- [src/controller/services/geometryservice.cpp](../src/controller/services/geometryservice.cpp)
+- [src/model/commandContext.h](../src/model/commandContext.h)
 
 ### Frontend (Botonera / QML)
 - `DDMController` (C++ QObject) parsea respuestas JSON y expone `tracksList` (QVariantList) a QML.
@@ -72,6 +94,12 @@ Referencias:
 
 ## Formato de mensajes JSON (resumen)
 Comunicación estándar JSON entre backend y frontend:
+
+### Comandos disponibles (backend)
+
+- Cursor: `create_line`, `delete_line`
+- Tracks: `create_track`, `delete_track`, `list_tracks`
+- Geometría: `create_area`, `delete_area`, `create_circle`, `delete_circle`, `create_polygon`, `delete_polygon`, `list_shapes`
 
 Ejemplo base de respuesta:
 ```json
@@ -93,8 +121,9 @@ Campos importantes de un `track` en JSON (backend → frontend):
 - `info`: string (información ampliatoria — se envía desde `addCommand`)
 
 Archivos relevantes:
-- [src/controller/handlers/trackcommandhandler.cpp](DesformatConcentrator/src/controller/handlers/trackcommandhandler.cpp)
-- [src/controller/commands/addCommand.cpp](DesformatConcentrator/src/controller/commands/addCommand.cpp)
+- [src/controller/handlers/trackcommandhandler.cpp](../src/controller/handlers/trackcommandhandler.cpp)
+- [src/controller/handlers/geometrycommandhandler.cpp](../src/controller/handlers/geometrycommandhandler.cpp)
+- [src/controller/commands/addCommand.cpp](../src/controller/commands/addCommand.cpp)
 
 ---
 
@@ -148,6 +177,9 @@ Para desarrollo QML puro, puedes abrir `DDM/` en QtCreator y ejecutar la interfa
   - Añadido filtrado visual y búsqueda en `SitrepWorkspace.qml`.
 - Backend:
   - Normalizado el string de identidad usando `TrackData::toQString(...)` en puntos donde se construye JSON para evitar discrepancias.
+  - Refactor a capa de servicios (`CursorService`, `TrackService`, `GeometryService`) para compartir lógica entre CLI y JSON.
+  - Se agregaron rutas JSON `delete_polygon` y `list_shapes`.
+  - `CommandContext` extendido para manejar `areas`, `circles` y `polygons`.
 
 Archivos modificados (localizados):
 - `tdc-botonera/botonera/src/controller/protocol/ddmcontroller.cpp`
@@ -155,6 +187,9 @@ Archivos modificados (localizados):
 - `tdc-botonera/botonera/DDM/SitrepWorkspace.qml`
 - `DesformatConcentrator/src/controller/handlers/trackcommandhandler.cpp` (ajuste de identity)
 - `DesformatConcentrator/src/controller/commands/addCommand.cpp` (ajuste de identity)
+- `DesformatConcentrator/src/controller/services/cursorservice.cpp`
+- `DesformatConcentrator/src/controller/services/trackservice.cpp`
+- `DesformatConcentrator/src/controller/services/geometryservice.cpp`
 
 ---
 

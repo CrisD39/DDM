@@ -29,9 +29,8 @@ graph TD
     CTRL[controller/]
     SRC --> CTRL
 
-    ROUT[routing/]
-    CTRL --> ROUT
-    ROUT --> MR[messageRouter.*]
+    MR[messageRouter.*]
+    CTRL --> MR
 
     JSON[json/]
     CTRL --> JSON
@@ -46,6 +45,12 @@ graph TD
     HANDLERS --> CCH[cursorcommandhandler.*]
     HANDLERS --> TCH[trackcommandhandler.*]
     HANDLERS --> GCH[geometrycommandhandler.*]
+
+    SERVICES[services/]
+    CTRL --> SERVICES
+    SERVICES --> CS[cursorservice.*]
+    SERVICES --> TS[trackservice.*]
+    SERVICES --> GS[geometryservice.*]
 
     COMMANDS[commands/]
     CTRL --> COMMANDS
@@ -99,7 +104,7 @@ graph TD
 
 Ubicación:
 ```
-src/controller/routing/messageRouter.*
+src/controller/messagerouter.*
 ```
 
 Responsabilidad:
@@ -175,6 +180,8 @@ m_commandMap["delete_area"];
 m_commandMap["create_circle"];
 m_commandMap["delete_circle"];
 m_commandMap["create_polygon"];
+m_commandMap["delete_polygon"];
+m_commandMap["list_shapes"];
 ```
 
 ---
@@ -219,6 +226,9 @@ Contiene:
 ```cpp
 std::deque<CursorEntity> cursors;
 std::deque<Track> tracks;
+std::deque<AreaEntity> areas;
+std::deque<CircleEntity> circles;
+std::deque<PolygonoEntity> polygons;
 
 int nextTrackId;
 int nextCursorId;
@@ -234,6 +244,12 @@ emplaceCursorFront(...)
 eraseCursorById(...)
 findTrackById(...)
 eraseTrackById(...)
+addArea(...)
+deleteAreaById(...)
+addCircle(...)
+deleteCircleById(...)
+addPolygono(...)
+deletePolygonoById(...)
 ```
 
 Es el núcleo del estado del backend.
@@ -383,6 +399,52 @@ ITransport
 }
 ```
 
+### Request de listado de figuras
+
+```json
+{
+  "command": "list_shapes",
+  "args": {}
+}
+```
+
+### Response Success de figuras
+
+```json
+{
+  "status": "success",
+  "command": "list_shapes",
+  "args": {
+    "areas": [],
+    "circles": [],
+    "polygons": []
+  }
+}
+```
+
+### Contratos JSON (resumen operativo)
+
+| Command | Args requeridos | Respuesta success (args) |
+|--------|------------------|--------------------------|
+| `create_line` | `azimut`, `length` | `created_id`, `lines` |
+| `delete_line` | `id` | `deleted_id`, `lines` |
+| `create_track` | `x`, `y` | `created_id`, `tracks` |
+| `delete_track` | `id` | `deleted_id`, `tracks` |
+| `list_tracks` | ninguno | `tracks` |
+| `create_area` | `points` | `created_id`, `areas` |
+| `delete_area` | `id` | `deleted_id`, `areas` |
+| `create_circle` | `x`, `y`, `radius` | `created_id`, `circles` |
+| `delete_circle` | `id` | `deleted_id`, `circles` |
+| `create_polygon` | `points` | `created_id`, `polygons` |
+| `delete_polygon` | `id` | `deleted_id`, `polygons` |
+| `list_shapes` | ninguno | `areas`, `circles`, `polygons` |
+
+Notas:
+
+- Todos los comandos siguen el envelope estándar: `status`, `command`, `args`.
+- Errores de validación usan `status: "error"` con `error_code` y `message`.
+- Para integración de frontend, mantener estables los nombres de `command` y claves de `args`.
+
 ---
 
 ## Principios de Diseño Aplicados
@@ -419,18 +481,14 @@ Dependencias sobre interfaces:
 
 ---
 
-## Cambios recientes (Feb 2026)
+## Cambios recientes (Mar 2026)
 
-- `DDMController` ahora realiza formateo de los objetos `tracks` antes de exponerlos a QML y mantiene campos numéricos auxiliares (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
-- Implementado el invocable `deleteTrack(int)` que construye y emite el JSON `{ "command": "delete_track", "args": {"id": <id>} }` al backend para eliminar tracks; así la UI no manipula el modelo localmente.
-- `SitrepWorkspace.qml` incluye filtros cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y una búsqueda textual; el filtrado es visual y no afecta al `CommandContext`.
-- Se estandarizó la salida `identity` desde backend usando `TrackData::toQString(...)` para mantener coherencia entre CLI y GUI.
-- Fix de compilación en `ddmcontroller`: añadidos `QJsonDocument`, `QJsonObject`, `QVariant` en las includes para resolver errores de tipo incompleto.
-- `DDMController` (frontend bridge) formatea los campos de `tracks` antes de entregarlos a la vista QML (p. ej. `azimut`, `distancia`, `rumbo`, `velocidad`) y conserva versiones numéricas para procesamiento (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
-- Se implementó `deleteTrack(int)` como invokable en `DDMController`; la UI envía `{ "command": "delete_track", "args": {"id": <id>} }` al backend en lugar de mutar el modelo localmente.
-- `SitrepWorkspace.qml` añade filtros cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda; el filtrado es únicamente visual.
-- `identity` ahora se normaliza en el backend con `TrackData::toQString(...)` para evitar discrepancias entre la CLI y la GUI.
-- Fix de compilación: incluidas cabeceras faltantes en `ddmcontroller` para resolver errores de tipo con `QJsonDocument`/`QJsonObject`/`QVariant`.
+- Se consolidó la lógica de negocio en servicios (`CursorService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
+- Se agregaron comandos JSON de geometría faltantes: `delete_polygon` y `list_shapes`.
+- `CommandContext` ahora expone también colecciones y helpers para `areas`, `circles` y `polygons`.
+- Se centralizó normalización angular en `RadarMath::normalizeAngle360` para evitar reglas duplicadas.
+- Se corrigieron errores de compilación por tipos incompletos y firmas inconsistentes en la capa de servicios/entidades.
+- `DDMController` mantiene formateo y campos auxiliares de tracks para QML, y la eliminación de track vía comando JSON `delete_track`.
 
 ## Resumen Final
 
@@ -438,7 +496,8 @@ El backend actual implementa una arquitectura limpia donde:
 
 - MessageRouter detecta
 - JsonCommandHandler enruta
-- Handlers ejecutan lógica
+- Handlers adaptan entrada/salida
+- Services ejecutan reglas de negocio y mutan estado
 - CommandContext mantiene estado
 - JsonResponseBuilder construye respuestas
 - Consola y frontend conviven sin interferir
