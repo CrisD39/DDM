@@ -6,11 +6,31 @@
 #include <QPair>
 #include <QStringView>
 #include <qfloat16.h>
+#include <QJsonArray>
+#include <QJsonObject>
 
 CursorService::CursorService(CommandContext* context)
     : m_context(context)
 {
     Q_ASSERT(m_context);
+}
+
+QJsonArray CursorService::serializeCursors() const
+{
+    QJsonArray out;
+    const auto& cursors = m_context->getCursors();
+    for (const CursorEntity& c : cursors) {
+        QJsonObject obj;
+        obj["id"] = c.getCursorId();
+        obj["type"] = c.getLineType();
+        obj["angle"] = double(c.getCursorAngle());
+        obj["length"] = double(c.getCursorLength());
+        obj["x"] = double(c.getCoordinates().first);
+        obj["y"] = double(c.getCoordinates().second);
+        obj["active"] = c.isActive();
+        out.append(obj);
+    }
+    return out;
 }
 
 CursorOperationResult CursorService::createCursor(const CursorCreateRequest& request)

@@ -1,4 +1,5 @@
 #include "Commands/sitrepCommand.h"
+#include "../services/sitrepservice.h"
 
 #include <QThread>
 #include <QTextStream>
@@ -109,7 +110,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
     const QString sub = args.isEmpty() ? "list" : args[0].toLower();
 
     if (sub == "list") {
-        const std::deque<Track> snap = ctx.getTracks();
+        SitrepService ss(&ctx);
+        const std::deque<Track> snap = ss.snapshot();
         QString outMsg;
         QTextStream oss(&outMsg);
         static constexpr int REFRESH_MS = 2000;
@@ -120,7 +122,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
     if (sub == "watch") {
         static constexpr int REFRESH_MS = 2000;
         while (true) {
-            const std::deque<Track> snap = ctx.getTracks();
+            SitrepService ss(&ctx);
+            const std::deque<Track> snap = ss.snapshot();
             clearScreen(ctx.out);
             printSitrep(ctx.out, snap, REFRESH_MS, /*showCtrlC*/true);
             QThread::msleep(REFRESH_MS);
@@ -135,11 +138,11 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         const int id = args[1].toInt(&ok);
         if (!ok) return { false, "trackId invalido: " + args[1] };
 
-        const bool erased = ctx.eraseTrackById(id);
+        SitrepService ss(&ctx);
+        const bool erased = ss.deleteTrackById(id);
         if (!erased) return { false, QString("No existe track con id=%1").arg(id) };
 
-        // compat viejo (si existe)
-        ctx.sitrepExtra.erase(id);
+        // compat viejo (si existe) - ya limpiado por SitrepService::deleteTrackById
         return { true, QString("OK delete → id=%1").arg(id) };
     }
 
@@ -150,7 +153,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         const int id = args[1].toInt(&ok);
         if (!ok) return { false, "trackId invalido: " + args[1] };
 
-        Track* t = ctx.findTrackById(id);
+        SitrepService ss(&ctx);
+        Track* t = ss.findTrackById(id);
         if (!t) return { false, QString("No existe track con id=%1").arg(id) };
 
         QString text = args[2];
@@ -163,7 +167,7 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         t->setInformacionAmpliatoria(text);
 
         // Compat: mantenemos el map viejo por si alguna otra parte lo usa
-        ctx.setSitrepInfo(id, text);
+        ss.setSitrepInfo(id, text);
 
         return { true, QString("OK sitrep info → id=%1").arg(id) };
     }

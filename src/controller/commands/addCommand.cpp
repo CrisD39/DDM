@@ -2,10 +2,6 @@
 #include "enums.h"
 #include "../services/trackservice.h"
 #include "model/utils/RadarMath.h"
-#include "../json/jsonresponsebuilder.h"
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
 
 #include <cmath>
 #include <limits>
@@ -338,26 +334,9 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     if (!t) {
         return {false, "No se pudo recuperar el track recien creado"};
     }
-    // Notificar al frontend vía transport si está disponible
-    if (ctx.transport) {
-        // Helper: translate identity using TrackData helpers (keeps enum mapping correct)
-        auto identityToString = [](const Track& tr) -> QString {
-            return TrackData::toQString(tr.getIdentity());
-        };
-        
-        QJsonObject argsObj;
-        argsObj["created_id"] = QString::number(t->getId());
-
-        argsObj["tracks"] = trackService.serializeTracks();
-
-        QJsonObject response;
-        response["status"] = "success";
-        response["command"] = "create_track";
-        response["args"] = argsObj;
-
-        QJsonDocument doc(response);
-        ctx.transport->send(doc.toJson(QJsonDocument::Compact));
-    }
+    // NOTE: CLI command must not perform JSON transport operations.
+    // Notification to frontend is handled by the JSON handlers (TrackCommandHandler) or by
+    // services/handlers responsible for protocol serialization.
 
     return {
         true,

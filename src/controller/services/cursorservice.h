@@ -27,6 +27,8 @@ public:
     CursorOperationResult createCursor(const CursorCreateRequest& request);
     CursorOperationResult deleteCursorById(int cursorId);
 
+    QJsonArray serializeCursors() const;
+
     static QString lineIdFromCursorId(int cursorId);
     static int cursorIdFromLineId(const QString& lineId, bool* ok = nullptr);
 

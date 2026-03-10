@@ -10,11 +10,9 @@
 CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
 
-    const auto& tracks = ctx.getTracks();
-    if (tracks.empty()) return {true, "(sin tracks)"};
-
     TrackService trackService(&ctx);
     const QJsonArray serializedTracks = trackService.serializeTracks();
+    if (serializedTracks.isEmpty()) return {true, "(sin tracks)"};
 
     QString out;
     out += "ID  | TYPE     | IDENT |      X   |      Y\n";
