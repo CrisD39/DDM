@@ -1,0 +1,27 @@
+name: testing DDM
+
+on:
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Descargar codigo
+      uses: actions/checkout@v4
+
+    - name: Instalar Qt y herramientas de C++
+      uses: jurplel/install-qt-action@v3 #pide descargar todo lo necesario para entender archivos .pro
+      with:
+        version: '6.5.*' #version estable de qt
+
+    - name: Crear carpeta de compilacion
+      run: mkdir build
+
+    - name: Ejecutar qmake
+      run: qmake DDM.pro -o build/Makefile #lee DDM.pro y prepara todo para la compilacion
+
+    - name: Compilar (Make)
+      run: make -C build #genera el programa
