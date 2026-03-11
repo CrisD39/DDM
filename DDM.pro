@@ -98,7 +98,7 @@ SOURCES += \
     src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
-    src/controller/commands/deleteAreaCommand.cpp \
+    src/controller/commands/deleteAreacommand.cpp \
     src/controller/commands/deleteCircleCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
