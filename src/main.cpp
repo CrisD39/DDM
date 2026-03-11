@@ -17,7 +17,7 @@
 #endif
 #include <stdinreader.h>
 
-#include "CommandDispatcher.h"
+#include "commandDispatcher.h"
 #include "QTimer"
 #include "addCommand.h"
 #include "addCursor.h"
@@ -33,7 +33,7 @@
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
 
-#include "addAreaCommand.h"
+#include "addareacommand.h"
 #include "addpolygonocommand.h"
 #include "addCircleCommand.h"
 #include "deleteAreaCommand.h"
