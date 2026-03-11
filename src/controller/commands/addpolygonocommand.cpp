@@ -1,6 +1,6 @@
 #include "addpolygonocommand.h"
 #include "model/commandContext.h"
-#include "model/entities/polygonoEntity.h"
+#include "model/entities/polygonoentity.h"
 #include <iostream>
 #include <vector>
 #include <QString>
