@@ -1,7 +1,7 @@
 /*
     Comando `list`/`ls`: imprime tabla con `id`, `type`, `ident`, `x`, `y` de los tracks existentes.
 */
-#include "Commands/listCommand.h"
+#include "listCommand.h"
 #include "enums.h"         // Q_NAMESPACE + enum class Type {...}
 
 CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {

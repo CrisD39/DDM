@@ -1,4 +1,4 @@
-#include "Commands/sitrepCommand.h"
+#include "sitrepCommand.h"
 
 #include <QThread>
 #include <QTextStream>
