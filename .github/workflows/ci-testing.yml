@@ -13,17 +13,25 @@ jobs:
     steps:
     - name: Descargar codigo
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Baja todo el historial para evitar el error 128 de Git
 
     - name: Instalar Qt y herramientas de C++
       uses: jurplel/install-qt-action@v3 #pide descargar todo lo necesario para entender archivos .pro
       with:
         version: '6.5.*' #version estable de qt
+        host: 'linux'
+        target: 'desktop'
 
     - name: Crear carpeta de compilacion
       run: mkdir build
 
     - name: Ejecutar qmake
-      run: qmake DDM.pro -o build/Makefile #lee DDM.pro y prepara todo para la compilacion
+      #lee DDM.pro y prepara todo para la compilacion
+      #usamos find para que el robot encuentre el .pro donde sea que este
+      run: |
+        PRO_FILE=$(find . -name "DDM.pro" | head -n 1)
+        qmake $PRO_FILE -o build/Makefile
 
     - name: Compilar (Make)
       run: make -C build #genera el programa
