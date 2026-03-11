@@ -17,7 +17,7 @@
 #endif
 #include <stdinreader.h>
 
-#include "commandDispatcher.h"
+#include "commanddispatcher.h"
 #include "QTimer"
 #include "addCommand.h"
 #include "addCursor.h"
