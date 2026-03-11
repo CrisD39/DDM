@@ -1,4 +1,4 @@
-#include "Commands/addCommand.h"
+#include "addCommand.h"
 #include "enums.h"
 #include "../json/jsonresponsebuilder.h"
 #include <QJsonObject>
