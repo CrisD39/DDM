@@ -2,7 +2,7 @@
     Comando `center`: fija `ctx.centerX/centerY` con `<x> <y>` validando formatos numéricos.
 */
 
-#include "Commands/centerCommand.h"
+#include "centerCommand.h"
 
 static bool takeNumber(const QString& s, double& out) {
     bool ok=false; double v = s.toDouble(&ok);
