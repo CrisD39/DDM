@@ -1,4 +1,4 @@
-name: Validacion Qt Windows
+name: CI Multiplataforma (Tritón)
 
 on:
   push:
@@ -7,30 +7,44 @@ on:
     branches: [ develop ]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    name: Compilar en ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # Para que si uno falla, el otro siga corriendo
+      matrix:
+        os: [ubuntu-latest, windows-latest] # Para que corra en ambos sistemas operativos
 
     steps:
     - name: Descargar codigo
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Instalar Qt
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.*'
-        host: 'windows'
+        # COndiciones para instalar
+        host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: 'desktop'
-        arch: 'win64_msvc2019_64'
+        arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2019_64' || '' }}
 
-    - name: Configurar MSVC (Compilador de Windows)
+    # --- PASOS ESPECÍFICOS PARA WINDOWS ---
+    - name: Configurar MSVC (Solo Windows)
+      if: matrix.os == 'windows-latest'
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Ejecutar qmake
+    - name: Compilar en Windows
+      if: matrix.os == 'windows-latest'
       shell: cmd
-      run: qmake DDM.pro -spec win32-msvc # <--- Directo al archivo, sin vueltas
+      run: |
+        qmake DDM.pro -spec win32-msvc
+        nmake
 
-    - name: Compilar
-      shell: cmd
-      run: nmake
+    # --- PASOS ESPECÍFICOS PARA LINUX ---
+    - name: Compilar en Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir build
+        cd build
+        qmake ../DDM.pro
+        make
