@@ -1,4 +1,4 @@
-name: CI Multiplataforma (Tritón)
+name: Tests para DDM
 
 on:
   push:
@@ -22,12 +22,14 @@ jobs:
     - name: Instalar Qt
       uses: jurplel/install-qt-action@v3
       with:
-        version: '6.5.*'
-        # COndiciones para instalar
+        version: '6.5.*' #version estable de qt
+        # Condiciones para instalar
         host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
         target: 'desktop'
         arch: ${{ matrix.os == 'windows-latest' && 'win64_msvc2019_64' || '' }}
 
+  #el make lee DDM.pro y prepara todo para la compilacion
+  
     # --- PASOS ESPECÍFICOS PARA WINDOWS ---
     - name: Configurar MSVC (Solo Windows)
       if: matrix.os == 'windows-latest'
