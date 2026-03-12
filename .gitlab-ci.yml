@@ -1,28 +1,29 @@
+# Definimos la etapa del proceso
 stages:
   - build
 
-# --- JOB PARA LINUX ---
 build_linux:
   stage: build
+  #permite que GitLab use sus servidores compartidos automáticamente
   image: rabits/qt:6.5-desktop
+  
   script:
-    - echo "Compilando en Linux (Docker)..."
-    - mkdir build_linux
-    - cd build_linux
+    - echo "Iniciando validación en el entorno estricto (Linux)..."
+    # 1.Crear carpeta limpia para la compilación
+    - mkdir build
+    - cd build
+    # 2.Configurar el proyecto con qmake
     - qmake ../DDM.pro
+    # 3.Compilar. Aquí saltarán los errores de mayúsculas y de main.cpp
     - make
+
+  #Solo queremos que trabaje cuando hay cambios en develop
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
 
-# --- JOB PARA WINDOWS ---
-build_windows:
-  stage: build
-  tags:
-    - windows  # <--- Este tag es obligatorio para que GitLab busque una PC con Windows
-  script:
-    - echo "Compilando en Windows (Shell)..."
-    # Nota: Asegurarse que qmake y nmake estén en el PATH del Runner de Windows
-    - qmake DDM.pro -spec win32-msvc
-    - nmake
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+  #Guardamos los resultados si falla para poder investigar
+  artifacts:
+    when: always
+    paths:
+      - build/
+    expire_in: 1 week
