@@ -1,37 +1,37 @@
-name: testing DDM
+name: Validacion Qt Windows
 
 on:
   push:
-    branches: [ develop ]  # <-- Agregamos esto
+    branches: [ develop ]
   pull_request:
-    branches: [ develop, main ]
+    branches: [ develop ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
     - name: Descargar codigo
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Baja todo el historial para evitar el error 128 de Git
+        fetch-depth: 0
 
-    - name: Instalar Qt y herramientas de C++
-      uses: jurplel/install-qt-action@v3 #pide descargar todo lo necesario para entender archivos .pro
+    - name: Instalar Qt
+      uses: jurplel/install-qt-action@v3
       with:
-        version: '6.5.*' #version estable de qt
+        version: '6.5.*'
         host: 'windows'
         target: 'desktop'
+        arch: 'win64_msvc2019_64' # Esto es lo estándar para Windows
 
-    - name: Crear carpeta de compilacion
-      run: mkdir build
+    - name: Configurar MSVC (Compilador de Windows)
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Ejecutar qmake
-      #lee DDM.pro y prepara todo para la compilacion
-      #usamos find para que el robot encuentre el .pro donde sea que este
+      shell: cmd
       run: |
-        PRO_FILE=$(find . -name "DDM.pro" | head -n 1)
-        qmake $PRO_FILE -o build/Makefile
+        for /r %%i in (DDM.pro) do qmake "%%i" -spec win32-msvc
 
-    - name: Compilar (Make)
-      run: make -C build #genera el programa
+    - name: Compilar
+      shell: cmd
+      run: nmake
