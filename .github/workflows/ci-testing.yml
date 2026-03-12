@@ -22,15 +22,14 @@ jobs:
         version: '6.5.*'
         host: 'windows'
         target: 'desktop'
-        arch: 'win64_msvc2019_64' # Esto es lo estándar para Windows
+        arch: 'win64_msvc2019_64'
 
     - name: Configurar MSVC (Compilador de Windows)
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Ejecutar qmake
       shell: cmd
-      run: |
-        for /r %%i in (DDM.pro) do qmake "%%i" -spec win32-msvc
+      run: qmake DDM.pro -spec win32-msvc # <--- Directo al archivo, sin vueltas
 
     - name: Compilar
       shell: cmd
