@@ -20,7 +20,7 @@ jobs:
       uses: jurplel/install-qt-action@v3 #pide descargar todo lo necesario para entender archivos .pro
       with:
         version: '6.5.*' #version estable de qt
-        host: 'linux'
+        host: 'windows'
         target: 'desktop'
 
     - name: Crear carpeta de compilacion
