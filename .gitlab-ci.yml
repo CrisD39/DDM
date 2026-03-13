@@ -6,7 +6,8 @@ build_linux:
   stage: build
   #permite que GitLab use sus servidores compartidos automáticamente
   image: rabits/qt:6.5-desktop
-  
+  tags:
+    - infra
   script:
     - echo "Iniciando validación en el entorno estricto (Linux)..."
     # 1.Crear carpeta limpia para la compilación
