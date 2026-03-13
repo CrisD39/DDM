@@ -1,30 +1,35 @@
-# Definimos la etapa del proceso
 stages:
   - build
 
+# --- TAREA PARA TU PC (WINDOWS) ---
+# Se activa cuando subís cambios y tu Runner está en "run"
+build_windows:
+  stage: build
+  tags:
+    - ddm-test-pc  # El tag que le pusiste a tu Runner en la terminal
+  script:
+    - echo "Compilando para Windows en la PC de Maria..."
+    # 1. Configuramos el entorno para que encuentre qmake (ajusta la versión si bajaste otra)
+    - $env:Path += ";C:\Qt\6.5.3\msvc2022_64\bin" 
+    # 2. Generamos el Makefile
+    - qmake DDM.pro -spec win32-msvc
+    # 3. Compilamos (nmake es el comando de Visual Studio)
+    - nmake
+  artifacts:
+    paths:
+      - release/DDM.exe  # Para que puedas descargar el programa terminado desde GitLab
+
+# --- TAREA PARA EL SERVIDOR DE LA ARMADA (LINUX) ---
+# Esta tarea la va a buscar el runner "infra"
 build_linux:
   stage: build
-  #permite que GitLab use sus servidores compartidos automáticamente
   image: rabits/qt:6.5-desktop
   tags:
-    - infra
+    - infra  # Buscamos al servidor de la Armada
   script:
-    - echo "Iniciando validación en el entorno estricto (Linux)..."
-    # 1.Crear carpeta limpia para la compilación
-    - mkdir build
-    - cd build
-    # 2.Configurar el proyecto con qmake
-    - qmake ../DDM.pro
-    # 3.Compilar. Aquí saltarán los errores de mayúsculas y de main.cpp
+    - echo "Compilando para Linux en el servidor INFRA..."
+    - qmake DDM.pro
     - make
-
-  #Solo queremos que trabaje cuando hay cambios en develop
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
-
-  #Guardamos los resultados si falla para poder investigar
   artifacts:
-    when: always
     paths:
-      - build/
-    expire_in: 1 week
+      - DDM  # El ejecutable de Linux
