@@ -10,7 +10,7 @@ build_windows:
   script:
     - echo "Compilando para Windows en la PC de Maria..."
     # 1. Configuramos el entorno para que encuentre qmake (ajusta la versión si bajaste otra)
-    - set "PATH=%PATH%;C:\Qt\6.5.3\msvc2019_64\bin" 
+    - $env:Path += ";C:\Qt\6.5.3\msvc2019_64\bin" 
     # 2. Generamos el Makefile
     - qmake DDM.pro -spec win32-msvc
     # 3. Compilamos (nmake es el comando de Visual Studio)
