@@ -19,19 +19,13 @@ build_windows:
 # Esta tarea la va a buscar el runner "infra"
 build_linux:
   stage: build
-  # Usamos una imagen oficial y limpia de Ubuntu
-  image: ubuntu:22.04
+  image: rabits/qt:6.5-desktop
   tags:
-    - ddm-linux-local
-  before_script:
-    # Le decimos a la maquinita Linux que instale Qt6 y los compiladores (C++)
-    - apt-get update -y
-    - apt-get install -y qt6-base-dev qt6-tools-dev build-essential
+    - infra  # Buscamos al servidor de la Armada
   script:
-    - echo "Compilando para Linux con Ubuntu en la PC de Maria..."
-    # En Ubuntu, qmake para la versión 6 se llama qmake6
-    - qmake6 DDM.pro
+    - echo "Compilando para Linux en el servidor INFRA..."
+    - qmake DDM.pro
     - make
   artifacts:
     paths:
-      - DDM
+      - DDM  # El ejecutable de Linux
