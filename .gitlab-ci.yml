@@ -1,6 +1,6 @@
 stages:
   - build
-
+# Forzando actualizacion del pipeline
 # --- TAREA PARA TU PC (WINDOWS) ---
 # Se activa cuando subís cambios y tu Runner está en "run"
 build_windows:
