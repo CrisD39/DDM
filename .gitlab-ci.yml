@@ -28,4 +28,4 @@ build_linux:
     - make
   artifacts:
     paths:
-      - DDM  # El ejecutable de Linux
+      - release/DDM.exe  # El ejecutable de Linux
