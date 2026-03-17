@@ -5,19 +5,16 @@ stages:
 build_windows:
   stage: build
   tags:
-    - ddm-test-pc  # El tag que le pusiste a tu Runner en la terminal
+    - ddm-test-pc
   script:
     - echo "Compilando para Windows en la PC de Maria..."
-    # 1. Configuramos el entorno para que encuentre qmake (ajusta la versión si bajaste otra)
+    # 1. Agregamos Qt al Path para que reconozca qmake
     - $env:Path += ";C:\Qt\6.5.3\msvc2019_64\bin" 
-    # 2. Generamos el Makefile
-    - qmake DDM.pro -spec win32-msvc
-    # 3. Compilamos (nmake es el comando de Visual Studio)
-    - nmake
+    # 2. Despertamos al compilador de Visual Studio y compilamos en un solo paso
+    - cmd.exe /c '"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" && qmake DDM.pro -spec win32-msvc && nmake'
   artifacts:
     paths:
-      - release/DDM.exe  # Para que puedas descargar el programa terminado desde GitLab
-
+      - release/DDM.exe
 # --- TAREA PARA EL SERVIDOR DE LA ARMADA (LINUX) ---
 # Esta tarea la va a buscar el runner "infra"
 build_linux:
