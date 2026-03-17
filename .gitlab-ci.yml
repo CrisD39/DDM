@@ -23,7 +23,6 @@ build_linux:
   image: ubuntu:22.04
   tags:
     - ddm-linux-local
-    - infra
   before_script:
     # Le decimos a la maquinita Linux que instale Qt6 y los compiladores (C++)
     - apt-get update -y
