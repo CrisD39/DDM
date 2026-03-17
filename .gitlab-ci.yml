@@ -21,11 +21,11 @@ build_linux:
   stage: build
   image: rabits/qt:6.5-desktop
   tags:
-    - infra  # Buscamos al servidor de la Armada
+    - ddm-linux-local  # Ahora llama a tu nuevo Runner de Docker
   script:
-    - echo "Compilando para Linux en el servidor INFRA..."
+    - echo "Compilando para Linux con Docker en la PC de Maria..."
     - qmake DDM.pro
     - make
   artifacts:
     paths:
-      - DDM  # El ejecutable de Linux
+      - DDM
