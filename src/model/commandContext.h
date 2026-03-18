@@ -43,6 +43,21 @@ struct CommandContext {
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
 
+    struct OwnShipState {
+        double xDm = 0.0;
+        double yDm = 0.0;
+        double latitudeDeg = 0.0;
+        double longitudeDeg = 0.0;
+        double speedKnots = 0.0;
+        double courseDeg = 0.0;
+        QString timeUtc = QStringLiteral("00:00:00");
+        QString dateUtc = QStringLiteral("1970-01-01");
+        QString source = QStringLiteral("unknown");
+        bool valid = false;
+    };
+
+    OwnShipState ownShip;
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;

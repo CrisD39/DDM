@@ -38,6 +38,7 @@ HEADERS += \
     src/controller/commands/deleteAreaCommand.h \
     src/controller/commands/deleteCircleCommand.h \
     src/controller/commands/cpaCommand.h \
+    src/controller/commands/ownshipcommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
     src/controller/commands/iCommand.h \
@@ -49,6 +50,7 @@ HEADERS += \
     src/controller/json/jsonresponsebuilder.h \
     src/controller/json/jsonserializer.h \
     src/controller/handlers/cursorcommandhandler.h \
+    src/controller/handlers/ownshipcommandhandler.h \
     src/controller/services/centerservice.h \
     src/controller/handlers/geometrycommandhandler.h \
     src/controller/services/cursorservice.h \
@@ -56,6 +58,7 @@ HEADERS += \
     src/controller/services/sitrepservice.h \
     src/controller/services/trackservice.h \
     src/controller/services/cpaservice.h \
+    src/controller/services/ownshipservice.h \
     src/controller/services/obmservice.h \
     src/controller/services/queryservice.h \
     src/controller/handlers/trackcommandhandler.h \
@@ -108,6 +111,7 @@ SOURCES += \
     src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
+    src/controller/commands/ownshipcommand.cpp \
     src/controller/services/centerservice.cpp \
     src/controller/commands/deleteAreaCommand.cpp \
     src/controller/commands/deleteCircleCommand.cpp \
@@ -121,12 +125,14 @@ SOURCES += \
     src/controller/json/jsonresponsebuilder.cpp \
     src/controller/json/jsonserializer.cpp \
     src/controller/handlers/cursorcommandhandler.cpp \
+    src/controller/handlers/ownshipcommandhandler.cpp \
     src/controller/handlers/geometrycommandhandler.cpp \
     src/controller/services/cursorservice.cpp \
     src/controller/services/geometryservice.cpp \
     src/controller/services/sitrepservice.cpp \
     src/controller/services/trackservice.cpp \
     src/controller/services/cpaservice.cpp \
+    src/controller/services/ownshipservice.cpp \
     src/controller/services/obmservice.cpp \
     src/controller/services/queryservice.cpp \
     src/controller/handlers/trackcommandhandler.cpp \

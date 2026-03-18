@@ -1,6 +1,7 @@
 #include "jsoncommandhandler.h"
 #include "../handlers/cursorcommandhandler.h"
 #include "../handlers/geometrycommandhandler.h"
+#include "../handlers/ownshipcommandhandler.h"
 #include "../handlers/trackcommandhandler.h"
 #include "../services/obmservice.h"
 #include "jsonresponsebuilder.h"
@@ -108,6 +109,7 @@ void JsonCommandHandler::initializeCommandMap()
     //URI ACA HAY QUE REMAPEAR PARA EMPEZAR LOS CPA
     // Registrar TrackCommandHandler y mapear comandos relacionados
     m_trackHandler = std::make_unique<TrackCommandHandler>(m_context, m_transport);
+    m_ownShipHandler = std::make_unique<OwnShipCommandHandler>(m_context);
 
     m_commandMap["create_track"] = [this](const QJsonObject& args) {
         return m_trackHandler->createTrack(args);
@@ -119,6 +121,10 @@ void JsonCommandHandler::initializeCommandMap()
 
     m_commandMap["list_tracks"] = [this](const QJsonObject& args) {
         return m_trackHandler->listTracks(args);
+    };
+
+    m_commandMap["ownship_update"] = [this](const QJsonObject& args) {
+        return m_ownShipHandler->updateOwnShip(args);
     };
 }
 

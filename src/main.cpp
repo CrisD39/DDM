@@ -33,6 +33,7 @@
 #include "listcursorscommand.h"
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
+#include "ownshipcommand.h"
 
 #include "addAreaCommand.h"
 #include "addpolygonocommand.h"
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]) {
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CpaCommand()));
+  registry->registerCommand(QSharedPointer<ICommand>(new OwnShipCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddAreaCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddPolygonoCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddCircleCommand()));

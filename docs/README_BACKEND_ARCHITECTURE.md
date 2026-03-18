@@ -185,7 +185,14 @@ m_commandMap["delete_circle"];
 m_commandMap["create_polygon"];
 m_commandMap["delete_polygon"];
 m_commandMap["list_shapes"];
+m_commandMap["ownship_update"];
 ```
+
+Comando `ownship_update`:
+
+- Recibe estado de buque propio desde AR-TDC via JSON.
+- Delega en `OwnShipCommandHandler` + `OwnShipService`.
+- Persiste en `CommandContext::ownShip`.
 
 ---
 
@@ -256,6 +263,35 @@ deletePolygonoById(...)
 ```
 
 Es el núcleo del estado del backend.
+
+Además incluye estado de buque propio:
+
+```cpp
+OwnShipState ownShip;
+```
+
+Campos relevantes de `OwnShipState`:
+
+- `xDm`, `yDm`
+- `latitudeDeg`, `longitudeDeg`
+- `courseDeg`, `speedKnots`
+- `timeUtc`, `dateUtc`, `source`, `valid`
+
+---
+
+## 4️⃣ Comandos CLI de OwnShip
+
+Comando:
+
+```text
+ownship [show]
+ownship set <course_deg> <speed_knots> [source]
+```
+
+Implementación:
+
+- `src/controller/commands/ownshipcommand.*`
+- Usa `OwnShipService` para que CLI y JSON compartan validaciones y persistencia.
 
 ---
 

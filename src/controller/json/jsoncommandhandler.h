@@ -17,6 +17,7 @@ class ITransport;
 class CursorCommandHandler;
 class GeometryCommandHandler;
 class TrackCommandHandler;
+class OwnShipCommandHandler;
 class ObmService;
 
 class JsonCommandHandler : public QObject
@@ -37,6 +38,7 @@ private:
     CommandContext* m_context;
     ObmService* m_obmService;
     std::unique_ptr<TrackCommandHandler> m_trackHandler;
+    std::unique_ptr<OwnShipCommandHandler> m_ownShipHandler;
     std::unique_ptr<CursorCommandHandler> m_cursorHandler;
     std::unique_ptr<GeometryCommandHandler> m_geometryHandler;
     QMap<QString, CommandHandler> m_commandMap;
