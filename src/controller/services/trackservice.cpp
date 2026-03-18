@@ -44,7 +44,8 @@ TrackOperationResult TrackService::createTrack(const TrackCreateRequest& request
         static_cast<float>(request.x),
         static_cast<float>(request.y),
         request.ctorSpeedKnots,
-        request.ctorCourseDeg
+        request.ctorCourseDeg,
+        request.creationEnvironment.value_or(request.type)
     );
 
     if (request.speedDmPerHour.has_value()) track.setVelocidadDmPerHour(request.speedDmPerHour.value());
@@ -75,6 +76,12 @@ TrackOperationResult TrackService::deleteTrackById(int trackId)
     return {true, QString(), QString(), trackId};
 }
 
+Track* TrackService::findTrackById(int trackId) const
+{
+    if (!m_context) return nullptr;
+    return m_context->findTrackById(trackId);
+}
+
 QJsonArray TrackService::serializeTracks() const
 {
     auto identityToString = [](const Track& t) -> QString {
@@ -86,6 +93,9 @@ QJsonArray TrackService::serializeTracks() const
         QJsonObject trackObj;
         trackObj["id"] = tr.getId();
         trackObj["type"] = TrackData::toQString(tr.getType());
+        trackObj["type_bits"] = TrackData::typeBits(tr.getType());
+        trackObj["creation_environment"] = TrackData::toQString(tr.getCreationEnvironment());
+        trackObj["creation_environment_bits"] = TrackData::typeBits(tr.getCreationEnvironment());
         trackObj["identity"] = identityToString(tr);
         trackObj["azimut"] = tr.getAzimuthDeg();
         trackObj["distancia"] = tr.getDistanceDm();

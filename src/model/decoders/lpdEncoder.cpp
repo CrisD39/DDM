@@ -4,6 +4,86 @@
 #include <QtEndian>
 #include <QtGlobal>
 
+namespace {
+
+enum class SymbolFamily {
+    Surface,
+    Air,
+    Subsurface,
+};
+
+SymbolFamily symbolFamilyForType(Type type)
+{
+    switch (type) {
+    case Type::ASW:
+        return SymbolFamily::Subsurface;
+    case Type::HECO:
+    case Type::APC:
+    case Type::AAW:
+        return SymbolFamily::Air;
+    case Type::SPC:
+    case Type::LINCO:
+    case Type::OPS:
+    case Type::EW:
+    default:
+        return SymbolFamily::Surface;
+    }
+}
+
+QPair<uint8_t, uint8_t> symbolBytesFor(Identity identity, SymbolFamily family)
+{
+    switch (identity) {
+    case Identity::Pending:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1D, 0x60};
+        case SymbolFamily::Air:        return {0x01, 0x60};
+        case SymbolFamily::Subsurface: return {0x1A, 0x60};
+        }
+        break;
+    case Identity::PossFriend:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1D, 0x64};
+        case SymbolFamily::Air:        return {0x01, 0x64};
+        case SymbolFamily::Subsurface: return {0x1A, 0x64};
+        }
+        break;
+    case Identity::PossHostile:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1D, 0x7C};
+        case SymbolFamily::Air:        return {0x01, 0x7C};
+        case SymbolFamily::Subsurface: return {0x1A, 0x7C};
+        }
+        break;
+    case Identity::ConfFriend:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1E, 0x00};
+        case SymbolFamily::Air:        return {0x02, 0x00};
+        case SymbolFamily::Subsurface: return {0x1A, 0x00};
+        }
+        break;
+    case Identity::ConfHostile:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1F, 0x00};
+        case SymbolFamily::Air:        return {0x03, 0x00};
+        case SymbolFamily::Subsurface: return {0x1B, 0x00};
+        }
+        break;
+    case Identity::EvalUnknown:
+        switch (family) {
+        case SymbolFamily::Surface:    return {0x1D, 0x00};
+        case SymbolFamily::Air:        return {0x01, 0x00};
+        case SymbolFamily::Subsurface: return {0x19, 0x00};
+        }
+        break;
+    case Identity::Heli:
+        return {0x0A, 0x00};
+    }
+
+    return {0x1D, 0xE0};
+}
+
+} // namespace
+
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     QByteArray bigBuffer;
 
@@ -41,67 +121,7 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
 
 QPair<uint8_t, uint8_t> encoderLPD::symbolFor(const Track& track) const
 {
-    const Type t = track.getType();
-    const Identity id = track.getIdentity();
-
-    static const QHash<Identity, QHash<Type, QPair<uint8_t,uint8_t>>> LUT = {
-        {
-            Identity::Pending, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1D, 0x60} },
-                { Type::Air,         {0x01, 0x60} },
-                { Type::Subsurface,  {0x1A, 0x60} },
-            }
-        },{
-            Identity::PossFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1D, 0x64} },
-                { Type::Air,         {0x01, 0x64} },
-                { Type::Subsurface,  {0x1A, 0x64} },
-            }
-        },{
-            Identity::PossHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1D, 0x7C} },
-                { Type::Air,         {0x01, 0x7C} },
-                { Type::Subsurface,  {0x1A, 0x7C} },
-            }
-        },{
-            Identity::ConfFriend, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1E, 0x00} },
-                { Type::Air,         {0x02, 0x00} },
-                { Type::Subsurface,  {0x1A, 0x00} },
-            }
-        },{
-            Identity::ConfHostile, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1F, 0x00} },
-                { Type::Air,         {0x03, 0x00} },
-                { Type::Subsurface,  {0x1B, 0x00} },
-            }
-        },{
-            Identity::EvalUnknown, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x1D, 0x00} },
-                { Type::Air,         {0x01, 0x00} },
-                { Type::Subsurface,  {0x19, 0x00} },
-            }
-        },{
-            Identity::Heli, QHash<Type, QPair<uint8_t,uint8_t>>{
-                { Type::Surface,     {0x0A, 0x00} },
-                { Type::Air,         {0x0A, 0x00} },
-                { Type::Subsurface,  {0x0A, 0x00} },
-                }
-        },
-    };
-
-    // Lookup
-    const auto itId = LUT.find(id);
-    if (itId != LUT.end()) {
-        const auto& byType = itId.value();
-        const auto itT = byType.find(t);
-        if (itT != byType.end()) {
-            return itT.value();
-        }
-    }
-
-    // Fallback: "Evaluated unknown – Surface" (era tu default {0x1D,0xE0})
-    return {0x1D, 0xE0};
+    return symbolBytesFor(track.getIdentity(), symbolFamilyForType(track.getType()));
 }
 
 uint8_t encoderLPD::trackModeFor(const Track &track) const {
@@ -130,7 +150,7 @@ uint8_t encoderLPD::trackModeFor(const Track &track) const {
 }
 
 //tengo que guardar todos los booleanos en el Cursor entity porque son muchos parametros
-void encoderLPD::appendCoordinate(QByteArray& dst, double value, uint8_t idBits, bool AP, bool PV, bool LS) {
+void encoderLPD::appendCoordinate(QByteArray& dst, double value, uint8_t idBits, bool, bool PV, bool LS) {
     int32_t scaled = static_cast<int32_t>(qRound(value * 256.0));
 
     constexpr int bitCount = 17;

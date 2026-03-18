@@ -13,6 +13,7 @@ public:
     using Type      = TrackData::Type;
     using Identity  = TrackData::Identity;
     using TrackMode = TrackData::TrackMode;
+    using Environment = TrackData::Type;
 
     // Estados según requerimiento
     enum LinkYStatus : uint8_t {
@@ -50,11 +51,13 @@ public:
           float xDm,
           float yDm,
           double speedKnots = 0.0,
-          double courseDeg  = 0.0);
+            double courseDeg  = 0.0,
+            Environment creationEnvironment = TrackData::SPC);
 
     // --- Getters principales (compatibilidad) ---
     int getId() const;
     Type getType() const;
+    Environment getCreationEnvironment() const;
     Identity getIdentity() const;
     TrackMode getTrackMode() const;
 
@@ -93,6 +96,7 @@ public:
     // --- Setters ---
     void setId(int id);
     void setType(Type t);
+    void setCreationEnvironment(Environment env);
     void setIdentity(Identity i);
     void setTrackMode(TrackMode m);
 
@@ -143,6 +147,7 @@ private:
     // Campos base
     int32_t  m_id{0};
     uint8_t  m_type{0};
+    uint8_t  m_creationEnvironment{0};
     uint8_t  m_identity{0};
     uint8_t  m_mode{0};
 

@@ -49,6 +49,7 @@ graph TD
     SERVICES[services/]
     CTRL --> SERVICES
     SERVICES --> CS[cursorservice.*]
+    SERVICES --> OS[obmservice.*]
     SERVICES --> TS[trackservice.*]
     SERVICES --> GS[geometryservice.*]
 
@@ -144,6 +145,7 @@ Componentes:
 | TrackCommandHandler | Adaptador JSON para tracks |
 | GeometryCommandHandler | Adaptador JSON para area/circle/polygon |
 | CursorService | Lógica compartida de cursor (CLI+JSON) |
+| ObmService | Lectura del estado actual de OBM para lógica de líneas |
 | TrackService | Lógica compartida de tracks (CLI+JSON) |
 | GeometryService | Lógica compartida de figuras (CLI+JSON) |
 | JsonValidator | Validación |
@@ -172,6 +174,7 @@ Mapa actual:
 ```cpp
 m_commandMap["create_line"];
 m_commandMap["delete_line"];
+m_commandMap["list_lines"];
 m_commandMap["create_track"];
 m_commandMap["delete_track"];
 m_commandMap["list_tracks"];
@@ -345,7 +348,7 @@ JsonCommandHandler
   ↓
 CursorCommandHandler / TrackCommandHandler / GeometryCommandHandler
   ↓
-Services (CursorService / TrackService / GeometryService)
+Services (CursorService / ObmService / TrackService / GeometryService)
   ↓
 CommandContext
   ↓
@@ -362,13 +365,12 @@ ITransport
 
 ```json
 {
-  "command": "create_line",
+  "command": "create_track",
   "args": {
-    "azimut": 45.0,
-    "length": 100.0,
     "x": 0.0,
     "y": 0.0,
-    "type": 1
+    "type": "SPC",
+    "creation_environment": "SPC"
   }
 }
 ```
@@ -428,6 +430,7 @@ ITransport
 |--------|------------------|--------------------------|
 | `create_line` | `azimut`, `length` | `created_id`, `lines` |
 | `delete_line` | `id` | `deleted_id`, `lines` |
+| `list_lines` | ninguno | `lines` |
 | `create_track` | `x`, `y` | `created_id`, `tracks` |
 | `delete_track` | `id` | `deleted_id`, `tracks` |
 | `list_tracks` | ninguno | `tracks` |
@@ -444,6 +447,10 @@ Notas:
 - Todos los comandos siguen el envelope estándar: `status`, `command`, `args`.
 - Errores de validación usan `status: "error"` con `error_code` y `message`.
 - Para integración de frontend, mantener estables los nombres de `command` y claves de `args`.
+- `create_circle` toma el centro desde la posición OBM actual en backend (via `ObmService`); `x`/`y` del payload no son necesarios para centrar.
+- `create_track.args.type` acepta etiquetas `SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW` o bits `0001..1000`.
+- `create_track.args.creation_environment` (también alias `environment` o `ambiente`) guarda el ambiente de creación del track.
+- Si `creation_environment` no viene en el JSON, se usa el mismo valor de `type`.
 
 ---
 
@@ -483,7 +490,7 @@ Dependencias sobre interfaces:
 
 ## Cambios recientes (Mar 2026)
 
-- Se consolidó la lógica de negocio en servicios (`CursorService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
+- Se consolidó la lógica de negocio en servicios (`CursorService`, `ObmService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
 - Se agregaron comandos JSON de geometría faltantes: `delete_polygon` y `list_shapes`.
 - `CommandContext` ahora expone también colecciones y helpers para `areas`, `circles` y `polygons`.
 - Se centralizó normalización angular en `RadarMath::normalizeAngle360` para evitar reglas duplicadas.

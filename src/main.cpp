@@ -5,6 +5,7 @@
 #include "lpdEncoder.h"
 #include "messagerouter.h"
 #include "obmHandler.h"
+#include "obmservice.h"
 #include "overlayHandler.h"
 #include "json/jsoncommandhandler.h"
 #include <QCoreApplication>
@@ -135,11 +136,12 @@ int main(int argc, char *argv[]) {
                    });
 
   auto *obmHandler = new OBMHandler();
+  auto *obmService = new ObmService(obmHandler);
   auto *ownCurs = new OwnCurs(ctx, obmHandler);
 
   // 1. Crear los controladores
   auto *dclConcController = new DclConcController(transport, decoder, &app);
-  auto *jsonHandler = new JsonCommandHandler(ctx, transport, &app);
+  auto *jsonHandler = new JsonCommandHandler(ctx, transport, obmService, &app);
 
   // 2. Crear el Router y pasarle los controladores
   auto *router = new MessageRouter(dclConcController, jsonHandler, &app);

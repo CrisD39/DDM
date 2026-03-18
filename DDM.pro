@@ -49,10 +49,15 @@ HEADERS += \
     src/controller/json/jsonresponsebuilder.h \
     src/controller/json/jsonserializer.h \
     src/controller/handlers/cursorcommandhandler.h \
+    src/controller/services/centerservice.h \
     src/controller/handlers/geometrycommandhandler.h \
     src/controller/services/cursorservice.h \
     src/controller/services/geometryservice.h \
+    src/controller/services/sitrepservice.h \
     src/controller/services/trackservice.h \
+    src/controller/services/cpaservice.h \
+    src/controller/services/obmservice.h \
+    src/controller/services/queryservice.h \
     src/controller/handlers/trackcommandhandler.h \
     src/controller/messagerouter.h \
     src/controller/overlayHandler.h \
@@ -103,6 +108,7 @@ SOURCES += \
     src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
+    src/controller/services/centerservice.cpp \
     src/controller/commands/deleteAreaCommand.cpp \
     src/controller/commands/deleteCircleCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
@@ -118,7 +124,11 @@ SOURCES += \
     src/controller/handlers/geometrycommandhandler.cpp \
     src/controller/services/cursorservice.cpp \
     src/controller/services/geometryservice.cpp \
+    src/controller/services/sitrepservice.cpp \
     src/controller/services/trackservice.cpp \
+    src/controller/services/cpaservice.cpp \
+    src/controller/services/obmservice.cpp \
+    src/controller/services/queryservice.cpp \
     src/controller/handlers/trackcommandhandler.cpp \
     src/controller/messagerouter.cpp \
     src/controller/overlayHandler.cpp \

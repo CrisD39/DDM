@@ -2,16 +2,18 @@
 
 #include "../json/jsonresponsebuilder.h"
 #include "../services/geometryservice.h"
+#include "../services/obmservice.h"
 #include "commandContext.h"
 #include "network/iTransport.h"
 
 #include <QJsonArray>
 
-GeometryCommandHandler::GeometryCommandHandler(CommandContext* context, ITransport* transport)
-    : m_context(context), m_transport(transport), m_geometryService(std::make_unique<GeometryService>(context))
+GeometryCommandHandler::GeometryCommandHandler(CommandContext* context, ITransport* transport, ObmService* obmService)
+    : m_context(context), m_transport(transport), m_obmService(obmService), m_geometryService(std::make_unique<GeometryService>(context))
 {
     Q_ASSERT(m_context);
     Q_ASSERT(m_transport);
+    Q_ASSERT(m_obmService);
 }
 
 QByteArray GeometryCommandHandler::createArea(const QJsonObject& args)
@@ -65,8 +67,9 @@ QByteArray GeometryCommandHandler::createCircle(const QJsonObject& args)
         return JsonResponseBuilder::buildValidationErrorResponse("create_circle", "radius", "", "required");
     }
 
-    const double x = args.value("x").toDouble(0.0);
-    const double y = args.value("y").toDouble(0.0);
+    const auto obmPosition = m_obmService->getCurrentPosition();
+    const double x = obmPosition.first;
+    const double y = obmPosition.second;
     const double radius = args.value("radius").toDouble(-1.0);
     const int type = args.value("type").toInt(0);
     const QString color = args.value("color").toString("ROJO");

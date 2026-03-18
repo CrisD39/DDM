@@ -12,10 +12,11 @@ public:
 
     QString usage() const override {
         return
-            "add <-f|-e|-u> [identidad] <x> <y> [legacyVelKnots] [legacyCourseDeg]\n"
+            "add <--type <SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW>|-f|-e|-u> [identidad] <x> <y> [legacyVelKnots] [legacyCourseDeg]\n"
             "\n"
-            "Tipo (obligatorio):\n"
-            "  -f  Surface   -e  Air   -u  Subsurface\n"
+            "Tipo táctico / ambiente (obligatorio):\n"
+            "  --type <SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW>\n"
+            "  Compat legacy: -f -> SPC   -e -> AAW   -u -> ASW\n"
             "\n"
             "Identidad (opcional, por defecto: P):\n"
             "  --id <P|A|F|E|H|U|Y>\n"
@@ -32,7 +33,7 @@ public:
             "  --priv <texto...>\n"
             "\n"
             "Ejemplos:\n"
-            "  add -f --id F 50 50 --spd 12.5 --crs 90 --fc 3 --asgc ALFA --linky R --info contacto recibido\n"
+                "  add --type SPC --id F 50 50 --spd 12.5 --crs 90 --fc 3 --asgc ALFA --linky R --info contacto recibido\n"
             "  add -f -s 10 20 15 180   (legacy: 15kt 180deg)\n"
             "\n";
     }

@@ -52,26 +52,14 @@ CommandResult AddCursorCommand::execute(const CommandInvocation &inv, CommandCon
         return {false, result.message};
     }
 
-    const CursorEntity* ref = nullptr;
-    for (const CursorEntity& cursor : ctx.cursors) {
-        if (cursor.getCursorId() == result.cursorId) {
-            ref = &cursor;
-            break;
-        }
-    }
-
-    if (!ref) {
-        return {false, "No se pudo recuperar el cursor recien creado"};
-    }
-
     return {
         true,
         QString("OK addCursor → id=%1 tipo=%2 x=%3 y=%4 largo=%5 ang=%6")
             .arg(result.cursorId)
             .arg(lineType)
-            .arg(double(ref->getCoordinates().first),  0, 'f', 3)
-            .arg(double(ref->getCoordinates().second), 0, 'f', 3)
-            .arg(double(ref->getCursorLength()),          0, 'f', 3)
-            .arg(double(ref->getCursorAngle()),            0, 'f', 3)
+            .arg(result.x, 0, 'f', 3)
+            .arg(result.y, 0, 'f', 3)
+            .arg(result.length, 0, 'f', 3)
+            .arg(result.angle, 0, 'f', 3)
     };
 }

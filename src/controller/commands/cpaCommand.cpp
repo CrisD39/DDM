@@ -1,5 +1,5 @@
 #include "cpaCommand.h"
-#include "src/model/cpa.h"
+#include "../services/cpaservice.h"
 
 CommandResult CpaCommand::execute(const CommandInvocation &inv, CommandContext &ctx) const
 {
@@ -17,10 +17,10 @@ CommandResult CpaCommand::execute(const CommandInvocation &inv, CommandContext &
         return {false, "IDs invalidos"};
     }
 
-    CPA _cpa;
-    CPAResult ret = _cpa.fromCLI(idTrack1,idTrack2,ctx);
+    CPAService cpaService(&ctx);
+    CPAResult ret = cpaService.computeCPA(idTrack1, idTrack2);
 
-    if(ret.valid == false && ret.tcpa == 0 && ret.dcpa){
+    if (!ret.valid) {
         return {false, "Contactos no encontrados"};
     }
 

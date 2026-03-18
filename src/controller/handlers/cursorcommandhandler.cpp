@@ -4,16 +4,18 @@
 #include "../json/jsonserializer.h"
 #include "../json/validators/jsonvalidator.h"
 #include "../services/cursorservice.h"
+#include "../services/obmservice.h"
 #include "commandContext.h"
 #include "network/iTransport.h"
 
 #include <QDebug>
 
-CursorCommandHandler::CursorCommandHandler(CommandContext* context, ITransport* transport)
-    : m_context(context), m_transport(transport), m_cursorService(std::make_unique<CursorService>(context))
+CursorCommandHandler::CursorCommandHandler(CommandContext* context, ITransport* transport, ObmService* obmService)
+    : m_context(context), m_transport(transport), m_obmService(obmService), m_cursorService(std::make_unique<CursorService>(context))
 {
     Q_ASSERT(m_context);
     Q_ASSERT(m_transport);
+    Q_ASSERT(m_obmService);
 }
 
 QByteArray CursorCommandHandler::createLine(const QJsonObject& args)
@@ -55,11 +57,12 @@ QByteArray CursorCommandHandler::createLine(const QJsonObject& args)
     }
 
     CursorCreateRequest request;
+    const auto obmPosition = m_obmService->getCurrentPosition();
     request.azimut = JsonValidator::getNumericValue(args, "azimut");
     request.length = JsonValidator::getNumericValue(args, "length");
     request.type = JsonValidator::getIntValue(args, "type", 0);
-    request.x = JsonValidator::getNumericValue(args, "x", 0.0);
-    request.y = JsonValidator::getNumericValue(args, "y", 0.0);
+    request.x = obmPosition.first;
+    request.y = obmPosition.second;
 
     CursorOperationResult result = m_cursorService->createCursor(request);
     if (!result.success) {
@@ -128,6 +131,11 @@ QByteArray CursorCommandHandler::deleteLine(const QJsonObject& args)
     return buildLineDeletedSuccessResponse(lineId);
 }
 
+QByteArray CursorCommandHandler::listLines(const QJsonObject&)
+{
+    return buildLineListSuccessResponse();
+}
+
 QByteArray CursorCommandHandler::buildLineCreatedSuccessResponse(const QString& lineId)
 {
     const QJsonArray linesArray = JsonSerializer::serializeLineList(m_context->getCursors());
@@ -140,4 +148,11 @@ QByteArray CursorCommandHandler::buildLineDeletedSuccessResponse(const QString& 
     const QJsonArray linesArray = JsonSerializer::serializeLineList(m_context->getCursors());
     qDebug() << "[CursorCommandHandler] Respuesta delete_line con" << linesArray.size() << "lineas";
     return JsonResponseBuilder::buildLineDeletedResponse("delete_line", lineId, linesArray);
+}
+
+QByteArray CursorCommandHandler::buildLineListSuccessResponse() const
+{
+    const QJsonArray linesArray = JsonSerializer::serializeLineList(m_context->getCursors());
+    qDebug() << "[CursorCommandHandler] Respuesta list_lines con" << linesArray.size() << "lineas";
+    return JsonResponseBuilder::buildLineListResponse("list_lines", linesArray);
 }

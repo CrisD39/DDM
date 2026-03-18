@@ -41,6 +41,12 @@ QString takeTextUntilNextFlag(const QStringList& args, int& idx) {
     return out;
 }
 
+TrackData::Type trackTypeFromToken(const QString& token, bool& ok) {
+    TrackData::Type parsedType = TrackData::SPC;
+    ok = TrackData::tryParseType(token, parsedType) || TrackData::tryParseTypeBits(token, parsedType);
+    return parsedType;
+}
+
 TrackData::Identity identityFromCode(const QString& code, bool& ok) {
     ok = true;
     const QString c = code.trimmed().toUpper();
@@ -85,7 +91,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
     // --- Tipo (obligatorio) ---
     bool hasType = false;
-    TrackData::Type type = TrackData::Surface;
+    TrackData::Type type = TrackData::SPC;
 
     // --- Identidad (opcional) ---
     TrackData::Identity ident = TrackData::Pending; // default P
@@ -130,13 +136,26 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
         const QString f = tok.toLower();
 
-        // Tipo (obligatorio): -f|-e|-u
+        // Tipo (obligatorio): --type o legacy -f|-e|-u
+        if (f == "--type" || f == "-t") {
+            if (hasType) return { false, "Solo un tipo permitido por comando." };
+            if (idx + 1 >= args.size()) return { false, "Falta valor para --type." };
+            bool ok = false;
+            type = trackTypeFromToken(args[idx + 1], ok);
+            if (!ok) {
+                return { false, "Tipo invalido: " + args[idx + 1] + " (esperado SPC/LINCO/ASW/OPS/HECO/APC/AAW/EW o bits 0001..1000)" };
+            }
+            hasType = true;
+            idx += 2;
+            continue;
+        }
+
         if (f == "-f" || f == "-e" || f == "-u") {
             if (hasType) return { false, "Solo un flag de tipo permitido (-f|-e|-u)." };
             hasType = true;
-            if      (f == "-f") type = TrackData::Surface;
-            else if (f == "-e") type = TrackData::Air;
-            else                type = TrackData::Subsurface;
+            if      (f == "-f") type = TrackData::SPC;
+            else if (f == "-e") type = TrackData::AAW;
+            else                type = TrackData::ASW;
             ++idx;
             continue;
         }
@@ -253,7 +272,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
     // --------- Validación tipo ---------
     if (!hasType) {
-        return { false, "Falta tipo (-f|-e|-u).\nUso:\n" + usage() };
+        return { false, "Falta tipo (--type o -f|-e|-u).\nUso:\n" + usage() };
     }
 
     // --------- Coordenadas ---------
@@ -330,7 +349,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
         return {false, createResult.message};
     }
 
-    Track* t = ctx.findTrackById(createResult.trackId);
+    Track* t = trackService.findTrackById(createResult.trackId);
     if (!t) {
         return {false, "No se pudo recuperar el track recien creado"};
     }

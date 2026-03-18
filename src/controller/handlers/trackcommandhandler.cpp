@@ -8,6 +8,34 @@
 #include <QJsonArray>
 #include <QDebug>
 
+namespace {
+
+bool parseTrackTypeValue(const QJsonValue& value, TrackData::Type& outType)
+{
+    if (value.isString()) {
+        const QString raw = value.toString().trimmed();
+        if (TrackData::tryParseType(raw, outType)) {
+            return true;
+        }
+        if (TrackData::tryParseTypeBits(raw, outType)) {
+            return true;
+        }
+        return false;
+    }
+
+    if (value.isDouble()) {
+        const int numeric = value.toInt(-1);
+        if (numeric < 1 || numeric > 8) {
+            return false;
+        }
+        return TrackData::tryParseTypeBits(QStringLiteral("%1").arg(numeric, 4, 2, QLatin1Char('0')), outType);
+    }
+
+    return false;
+}
+
+} // namespace
+
 TrackCommandHandler::TrackCommandHandler(CommandContext* context, ITransport* transport)
     : m_context(context), m_transport(transport), m_trackService(std::make_unique<TrackService>(context))
 {
@@ -25,7 +53,34 @@ QByteArray TrackCommandHandler::createTrack(const QJsonObject& args)
     TrackCreateRequest request;
     request.x = args.value("x").toDouble();
     request.y = args.value("y").toDouble();
-    request.type = static_cast<TrackData::Type>(args.value("type").toInt(static_cast<int>(0)));
+
+    if (args.contains("type")) {
+        TrackData::Type parsedType = TrackData::SPC;
+        if (!parseTrackTypeValue(args.value("type"), parsedType)) {
+            return JsonResponseBuilder::buildValidationErrorResponse(
+                "create_track", "type", args.value("type").toVariant().toString(),
+                "SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW o bits 0001..1000"
+            );
+        }
+        request.type = parsedType;
+    }
+
+    const QJsonValue environmentValue =
+        args.contains("creation_environment") ? args.value("creation_environment") :
+        args.contains("environment") ? args.value("environment") :
+        args.value("ambiente");
+
+    if (!environmentValue.isUndefined()) {
+        TrackData::Type parsedEnvironment = TrackData::SPC;
+        if (!parseTrackTypeValue(environmentValue, parsedEnvironment)) {
+            return JsonResponseBuilder::buildValidationErrorResponse(
+                "create_track", "creation_environment", environmentValue.toVariant().toString(),
+                "SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW o bits 0001..1000"
+            );
+        }
+        request.creationEnvironment = parsedEnvironment;
+    }
+
     if (args.contains("info")) {
         request.info = args.value("info").toString();
     }

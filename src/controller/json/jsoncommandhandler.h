@@ -17,12 +17,13 @@ class ITransport;
 class CursorCommandHandler;
 class GeometryCommandHandler;
 class TrackCommandHandler;
+class ObmService;
 
 class JsonCommandHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit JsonCommandHandler(CommandContext* context, ITransport* transport, QObject *parent = nullptr);
+    explicit JsonCommandHandler(CommandContext* context, ITransport* transport, ObmService* obmService, QObject *parent = nullptr);
     ~JsonCommandHandler();
 
 public slots:
@@ -34,6 +35,7 @@ private:
     
     ITransport* m_transport;
     CommandContext* m_context;
+    ObmService* m_obmService;
     std::unique_ptr<TrackCommandHandler> m_trackHandler;
     std::unique_ptr<CursorCommandHandler> m_cursorHandler;
     std::unique_ptr<GeometryCommandHandler> m_geometryHandler;

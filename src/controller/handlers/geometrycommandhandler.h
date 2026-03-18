@@ -7,11 +7,12 @@
 
 class CommandContext;
 class ITransport;
+class ObmService;
 
 class GeometryCommandHandler
 {
 public:
-    GeometryCommandHandler(CommandContext* context, ITransport* transport);
+    GeometryCommandHandler(CommandContext* context, ITransport* transport, ObmService* obmService);
 
     QByteArray createArea(const QJsonObject& args);
     QByteArray deleteArea(const QJsonObject& args);
@@ -24,5 +25,6 @@ public:
 private:
     CommandContext* m_context;
     ITransport* m_transport;
+    ObmService* m_obmService;
     std::unique_ptr<GeometryService> m_geometryService;
 };

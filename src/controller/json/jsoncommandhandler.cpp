@@ -2,6 +2,7 @@
 #include "../handlers/cursorcommandhandler.h"
 #include "../handlers/geometrycommandhandler.h"
 #include "../handlers/trackcommandhandler.h"
+#include "../services/obmservice.h"
 #include "jsonresponsebuilder.h"
 #include "commandContext.h"
 #include "network/iTransport.h"
@@ -9,15 +10,16 @@
 #include <QJsonObject>
 #include <QDebug>
 
-JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* transport, QObject *parent)
-    : QObject(parent), m_transport(transport){
+JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* transport, ObmService* obmService, QObject *parent)
+    : QObject(parent), m_transport(transport), m_obmService(obmService){
     Q_ASSERT(context);
     Q_ASSERT(m_transport);
+    Q_ASSERT(m_obmService);
     m_context = context;
     
     // Crea un puntero unico a CursorCommandHandler y se asegura ownership
-    m_cursorHandler = std::make_unique<CursorCommandHandler>(context, transport);
-    m_geometryHandler = std::make_unique<GeometryCommandHandler>(context, transport);
+    m_cursorHandler = std::make_unique<CursorCommandHandler>(context, transport, m_obmService);
+    m_geometryHandler = std::make_unique<GeometryCommandHandler>(context, transport, m_obmService);
     
     // Inicializar el mapa de comandos
     initializeCommandMap();
@@ -63,6 +65,10 @@ void JsonCommandHandler::initializeCommandMap()
     
     m_commandMap["delete_line"] = [this](const QJsonObject& args) {
         return m_cursorHandler->deleteLine(args);
+    };
+
+    m_commandMap["list_lines"] = [this](const QJsonObject& args) {
+        return m_cursorHandler->listLines(args);
     };
 
     // Registrar comandos de figuras geometricas

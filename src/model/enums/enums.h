@@ -10,17 +10,12 @@ class TrackData {
 
 public:
     // ==== Enums (estilo ButtonsData: NO "enum class") ====
-    enum Type { Air, Surface, Subsurface, RP, ESM };
+    // Tipos de track/ambiente táctico (AR-TDC):
+    // 0001 SPC, 0010 LINCO, 0011 ASW, 0100 OPS,
+    // 0101 HECO, 0110 APC, 0111 AAW, 1000 EW.
+    enum Type { SPC, LINCO, ASW, OPS, HECO, APC, AAW, EW };
     Q_ENUM(Type)
 
-    // Tabla SURFACE TRACKS:
-    // P Pending
-    // A PossFriend
-    // F ConfFriend
-    // E PossHostile
-    // H ConfHostile
-    // U EvalUnknown
-    // Y Heli
     enum Identity { Pending, PossHostile, PossFriend, ConfHostile, ConfFriend, EvalUnknown, Heli };
     Q_ENUM(Identity)
 
@@ -85,6 +80,49 @@ public:
         switch (v) {
         case Link14_T: return QLatin1Char('T');
         default:       return QLatin1Char('-');
+        }
+    }
+
+    // ==== Helpers para parseo de Type desde JSON ====
+    // Acepta etiquetas "SPC".."EW" (case-insensitive).
+    static inline bool tryParseType(const QString& value, Type& out) {
+        const QString normalized = value.trimmed().toUpper();
+        if (normalized == QLatin1String("SPC"))   { out = SPC;   return true; }
+        if (normalized == QLatin1String("LINCO")) { out = LINCO; return true; }
+        if (normalized == QLatin1String("ASW"))   { out = ASW;   return true; }
+        if (normalized == QLatin1String("OPS"))   { out = OPS;   return true; }
+        if (normalized == QLatin1String("HECO"))  { out = HECO;  return true; }
+        if (normalized == QLatin1String("APC"))   { out = APC;   return true; }
+        if (normalized == QLatin1String("AAW"))   { out = AAW;   return true; }
+        if (normalized == QLatin1String("EW"))    { out = EW;    return true; }
+        return false;
+    }
+
+    // Acepta bits en binario "0001".."1000".
+    static inline bool tryParseTypeBits(const QString& bits, Type& out) {
+        const QString normalized = bits.trimmed();
+        if (normalized == QLatin1String("0001")) { out = SPC;   return true; }
+        if (normalized == QLatin1String("0010")) { out = LINCO; return true; }
+        if (normalized == QLatin1String("0011")) { out = ASW;   return true; }
+        if (normalized == QLatin1String("0100")) { out = OPS;   return true; }
+        if (normalized == QLatin1String("0101")) { out = HECO;  return true; }
+        if (normalized == QLatin1String("0110")) { out = APC;   return true; }
+        if (normalized == QLatin1String("0111")) { out = AAW;   return true; }
+        if (normalized == QLatin1String("1000")) { out = EW;    return true; }
+        return false;
+    }
+
+    static inline QString typeBits(Type v) {
+        switch (v) {
+        case SPC:   return QStringLiteral("0001");
+        case LINCO: return QStringLiteral("0010");
+        case ASW:   return QStringLiteral("0011");
+        case OPS:   return QStringLiteral("0100");
+        case HECO:  return QStringLiteral("0101");
+        case APC:   return QStringLiteral("0110");
+        case AAW:   return QStringLiteral("0111");
+        case EW:    return QStringLiteral("1000");
+        default:    return QStringLiteral("0001");
         }
     }
 

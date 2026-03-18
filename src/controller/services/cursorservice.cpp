@@ -63,6 +63,12 @@ CursorOperationResult CursorService::createCursor(const CursorCreateRequest& req
     result.success = true;
     result.cursorId = cursorId;
     result.lineId = lineIdFromCursorId(cursorId);
+    result.x = request.x;
+    result.y = request.y;
+    result.angle = normalizedAzimut;
+    result.length = request.length;
+    result.type = request.type;
+    result.active = true;
     return result;
 }
 
