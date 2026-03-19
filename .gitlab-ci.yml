@@ -13,9 +13,11 @@ build_windows:
     - $env:Path += ";C:\Qt\6.5.3\msvc2019_64\bin" 
     # 2. Despertamos al compilador de Visual Studio y compilamos en un solo paso
     - cmd.exe /c '"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" && qmake DDM.pro -spec win32-msvc && nmake'
+    - echo "Recolectando dependencias (DLLs) de Qt..."
+    - windeployqt release\DDM.exe
   artifacts:
     paths:
-      - release/DDM.exe
+      - release/
 # --- TAREA PARA EL SERVIDOR DE LA ARMADA (LINUX) ---
 # Esta tarea la va a buscar el runner "infra"
 build_linux:
@@ -56,4 +58,4 @@ create_release:
       release-cli --insecure-https create --name "Release $CI_COMMIT_TAG" \
         --description "Build automático de DDM" \
         --tag-name "$CI_COMMIT_TAG" \
-        --assets-link "{\"name\":\"Descargar Windows\",\"url\":\"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows\"}"
+       --assets-link "{\"name\":\"Descargar DDM Portable\",\"url\":\"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows\"}"
