@@ -20,8 +20,11 @@ CommandResult ListCommand::execute(const CommandInvocation& inv, CommandContext&
 
     for (const QJsonValue& value : serializedTracks) {
         const QJsonObject track = value.toObject();
+        const int trackId = track.value("id").toInt();
+        const QString trackIdOctal = QString::number(trackId, 8).rightJustified(4, '0');
+
         out += QString("%1 | %2 | %3 | %4 | %5\n")
-                   .arg(track.value("id").toInt(), 3)
+                   .arg(trackIdOctal)
                    .arg(track.value("type").toString().left(8).leftJustified(8, ' '))
                    .arg(track.value("identity").toString().left(5).leftJustified(5, ' '))
                    .arg(QString::number(track.value("lon").toDouble(), 'f', 3).rightJustified(8, ' '))
