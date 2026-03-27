@@ -1,5 +1,5 @@
 /*
-    Comando `delete`/`del`/`rm`: elimina un `Track` por `id` del `ctx.tracks` con validaciones de argumentos.
+    Comando `delete`/`del`/`rm`: elimina un `Track` por `id` usando la API de `CommandContext`.
 */
 #include "Commands/deleteCommand.h"
 

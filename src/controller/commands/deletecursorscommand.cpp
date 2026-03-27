@@ -12,12 +12,8 @@ CommandResult DeleteCursorsCommand::execute(const CommandInvocation& inv, Comman
         return {false, "ID inválido"};
     }
 
-    // Borrado lineal como en eraseTrackById, pero sobre ctx.cursors
-    for (auto it = ctx.cursors.begin(); it != ctx.cursors.end(); ++it) {
-        if (it->getCursorId() == id) {
-            ctx.cursors.erase(it);
-            return {true, QString("OK deletecursor → id=%1").arg(id)};
-        }
+    if (ctx.eraseCursorById(id)) {
+        return {true, QString("OK deletecursor → id=%1").arg(id)};
     }
 
     return {false, QString("No existe el cursor id=%1").arg(id)};

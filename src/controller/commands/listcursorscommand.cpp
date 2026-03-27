@@ -4,7 +4,7 @@
 CommandResult ListCursorsCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
 
-    const auto& cursors = ctx.cursors; // público en CommandContext
+    const auto& cursors = ctx.getCursors();
     if (cursors.empty()) return {true, "(sin cursores)"};  // texto simple como en list
 
     QString out;

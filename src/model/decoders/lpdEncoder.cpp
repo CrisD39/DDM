@@ -6,14 +6,16 @@
 
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     QByteArray bigBuffer;
+    const auto& tracks = ctx.getTracks();
+    const auto& cursors = ctx.getCursors();
 
     // Pre-reserva memoria aproximada para evitar reallocs.
-    int estimatedSize = 64 + (ctx.tracks.size() * 20) + (ctx.cursors.size() * 12);
+    int estimatedSize = 64 + (tracks.size() * 20) + (cursors.size() * 12);
     bigBuffer.reserve(estimatedSize);
 
     bigBuffer.append(HEADER_BYTES, sizeof(HEADER_BYTES));
 
-    int palabrasTracks = (ctx.tracks.size() * 6) + 2 + 9;
+    int palabrasTracks = (tracks.size() * 6) + 2 + 9;
     bigBuffer.append(static_cast<char>(palabrasTracks & 0xFF));
 
 
@@ -25,12 +27,12 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     appendOBM(bigBuffer);
 
     // TRACKS
-    for (const auto &track : ctx.tracks) {
+    for (const auto &track : tracks) {
         appendAB2Message(bigBuffer, track);
     }
 
     // CURSORES
-    for (const auto &cursor : ctx.cursors){
+    for (const auto &cursor : cursors){
         appendAB3Message(bigBuffer, cursor);
     }
 
