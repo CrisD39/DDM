@@ -25,7 +25,7 @@ public:
 signals:
     void signalOBM(QPair<float,float> delta);
     void newRollingBall(QPair<float,float>);
-    void newHandWheel(QPair<float,float>);
+    void newHandWheel(QPair<qfloat16,qfloat16>);
     void newRange(int);
     void newQEK(QString);
     void newOverlay(QString);

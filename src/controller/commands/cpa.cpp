@@ -1,4 +1,7 @@
 #include "cpa.h"
+#include "iCommand.h"        // Aquí es donde suele estar definido CommandResult
+#include "commanddispatcher.h" // O el que contenga CommandContext
+#include <cmath>             // Para asegurarnos que std::sqrt y demás funcionen
 
 CPA::CPA(QObject *parent)
     : QObject{parent}
@@ -37,8 +40,20 @@ CPAResult CPA::computeCPA(const Track &track_a, const Track &track_b)
         Pr.first + Vr.first * tcpa,
         Pr.second + Vr.second * tcpa
     };
+    // Agregá esto al final de tu archivo cpa.cpp:
+
 
     double dcpa = std::sqrt(std::sqrt(Pcpa.first) + std::sqrt(Pcpa.second));
 
     return { tcpa, dcpa, true };
+}
+
+CommandResult CPA::fromCLI(int id1, int id2, CommandContext& ctx) {
+    // Ignoramos los parámetros por ahora para que no tire warnings
+    Q_UNUSED(id1);
+    Q_UNUSED(id2);
+    Q_UNUSED(ctx);
+
+    // Devolvemos un mensaje genérico
+    return {true, "Comando CPA no implementado en esta versión de Linux."};
 }

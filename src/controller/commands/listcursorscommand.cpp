@@ -1,14 +1,15 @@
 #include "listcursorscommand.h"
 #include "../services/cursorservice.h"
 #include <QString>
-
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 CommandResult ListCursorsCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
 
     CursorService cs(&ctx);
     const QJsonArray serialized = cs.serializeCursors();
     if (serialized.isEmpty()) return {true, "(sin cursores)"};
-    if (cursors.empty()) return {true, "(sin cursores)"};
 
     QString out;
     out += "ID  | TYPE | ANGLE |  LONG |      X   |      Y   | ACTIVE\n";

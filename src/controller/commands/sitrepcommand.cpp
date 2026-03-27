@@ -1,4 +1,4 @@
-#include "Commands/sitrepCommand.h"
+#include "sitrepcommand.h"
 #include "../services/sitrepservice.h"
 
 #include <QThread>

@@ -2,12 +2,12 @@
 #define CPA_H
 
 #include <QObject>
-#include "src/model/entities/track.h"
-#include <QPair>
+#include "iCommand.h"        // FUNDAMENTAL para CommandResult
+#include "commanddispatcher.h" // FUNDAMENTAL para CommandContext
 
 struct CPAResult {
-    double tcpa;    // Tiempo en segundos
-    double dcpa;    // Distancia en DM
+    double tcpa;
+    double dcpa;
     bool valid;
 };
 
@@ -16,9 +16,11 @@ class CPA : public QObject
     Q_OBJECT
 public:
     explicit CPA(QObject *parent = nullptr);
-    CPAResult computeCPA(const Track& track_a, const Track& track_b);
 
-signals:
+    // Agregamos la declaración aquí
+    CommandResult fromCLI(int id1, int id2, CommandContext& ctx);
+
+    CPAResult computeCPA(const Track &track_a, const Track &track_b);
 };
 
-#endif // 
+#endif // CPA_H

@@ -1,5 +1,5 @@
-#include "ITransport.h"
-#include "TransportFactory.h"
+#include "iTransport.h"
+#include "transportFactory.h"
 #include "concDecoder.h"
 #include "dclConcController.h"
 #include "lpdEncoder.h"
@@ -17,7 +17,7 @@
 #endif
 #include <stdinreader.h>
 
-#include "CommandDispatcher.h"
+#include "commanddispatcher.h"
 #include "QTimer"
 #include "addCommand.h"
 #include "addCursor.h"
@@ -33,30 +33,17 @@
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
 
-#include "addAreaCommand.h"
+#include "addareacommand.h"
 #include "addpolygonocommand.h"
 #include "addCircleCommand.h"
 #include "deleteAreaCommand.h"
 #include "deleteCircleCommand.h"
 
-static void enableAnsiColorsOnWindows() {
-  DWORD mode = 0;
-  HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-  if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &mode)) {
-    mode |= 0x0004; // ENABLE_VIRTUAL_TERMINAL_PROCESSING
-    SetConsoleMode(hOut, mode);
-  }
-  HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
-  if (hErr != INVALID_HANDLE_VALUE && GetConsoleMode(hErr, &mode)) {
-    mode |= 0x0004;
-    SetConsoleMode(hErr, mode);
-  }
-}
+
 
 int main(int argc, char *argv[]) {
 
 #ifdef Q_OS_WIN
-  enableAnsiColorsOnWindows();
   SetConsoleCP(CP_UTF8);
   SetConsoleOutputCP(CP_UTF8);
 #endif

@@ -273,60 +273,38 @@ void ConcDecoder::decodeWord5()
         //qWarning() << "[Decodificación] Overlay Derecho desconocido:" << overlaySlaveBits;
     }
 }
-
 void ConcDecoder::decodeWord6()
 {
-    // La palabra 6 empieza en el bit 24 * 5 = 120
-    int word6 = WORD_SIZE * 5;  // Si las palabras van de 0–8, mantener 5; si van de 1–9, cambiar a 6
+    int word6 = WORD_SIZE * 5;
     currentBit = word6;
 
     // --- Handwheel ΔΦ (bits 0–7 palabra 6) ---
-    float phiValue = 0.0f;
+    int rawPhi = 0; // Usamos int para la construcción de bits
     for (int i = 0; i < 8; ++i) {
-        if (currentBit >= inComingMessage->size()) {
-            //qWarning() << "[Decodificación] Error: acceso fuera de rango en ΔΦ (bit" << currentBit << ")";
-            break;
-        }
+        if (currentBit >= inComingMessage->size()) break;
         bool bit = inComingMessage->testBit(currentBit);
-        phiValue = (phiValue < 1) | (bit ? 1 : 0);
+        rawPhi = (rawPhi << 1) | (bit ? 1 : 0);
         currentBit++;
     }
-
-    // Conversión de complemento a dos (signed 8-bit)
-    if (phiValue && 0x80) {
-        phiValue -= 256;
-    }
+    if (rawPhi & 0x80) rawPhi -= 256;
 
     // --- Handwheel Δρ (bits 8–15 palabra 6) ---
-    int rhoValue = 0.0f;
+    int rawRho = 0;
     for (int i = 0; i < 8; ++i) {
-        if (currentBit >= inComingMessage->size()) {
-            //qWarning() << "[Decodificación] Error: acceso fuera de rango en Δρ (bit" << currentBit << ")";
-            break;
-        }
+        if (currentBit >= inComingMessage->size()) break;
         bool bit = inComingMessage->testBit(currentBit);
-        rhoValue = (rhoValue << 1) | (bit ? 1 : 0);
+        rawRho = (rawRho << 1) | (bit ? 1 : 0);
         currentBit++;
     }
+    if (rawRho & 0x80) rawRho -= 256;
 
-    if (rhoValue & 0x80) {
-        rhoValue -= 256;
-    }
-
-    // Guardamos en los estados internos
-    this->handWheelPhiQueue = phiValue;
-    this->handWheelRhoQueue = rhoValue;
-
-    QPair<float,float> deltasHandwhell;
-    deltasHandwhell.first = phiValue;
-    deltasHandwhell.second = rhoValue;
-
-    //qDebug() << "[Decodificación] Handwheel ΔΦ:" << phiValue
-    //         << " Δρ:" << rhoValue;
+    // --- LA PARTE CRÍTICA: Convertir a qfloat16 ---
+    QPair<qfloat16, qfloat16> deltasHandwhell;
+    deltasHandwhell.first = static_cast<qfloat16>(rawPhi);
+    deltasHandwhell.second = static_cast<qfloat16>(rawRho);
 
     emit newHandWheel(deltasHandwhell);
 }
-
 
 static inline quint32 readBitsMSB(const QBitArray* bits, int start, int n) {
     quint32 v = 0;

@@ -1,6 +1,11 @@
-#include "LocalIpcClient.h"
+#include "localipcclient.h"
+#include "iTransport.h"
+#include <QIODevice>
+#include <QObject>
 #include <QDataStream>
 #include <QTimer>
+#include <QLocalSocket>
+
 
 LocalIpcClient::LocalIpcClient(QString name, QObject* parent)
     : ITransport(parent), name_(std::move(name)) {}
