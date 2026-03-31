@@ -2,6 +2,7 @@
 
 #include "commandContext.h"
 #include "entities/track.h"
+#include "trackpppservice.h"
 #include <QJsonObject>
 
 TrackService::TrackService(CommandContext* context)
@@ -60,6 +61,12 @@ TrackOperationResult TrackService::createTrack(const TrackCreateRequest& request
     }
     if (request.priv.has_value()) track.setCodigoPrivado(request.priv.value());
 
+    // Solo calculamos PPP al crear track cuando OwnShip ya fue seteado.
+    // No hay recalc periodico en esta etapa porque los tracks se tratan como estaticos.
+    if (m_context->ownShip.valid) {
+        TrackPppService(m_context).recalculateTrackAgainstOwnShip(track);
+    }
+
     return {true, QString(), QString(), id};
 }
 
@@ -90,6 +97,17 @@ QJsonArray TrackService::serializeTracks() const
 
     QJsonArray arr;
     for (const Track& tr : m_context->getTracks()) {
+        const Track::SitrepPppData ppp = tr.getSitrepPpp();
+
+        QString pppStatus = QStringLiteral("not_computed");
+        if (ppp.status == Track::SitrepPppData::NoOwnShip) {
+            pppStatus = QStringLiteral("no_ownship");
+        } else if (ppp.status == Track::SitrepPppData::DegenerateRelativeMotion) {
+            pppStatus = QStringLiteral("degenerate_relative_motion");
+        } else if (ppp.status == Track::SitrepPppData::Valid) {
+            pppStatus = QStringLiteral("valid");
+        }
+
         QJsonObject trackObj;
         trackObj["id"] = tr.getId();
         trackObj["type"] = TrackData::toQString(tr.getType());
@@ -106,6 +124,11 @@ QJsonArray TrackService::serializeTracks() const
         trackObj["lat"] = tr.getY();
         trackObj["lon"] = tr.getX();
         trackObj["info"] = tr.getInformacionAmpliatoria();
+        trackObj["ppp_az"] = ppp.azDeg;
+        trackObj["ppp_dt"] = ppp.distanceDm;
+        trackObj["ppp_t_hhmm"] = tr.getSitrepPppTimeHHMM();
+        trackObj["ppp_status"] = pppStatus;
+        trackObj["ppp_reason"] = ppp.reason;
         arr.append(trackObj);
     }
     

@@ -158,6 +158,43 @@ flowchart TD
     J --> M[lpdEncoder]
 ```
 
+## Actualizado - PPP 31/03
+
+### Integracion PPP en arquitectura general
+
+- El calculo PPP/CPA usa un unico motor matematico reutilizable: `PppCalculator` (`src/model/pppcalculator.*`).
+- El caso de uso SITREP se integra mediante `TrackPppService` (`src/controller/services/trackpppservice.*`).
+- `TrackPppService` no redefine la matematica: adapta el motor generico al caso `Track vs OwnShip` y persiste el resultado en cada `Track`.
+- El caso GUI de PPP/CPA entre dos tracks mantiene su semantica propia de herramienta, pero reutiliza la misma matematica base.
+
+### Flujos de activacion del calculo PPP (estado actual)
+
+- `ownship set` (CLI) / `ownship_update` (JSON): recálculo masivo one-shot para tracks existentes.
+- Alta de track con OwnShip valido: calculo inmediato al crear el track.
+- Sin recálculo periodico en esta etapa (tracks tratados como estaticos a efectos PPP).
+
+### Puntos de integracion concretos
+
+- `src/controller/services/ownshipservice.cpp`:
+    - dispara recálculo masivo al actualizar OwnShip.
+- `src/controller/services/trackservice.cpp`:
+    - calcula PPP en alta de tracks por CLI/JSON si OwnShip es valido.
+- `src/model/qek.h`:
+    - calcula PPP en alta de tracks via QEK/botonera si OwnShip es valido.
+
+### Modelo y contrato de salida
+
+- `Track` persiste PPP de SITREP (azimut, distancia, tiempo y estado).
+- `TrackService::serializeTracks()` expone al frontend:
+    - `ppp_az`
+    - `ppp_dt`
+    - `ppp_t_hhmm`
+    - `ppp_status`
+    - `ppp_reason`
+
+Nota de evolucion:
+- Si los tracks pasan a dinamicos, integrar recálculo PPP en el flujo cinemático (`updateTracks()` o punto equivalente), evitando mezclar calculo de dominio con presentacion de SITREP.
+
 ## Key Components
 
 - Transport Layer: abstrae UDP y Local IPC mediante ITransport.

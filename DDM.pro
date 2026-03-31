@@ -56,6 +56,7 @@ HEADERS += \
     src/controller/services/cursorservice.h \
     src/controller/services/geometryservice.h \
     src/controller/services/sitrepservice.h \
+    src/controller/services/trackpppservice.h \
     src/controller/services/trackservice.h \
     src/controller/services/cpaservice.h \
     src/controller/services/ownshipservice.h \
@@ -67,6 +68,7 @@ HEADERS += \
     src/controller/json/validators/jsonvalidator.h \
     src/model/commandContext.h \
     src/model/cpa.h \
+    src/model/pppcalculator.h \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
@@ -130,6 +132,7 @@ SOURCES += \
     src/controller/services/cursorservice.cpp \
     src/controller/services/geometryservice.cpp \
     src/controller/services/sitrepservice.cpp \
+    src/controller/services/trackpppservice.cpp \
     src/controller/services/trackservice.cpp \
     src/controller/services/cpaservice.cpp \
     src/controller/services/ownshipservice.cpp \
@@ -141,6 +144,7 @@ SOURCES += \
     src/controller/json/validators/jsonvalidator.cpp \
     src/main.cpp \
     src/model/cpa.cpp \
+    src/model/pppcalculator.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \

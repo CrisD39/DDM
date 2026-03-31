@@ -487,6 +487,8 @@ Notas:
 - `create_track.args.type` acepta etiquetas `SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW` o bits `0001..1000`.
 - `create_track.args.creation_environment` (también alias `environment` o `ambiente`) guarda el ambiente de creación del track.
 - Si `creation_environment` no viene en el JSON, se usa el mismo valor de `type`.
+- `tracks` incluye PPP de SITREP (`ppp_az`, `ppp_dt`, `ppp_t_hhmm`, `ppp_status`, `ppp_reason`). Este PPP es Track vs OwnShip.
+- El PPP de SITREP es independiente del modulo visual PPP/CPA entre dos tracks de la GUI.
 
 ---
 
@@ -524,10 +526,57 @@ Dependencias sobre interfaces:
 
 ---
 
+## Actualizado - PPP 31/03
+
+### PPP como parte del sistema (no modulo aislado)
+
+El backend incorpora PPP/CPA como una capacidad transversal:
+
+- Matematica comun y reutilizable en `PppCalculator` (`src/model/pppcalculator.*`).
+- Integracion de caso de uso SITREP en `TrackPppService` (`src/controller/services/trackpppservice.*`).
+- Persistencia del resultado PPP en `Track` para exposicion consistente a CLI/JSON/frontend.
+
+### Separacion de casos de uso
+
+- SITREP: PPP por fila de track, siempre `Track vs OwnShip`.
+- GUI (herramienta PPP/CPA): calculo operativo `Track vs Track`.
+
+Ambos casos reutilizan la misma cuenta base; lo que cambia es la pareja de entidades y el punto de integracion.
+
+### Puntos de disparo del calculo PPP
+
+- `OwnShipService` (`src/controller/services/ownshipservice.cpp`):
+  - recálculo masivo one-shot al ejecutar `ownship set` o `ownship_update`.
+- `TrackService` (`src/controller/services/trackservice.cpp`):
+  - calculo inmediato al crear track por CLI/JSON si OwnShip ya es valido.
+- `QEK` (`src/model/qek.h`):
+  - calculo inmediato al crear track por flujo botonera/hardware si OwnShip ya es valido.
+
+### Estado operativo actual
+
+- En esta etapa no hay recálculo periodico de PPP.
+- Se asume track estatico para este caso de uso.
+- Para etapa dinamica futura, integrar recálculo en flujo cinemático (`updateTracks()` o equivalente) sin acoplar logica de dominio a presentacion.
+
+### Contrato JSON de tracks (SITREP)
+
+Los listados de tracks exponen:
+
+- `ppp_az`
+- `ppp_dt`
+- `ppp_t_hhmm` (salida `HH:MM`)
+- `ppp_status`
+- `ppp_reason`
+
+---
+
 ## Cambios recientes (Mar 2026)
 
 - Se consolidó la lógica de negocio en servicios (`CursorService`, `ObmService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
 - Se agregaron comandos JSON de geometría faltantes: `delete_polygon` y `list_shapes`.
+- Se agrego `TrackPppService` como capa de integracion para persistir PPP de SITREP (Track vs OwnShip) en cada `Track`, reutilizando el motor matematico generico `PppCalculator`.
+- El recálculo de PPP de SITREP se ejecuta una sola vez al setear OwnShip (`ownship set`/`ownship_update`) y al crear track con OwnShip válido.
+- No hay recálculo periódico en esta etapa; para tracks dinámicos futuros, integrar recálculo en el flujo cinemático (`updateTracks()`).
 - `CommandContext` ahora expone también colecciones y helpers para `areas`, `circles` y `polygons`.
 - Se centralizó normalización angular en `RadarMath::normalizeAngle360` para evitar reglas duplicadas.
 - Se corrigieron errores de compilación por tipos incompletos y firmas inconsistentes en la capa de servicios/entidades.

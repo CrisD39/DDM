@@ -29,6 +29,22 @@ public:
         Link14_Invalid = 255
     };
 
+    // PPP para SITREP: calculado entre este Track y OwnShip.
+    struct SitrepPppData {
+        enum Status : uint8_t {
+            NotComputed = 0,
+            NoOwnShip,
+            DegenerateRelativeMotion,
+            Valid
+        };
+
+        double azDeg = 0.0;
+        double distanceDm = 0.0;
+        double timeHours = 0.0;
+        Status status = NotComputed;
+        QString reason;
+    };
+
     static constexpr char   kDefaultTipo = 'S';
     static constexpr int    kMinNumero = 1;
     static constexpr int    kMaxNumero = 7776;
@@ -93,6 +109,9 @@ public:
 
     QString getCodigoPrivado() const;
 
+    SitrepPppData getSitrepPpp() const;
+    QString getSitrepPppTimeHHMM() const;
+
     // --- Setters ---
     void setId(int id);
     void setType(Type t);
@@ -126,6 +145,8 @@ public:
 
     void setCodigoPrivado(const QString& code);
 
+    void setSitrepPpp(const SitrepPppData& ppp);
+
     // deltaTimeSeconds: segundos transcurridos
     void updatePosition(double deltaTimeSeconds);
 
@@ -142,6 +163,7 @@ private:
     static double clamp(double v, double lo, double hi);
 
     static QChar identityToCode(Identity i);
+    static QString formatHoursToHHMM(double hours);
 
 private:
     // Campos base
@@ -170,4 +192,6 @@ private:
     uint8_t  m_estadoLink14{static_cast<uint8_t>(Link14_Invalid)};
 
     QString  m_codigoPrivado{QStringLiteral("-")};
+
+    SitrepPppData m_sitrepPpp;
 };

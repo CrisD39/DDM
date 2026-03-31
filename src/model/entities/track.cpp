@@ -5,6 +5,20 @@
 #include <QtMath>
 #include <cmath>
 
+QString Track::formatHoursToHHMM(double hours)
+{
+    if (!std::isfinite(hours) || hours < 0.0) {
+        return QStringLiteral("--:--");
+    }
+
+    const qint64 totalMinutes = static_cast<qint64>(std::round(hours * 60.0));
+    const qint64 hh = totalMinutes / 60;
+    const qint64 mm = totalMinutes % 60;
+    return QStringLiteral("%1:%2")
+        .arg(hh, 2, 10, QLatin1Char('0'))
+        .arg(mm, 2, 10, QLatin1Char('0'));
+}
+
 // ---------- helpers ----------
 double Track::normalize360(double deg)
 {
@@ -167,6 +181,21 @@ QString Track::getCodigoPrivado() const
     return m_codigoPrivado;
 }
 
+Track::SitrepPppData Track::getSitrepPpp() const
+{
+    return m_sitrepPpp;
+}
+
+QString Track::getSitrepPppTimeHHMM() const
+{
+    if (m_sitrepPpp.status == SitrepPppData::NotComputed
+        || m_sitrepPpp.status == SitrepPppData::NoOwnShip) {
+        return QStringLiteral("--:--");
+    }
+
+    return formatHoursToHHMM(m_sitrepPpp.timeHours);
+}
+
 // ---------- setters (compatibilidad) ----------
 void Track::setId(int id)
 {
@@ -243,6 +272,11 @@ void Track::setEstadoLink14(Link14Status st)
 void Track::setCodigoPrivado(const QString& code)
 {
     m_codigoPrivado = code.isEmpty() ? QStringLiteral("-") : code;
+}
+
+void Track::setSitrepPpp(const SitrepPppData& ppp)
+{
+    m_sitrepPpp = ppp;
 }
 
 // ---------- cálculos ----------

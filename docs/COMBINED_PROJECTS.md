@@ -132,6 +132,33 @@ Archivos relevantes:
 - La GUI originalmente mostraba valores brutos; se sincronizó con la CLI mediante formateo en `DDMController` (QVariantMap) para que la UI muestre exactamente lo mismo.
 - Filtrado visual: se añadieron filtros en `SitrepWorkspace.qml` (`TODOS`, `AMIGOS`, `DESC.`, `HOSTILES`, `TX`, `RX`) y búsqueda. Estos filtros son puramente visuales (no afectan backend).
 
+### Actualizado - PPP 31/03
+
+PPP en el sistema ahora se documenta en dos niveles:
+
+- Nivel dominio/matematica: calculo generico reutilizable (`PppCalculator`).
+- Nivel caso de uso SITREP: integracion `TrackPppService` para `Track vs OwnShip` con persistencia en `Track`.
+
+Diferencia funcional clave:
+
+- PPP de SITREP: siempre `Track vs OwnShip`, se serializa y se muestra por fila de track.
+- PPP de GUI: herramienta operativa entre dos tracks (`Track vs Track`) y no depende de OwnShip.
+
+Activacion del PPP de SITREP en backend:
+
+- Al ejecutar `ownship set` / `ownship_update`: recálculo one-shot de todos los tracks.
+- Al crear track nuevo (CLI/JSON/QEK): calculo inmediato solo si OwnShip ya es valido.
+
+Contrato JSON extendido en `tracks` (backend → frontend):
+
+- `ppp_az`
+- `ppp_dt`
+- `ppp_t_hhmm` (formato `HH:MM`)
+- `ppp_status`
+- `ppp_reason`
+
+Frontend (`DDMController`) consume estos campos y alimenta la grilla SITREP.
+
 Cambios clave (recientes):
 - `tdc-botonera/botonera/src/controller/protocol/ddmcontroller.cpp` — ahora formatea campos (`azimut`, `distancia`, `rumbo`, `velocidad`, placeholders de `lat/lon`), mantiene valores numéricos en `azimutNum`, `distanciaNum`, etc.
 - `tdc-botonera/botonera/DDM/SitrepWorkspace.qml` — usa `filteredTracks()` y control de filtros + búsqueda; el botón borrar llama `ddmController.deleteTrack(id)` en lugar de mutar localmente el modelo.
@@ -180,6 +207,8 @@ Para desarrollo QML puro, puedes abrir `DDM/` en QtCreator y ejecutar la interfa
   - Refactor a capa de servicios (`CursorService`, `TrackService`, `GeometryService`) para compartir lógica entre CLI y JSON.
   - Se agregaron rutas JSON `delete_polygon` y `list_shapes`.
   - `CommandContext` extendido para manejar `areas`, `circles` y `polygons`.
+  - PPP/CPA se refactorizó para reutilizar un unico motor matematico (`PppCalculator`) tanto en `Track vs OwnShip` (SITREP) como en `Track vs Track` (modulo GUI/CPA).
+  - Se incorporo `TrackPppService` para persistir PPP de SITREP en `Track` y disparar calculo en altas de tracks y en actualizacion de OwnShip.
 
 Archivos modificados (localizados):
 - `tdc-botonera/botonera/src/controller/protocol/ddmcontroller.cpp`

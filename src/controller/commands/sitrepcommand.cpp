@@ -51,9 +51,9 @@ QString fmtNum4(int n) {
 
 void printHeader(QTextStream& out, int tracksCount, int refreshMs, bool showCtrlC) {
     out << "SITREP (refresh=" << refreshMs << "ms)  Tracks=" << tracksCount << "\n";
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
-    out << "| Nro   | Identidad   | Az/Dt(DM) | Rv/Vd     | Link | Lat/Long            | Info Ampliatoria          |\n";
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
+    out << "| Nro   | Identidad   | Az/Dt(DM) | Rv/Vd     | Link | Lat/Long            | Info Ampliatoria          | PPP Az/Dt/T      |\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
     if (!showCtrlC) out.flush();
 }
 
@@ -80,6 +80,16 @@ void printRow(QTextStream& out, const Track& t) {
     const QString info = t.getInformacionAmpliatoria().isEmpty() ? "-" : t.getInformacionAmpliatoria();
     const QString infoCell = QString("%1").arg(info.left(25), 25);
 
+    const Track::SitrepPppData ppp = t.getSitrepPpp();
+    QString pppCell = QStringLiteral("--/--/--:--");
+    if (ppp.status == Track::SitrepPppData::Valid
+        || ppp.status == Track::SitrepPppData::DegenerateRelativeMotion) {
+        pppCell = QStringLiteral("%1/%2/%3")
+                      .arg(ppp.azDeg, 3, 'f', 0)
+                      .arg(ppp.distanceDm, 4, 'f', 1)
+                      .arg(t.getSitrepPppTimeHHMM());
+    }
+
     out
         << "| " << QString("%1").arg(nro, 5) << " "
         << "| " << QString("%1").arg(ident, 11) << " "
@@ -87,11 +97,12 @@ void printRow(QTextStream& out, const Track& t) {
         << "| " << QString("%1").arg(rvvdCell, 9) << " "
         << "| " << QString("%1").arg(link, 4) << " "
         << "| " << QString("%1").arg(ll, 19) << " "
-        << "| " << infoCell << " |\n";
+        << "| " << infoCell << " "
+        << "| " << QString("%1").arg(pppCell, 16) << " |\n";
 }
 
 void printFooter(QTextStream& out, bool showCtrlC) {
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
     if (showCtrlC) out << "\nCTRL+C para salir.\n";
     out.flush();
 }

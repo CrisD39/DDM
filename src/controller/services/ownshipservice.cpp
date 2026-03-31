@@ -1,6 +1,7 @@
 #include "ownshipservice.h"
 
 #include "commandContext.h"
+#include "trackpppservice.h"
 
 #include <QtMath>
 #include <cmath>
@@ -72,6 +73,13 @@ OwnShipOperationResult OwnShipService::updateFromJson(const QJsonObject& args)
     }
 
     own.valid = true;
+
+    // Etapa actual: tracks estaticos.
+    // Por eso el PPP de SITREP se recalcula una sola vez cuando cambia OwnShip.
+    // Si en el futuro los tracks pasan a ser dinamicos, este recalc tambien debe
+    // dispararse desde el punto de actualizacion cinematica (por ejemplo updateTracks()).
+    TrackPppService(m_context).recalculateAllTracksAgainstOwnShip();
+
     return {true, QString(), QStringLiteral("OwnShip actualizado")};
 }
 
@@ -94,6 +102,12 @@ OwnShipOperationResult OwnShipService::setFromCli(double courseDeg,
     own.speedKnots = speedKnots;
     own.source = source.trimmed().isEmpty() ? QStringLiteral("CLI") : source;
     own.valid = true;
+
+    // Etapa actual: tracks estaticos.
+    // Por eso el PPP de SITREP se recalcula una sola vez cuando cambia OwnShip.
+    // Si en el futuro los tracks pasan a ser dinamicos, este recalc tambien debe
+    // dispararse desde el punto de actualizacion cinematica (por ejemplo updateTracks()).
+    TrackPppService(m_context).recalculateAllTracksAgainstOwnShip();
 
     return {true, QString(), QStringLiteral("OwnShip actualizado desde consola")};
 }
