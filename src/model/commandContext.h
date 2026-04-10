@@ -58,6 +58,15 @@ struct CommandContext {
 
     OwnShipState ownShip;
 
+    struct CpaMarkerState {
+        QString sessionId;
+        int trackAId = -1;
+        int trackBId = -1;
+        float xDm = 0.0f;
+        float yDm = 0.0f;
+        bool visible = true;
+    };
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
@@ -65,6 +74,7 @@ struct CommandContext {
     std::deque<AreaEntity> areas;
     std::deque<CircleEntity> circles;
     std::deque<PolygonoEntity> polygons;
+    std::deque<CpaMarkerState> cpaMarkers;
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -87,6 +97,9 @@ struct CommandContext {
 
     inline std::deque<PolygonoEntity>& getPolygons() { return polygons; }
     inline const std::deque<PolygonoEntity>& getPolygons() const { return polygons; }
+
+    inline std::deque<CpaMarkerState>& getCpaMarkers() { return cpaMarkers; }
+    inline const std::deque<CpaMarkerState>& getCpaMarkers() const { return cpaMarkers; }
 
     inline void addArea(const AreaEntity& area) {
         areas.push_back(area);
@@ -159,6 +172,39 @@ struct CommandContext {
             if (it->getCursorId() == id) { cursors.erase(it); return true; }
         }
         return false;
+    }
+
+    inline void upsertCpaMarker(const CpaMarkerState& marker) {
+        for (CpaMarkerState& existing : cpaMarkers) {
+            if (existing.sessionId == marker.sessionId) {
+                existing = marker;
+                return;
+            }
+        }
+        cpaMarkers.push_front(marker);
+    }
+
+    inline bool eraseCpaMarkerBySessionId(const QString& sessionId) {
+        for (auto it = cpaMarkers.begin(); it != cpaMarkers.end(); ++it) {
+            if (it->sessionId == sessionId) {
+                cpaMarkers.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline int eraseCpaMarkersByTrackId(int trackId) {
+        int removed = 0;
+        for (auto it = cpaMarkers.begin(); it != cpaMarkers.end();) {
+            if (it->trackAId == trackId || it->trackBId == trackId) {
+                it = cpaMarkers.erase(it);
+                ++removed;
+            } else {
+                ++it;
+            }
+        }
+        return removed;
     }
     // transport is declared above; do not redeclare here.
     inline Track* getNextTrackById(int currentId) {

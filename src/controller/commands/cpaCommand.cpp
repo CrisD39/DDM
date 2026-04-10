@@ -18,25 +18,25 @@ CommandResult CpaCommand::execute(const CommandInvocation &inv, CommandContext &
     }
 
     CPAService cpaService(&ctx);
-    CPAResult ret = cpaService.computeCPA(idTrack1, idTrack2);
+    //CPAResult ret = cpaService.computeCPA(idTrack1, idTrack2);
 
-    if (!ret.valid) {
-        return {false, "Contactos no encontrados"};
-    }
+    //if (!ret.valid) {
+    //    return {false, "Contactos no encontrados"};
+    //}
 
     QString out;
     QTextStream oss(&out);
 
     oss << "CPA RESULT\n";
     oss << "Tracks: " << idTrack1 << " vs " << idTrack2 << "\n";
-    oss << "TCPA: " << ret.tcpa << " s\n";
-    oss << "CPA Distance: " << ret.dcpa << " DM\n";
+    //oss << "TCPA: " << ret.tcpa << " s\n";
+    //oss << "CPA Distance: " << ret.dcpa << " DM\n";
 
-    if (ret.tcpa < 0) {
-        oss << "Estado: Divergiendo\n";
-    } else {
-        oss << "Estado: Convergente\n";
-    }
+    //if (ret.tcpa < 0) {
+    //    oss << "Estado: Divergiendo\n";
+    //} else {
+    //    oss << "Estado: Convergente\n";
+    //}
 
     return {true, out};
 

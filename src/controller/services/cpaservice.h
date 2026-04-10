@@ -1,35 +1,88 @@
 #pragma once
 
 #include <QString>
-#include "model/cpa.h"
+#include <QMap>
 
 class CommandContext;
-class Track;
+
+struct CPATrackRef {
+    bool isOwnShip = false;
+    int trackId = -1;
+};
+
+struct CPAComputationResult {
+    bool valid = false;
+    QString errorCode;
+    QString errorMessage;
+    QString sessionId;
+    double tcpaSeconds = 0.0;
+    double dcpaDm = 0.0;
+    double cpaMidX = 0.0;
+    double cpaMidY = 0.0;
+};
+
+struct CPASession {
+    enum class State {
+        Active,
+        Finished,
+        Expired
+    };
+
+    QString sessionId;
+    CPATrackRef trackA;
+    CPATrackRef trackB;
+    State state = State::Active;
+};
+
+struct CPAClearResult {
+    int removedSessions = 0;
+    int removedMarkers = 0;
+};
 
 /**
- * @brief Servicio para cálculo de CPA (Closest Point of Approach)
- * 
- * Encapsula la lógica de búsqueda de tracks y cálculo de punto de aproximación mínima,
- * ocultando detalles del algoritmo CPA al usuario del servicio.
+ * @brief Servicio para cálculo y gestión de CPA/PPP entre dos tracks.
+ *
+ * Centraliza:
+ * - resolución de referencias de tracks desde CommandContext
+ * - cálculo matemático CPA
+ * - administración de sesiones CPA
+ * - preparación de marcadores para LPD
  */
 class CPAService {
 public:
-    /**
-     * @brief Constructor que inyecta el contexto
-     * @param context Puntero a CommandContext (no nulo)
-     */
     explicit CPAService(CommandContext* context);
 
-    /**
-     * @brief Calcula CPA entre dos tracks
-     * @param trackId1 ID del primer track
-     * @param trackId2 ID del segundo track
-     * @return CPAResult con TCPA (segundos) y DCPA (Data Miles)
-     * @note Si un track no existe, retorna CPAResult.valid = false
-     * @note TCPA < 0 significa tracks divergen; TCPA >= 0 significa convergencia
-     */
-    CPAResult computeCPA(int trackId1, int trackId2) const;
+    CPAComputationResult startCPA(const CPATrackRef& trackA, const CPATrackRef& trackB);
+    CPAComputationResult graphCPA(const QString& sessionId);
+    CPAComputationResult computeCPA(const CPATrackRef& trackA, const CPATrackRef& trackB) const;
+    bool finishCPA(const QString& sessionId);
+    CPAClearResult clearTrack(const CPATrackRef& trackRef);
+    bool isSessionActive(const QString& sessionId) const;
 
 private:
     CommandContext* m_context;
+    QMap<QString, CPASession> m_sessions;
+
+    QString buildSessionId(const CPATrackRef& trackA, const CPATrackRef& trackB) const;
+    bool resolveTrack(const CPATrackRef& ref,
+                      double& xDm,
+                      double& yDm,
+                      double& speedDmPerHour,
+                      double& courseDeg,
+                      QString& errorCode) const;
+    void upsertMarker(const QString& sessionId,
+                      const CPATrackRef& trackA,
+                      const CPATrackRef& trackB,
+                      double cpaMidX,
+                      double cpaMidY) const;
+    CPAComputationResult computeFromResolvedStates(const CPATrackRef& trackA,
+                                                   const CPATrackRef& trackB,
+                                                   double xADm,
+                                                   double yADm,
+                                                   double speedADmPerHour,
+                                                   double courseADeg,
+                                                   double xBDm,
+                                                   double yBDm,
+                                                   double speedBDmPerHour,
+                                                   double courseBDeg) const;
 };

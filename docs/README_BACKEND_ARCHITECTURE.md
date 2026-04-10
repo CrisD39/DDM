@@ -186,6 +186,10 @@ m_commandMap["create_polygon"];
 m_commandMap["delete_polygon"];
 m_commandMap["list_shapes"];
 m_commandMap["ownship_update"];
+m_commandMap["cpa_start"];
+m_commandMap["ppp_graph"];
+m_commandMap["ppp_finish"];
+m_commandMap["ppp_clear_track"];
 ```
 
 Comando `ownship_update`:
@@ -477,6 +481,10 @@ ITransport
 | `create_polygon` | `points` | `created_id`, `polygons` |
 | `delete_polygon` | `id` | `deleted_id`, `polygons` |
 | `list_shapes` | ninguno | `areas`, `circles`, `polygons` |
+| `cpa_start` | `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `status` |
+| `ppp_graph` | `id` o `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `symbol`, `main_symbol_byte` |
+| `ppp_finish` | `id` | `id`, `status` |
+| `ppp_clear_track` | `track_id` (alias `id`) | `track_id`, `removed_sessions`, `removed_markers` |
 
 Notas:
 
@@ -489,6 +497,9 @@ Notas:
 - Si `creation_environment` no viene en el JSON, se usa el mismo valor de `type`.
 - `tracks` incluye PPP de SITREP (`ppp_az`, `ppp_dt`, `ppp_t_hhmm`, `ppp_status`, `ppp_reason`). Este PPP es Track vs OwnShip.
 - El PPP de SITREP es independiente del modulo visual PPP/CPA entre dos tracks de la GUI.
+- Para CPA/PPP entre dos tracks, backend mantiene sesiones y marcadores de graficado en `CommandContext::cpaMarkers`.
+- `ppp_graph` publica marcador con símbolo principal `0x26` para que LPD dibuje `drawSymbolC3F07`.
+- `track_a` puede ser `own_ship` (alias `ownship|os|own`) si `OwnShipState.valid == true`; `track_b` debe ser un track regular.
 
 ---
 

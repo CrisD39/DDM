@@ -109,6 +109,14 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
         appendAB2Message(bigBuffer, track);
     }
 
+    // CPA MARKERS (C3F07) - graficados como mensajes AB2 con simbolo dedicado.
+    for (const auto &marker : ctx.cpaMarkers) {
+        if (!marker.visible) {
+            continue;
+        }
+        appendCpaMarkerMessage(bigBuffer, marker);
+    }
+
     // CURSORES
     for (const auto &cursor : ctx.cursors){
         appendAB3Message(bigBuffer, cursor);
@@ -251,6 +259,30 @@ void encoderLPD::appendAB2Message(QByteArray& dst, const Track &track) {
     appendCoordinate(dst, track.getX(), AB2_ID_X);
     appendCoordinate(dst, track.getY(), AB2_ID_Y);
     appendSymbolBytes(dst, track);
+}
+
+void encoderLPD::appendCpaMarkerMessage(QByteArray& dst, const CommandContext::CpaMarkerState& marker)
+{
+    appendCoordinate(dst, marker.xDm, AB2_ID_X);
+    appendCoordinate(dst, marker.yDm, AB2_ID_Y);
+
+    // 0x26 -> LPDWidget::drawMarkerMS() -> ContactRenderer::drawSymbolC3F07()
+    dst.append(static_cast<char>(0x26));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+
+    // Numero de track simbolico para marcador CPA (4 digitos octales ASCII)
+    const int syntheticId = qBound(0, marker.trackAId, 4095);
+    dst.append(static_cast<char>('0' + ((syntheticId >> 9) & 0x7)));
+    dst.append(static_cast<char>('0' + ((syntheticId >> 6) & 0x7)));
+    dst.append(static_cast<char>('0' + ((syntheticId >> 3) & 0x7)));
+    dst.append(static_cast<char>('0' + (syntheticId & 0x7)));
+
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(EOMM));
 }
 
 void encoderLPD::appendAB3Message(QByteArray& dst, const CursorEntity &cursor)

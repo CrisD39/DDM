@@ -124,6 +124,8 @@ int main(int argc, char *argv[]) {
   ITransport *transport = transportGuard.get();
   transport->start();
 
+  JsonCommandHandler *jsonHandler = nullptr;
+
   QTimer timer;
   QTimer updatePositionTimer;
   QObject::connect(&updatePositionTimer, &QTimer::timeout,
@@ -133,7 +135,10 @@ int main(int argc, char *argv[]) {
                    });
 
   QObject::connect(&timer, &QTimer::timeout, &timer,
-                   [ctx, encoder, transport]() {
+                   [ctx, encoder, transport, &jsonHandler]() {
+                     if (jsonHandler) {
+                       jsonHandler->refreshActiveCpaSessions();
+                     }
                      transport->send(encoder->buildFullMessage(*ctx));
                    });
 
@@ -143,7 +148,7 @@ int main(int argc, char *argv[]) {
 
   // 1. Crear los controladores
   auto *dclConcController = new DclConcController(transport, decoder, &app);
-  auto *jsonHandler = new JsonCommandHandler(ctx, transport, obmService, &app);
+  jsonHandler = new JsonCommandHandler(ctx, transport, obmService, &app);
 
   // 2. Crear el Router y pasarle los controladores
   auto *router = new MessageRouter(dclConcController, jsonHandler, &app);
