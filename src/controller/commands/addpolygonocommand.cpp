@@ -1,13 +1,9 @@
 #include "addpolygonocommand.h"
-<<<<<<< HEAD
-#include "model/commandContext.h"
-#include "model/entities/polygonoentity.h"
-=======
 #include "../services/geometryservice.h"
->>>>>>> devLink
 #include <iostream>
 #include <vector>
 #include <QString>
+#include <stdexcept>
 
 CommandResult AddPolygonoCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     // 1. Verificar argumentos mínimos

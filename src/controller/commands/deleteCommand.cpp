@@ -1,12 +1,8 @@
 /*
     Comando `delete`/`del`/`rm`: elimina un `Track` por `id` del `ctx.tracks` con validaciones de argumentos.
 */
-<<<<<<< HEAD
 #include "deleteCommand.h"
-=======
-#include "Commands/deleteCommand.h"
 #include "../services/trackservice.h"
->>>>>>> devLink
 
 CommandResult DeleteCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     const QStringList& args = inv.args;

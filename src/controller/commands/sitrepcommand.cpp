@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 #include "sitrepcommand.h"
-=======
-#include "Commands/sitrepCommand.h"
 #include "../services/sitrepservice.h"
->>>>>>> devLink
 
 #include <QThread>
 #include <QTextStream>

@@ -113,13 +113,9 @@ SOURCES += \
     src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
-<<<<<<< HEAD
-    src/controller/commands/deleteAreacommand.cpp \
-=======
+    src/controller/commands/delete_area_command.cpp \
     src/controller/commands/ownshipcommand.cpp \
     src/controller/services/centerservice.cpp \
-    src/controller/commands/deleteAreaCommand.cpp \
->>>>>>> devLink
     src/controller/commands/deleteCircleCommand.cpp \
     src/controller/commands/deleteCommand.cpp \
     src/controller/commands/deletecursorscommand.cpp \
@@ -174,4 +170,7 @@ SOURCES += \
     src/model/utils/RadarMath.cpp \
     src/model/utils/configuration.cpp \
     src/view/stdinreader.cpp
+
+
+
 
