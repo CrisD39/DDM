@@ -4,6 +4,8 @@
 #include <QString>
 #include <QPointF>
 #include <QPair>
+#include <QtMath>
+#include <cmath>
 #include <deque>
 #include <utility>
 #include <unordered_map>
@@ -16,6 +18,11 @@
 #include "entities/polygonoentity.h"
 
 struct CommandContext {
+    enum MotionMode {
+        RELATIVE = 0,
+        TRUE_MOTION = 1
+    };
+
     CommandContext() : out(stdout), err(stderr) {
         out.setEncoding(QStringConverter::Utf8);
         err.setEncoding(QStringConverter::Utf8);
@@ -78,6 +85,7 @@ struct CommandContext {
 
     double centerX = 0.0;
     double centerY = 0.0;
+    MotionMode motionMode = RELATIVE;
 
     // Transport opcional: si está seteado, los comandos CLI/backend pueden
     // notificar eventos JSON al frontend via transport->send()
@@ -151,6 +159,9 @@ struct CommandContext {
 
     inline void resetCenter(){ setCenter({0.0f, 0.0f}); }
 
+    inline void setMotionMode(MotionMode mode) { motionMode = mode; }
+    inline MotionMode getMotionMode() const { return motionMode; }
+
     inline Track* findTrackById(int id) {
         for (Track& t : tracks) if (t.getId() == id) return &t;
         return nullptr;
@@ -219,8 +230,62 @@ struct CommandContext {
     }
 
     inline void updateTracks(double deltaTime){
-        for(Track& track : tracks){
-            track.updatePosition(deltaTime);
+        if (deltaTime <= 0.0) return;
+
+        const double dtHours = deltaTime / 3600.0;
+        if (dtHours <= 0.0) return;
+
+        auto displacementDm = [&](const Track& t, double& dx, double& dy) {
+            const double speedDmPerHour = t.getVelocidadDmPerHour();
+            if (speedDmPerHour <= 0.0) {
+                dx = 0.0;
+                dy = 0.0;
+                return;
+            }
+
+            const double distanceDm = speedDmPerHour * dtHours;
+            const double courseRad = qDegreesToRadians(t.getCourseDeg());
+            dx = distanceDm * std::sin(courseRad);
+            dy = distanceDm * std::cos(courseRad);
+        };
+
+        if (motionMode == RELATIVE) {
+            Track* ownShipTrack = findTrackById(0);
+            double ownDx = 0.0;
+            double ownDy = 0.0;
+            if (ownShipTrack) {
+                displacementDm(*ownShipTrack, ownDx, ownDy);
+            }
+
+            for (Track& track : tracks) {
+                if (track.getId() == 0) {
+                    // OwnShip stays anchored at center in relative-motion mode.
+                    track.setX(0.0f);
+                    track.setY(0.0f);
+                    continue;
+                }
+
+                double trkDx = 0.0;
+                double trkDy = 0.0;
+                displacementDm(track, trkDx, trkDy);
+
+                const float newX = static_cast<float>(track.getX() + (trkDx - ownDx));
+                const float newY = static_cast<float>(track.getY() + (trkDy - ownDy));
+                track.setX(newX);
+                track.setY(newY);
+            }
+            return;
+        }
+
+        for (Track& track : tracks) {
+            double trkDx = 0.0;
+            double trkDy = 0.0;
+            displacementDm(track, trkDx, trkDy);
+
+            const float newX = static_cast<float>(track.getX() + trkDx);
+            const float newY = static_cast<float>(track.getY() + trkDy);
+            track.setX(newX);
+            track.setY(newY);
         }
     }
 

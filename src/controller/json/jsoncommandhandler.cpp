@@ -5,6 +5,7 @@
 #include "../handlers/ownshipcommandhandler.h"
 #include "../handlers/trackcommandhandler.h"
 #include "../services/cpaservice.h"
+#include "../services/estacionamientoservice.h"
 #include "../services/obmservice.h"
 #include "jsonresponsebuilder.h"
 #include "commandContext.h"
@@ -29,6 +30,7 @@ JsonCommandHandler::JsonCommandHandler(CommandContext* context, ITransport* tran
     m_trackHandler = std::make_unique<TrackCommandHandler>(m_context, m_transport);
     m_ownShipHandler = std::make_unique<OwnShipCommandHandler>(m_context);
     m_cpaService = std::make_unique<CPAService>(m_context);
+    m_estacionamientoService = std::make_unique<EstacionamientoService>(m_context);
 
     initializeCommandMap();
 }
@@ -157,6 +159,10 @@ void JsonCommandHandler::initializeCommandMap()
 
     m_commandMap[QStringLiteral("ppp_clear_track")] = [this](const QJsonObject& args) {
         return handlePppClearTrack(args);
+    };
+
+    m_commandMap[QStringLiteral("estacionamiento_calc")] = [this](const QJsonObject& args) {
+        return handleEstacionamiento(args);
     };
 }
 
@@ -438,4 +444,89 @@ QByteArray JsonCommandHandler::handlePppClearTrack(const QJsonObject& args)
     responseArgs[QStringLiteral("removed_markers")] = 1;
     responseArgs[QStringLiteral("status")] = QStringLiteral("cleared");
     return JsonResponseBuilder::buildSuccessResponse(QStringLiteral("ppp_clear_track"), responseArgs);
+}
+
+QByteArray JsonCommandHandler::handleEstacionamiento(const QJsonObject& args)
+{
+    QMap<QString, QString> options;
+
+    auto valueToString = [](const QJsonValue& value, QString& outText) -> bool {
+        if (value.isDouble()) {
+            outText = QString::number(value.toDouble(), 'g', 16);
+            return true;
+        }
+        if (value.isString()) {
+            outText = value.toString().trimmed();
+            return !outText.isEmpty();
+        }
+        return false;
+    };
+
+    const QJsonValue trackAValue = args.contains(QStringLiteral("track_a")) ? args.value(QStringLiteral("track_a")) : args.value(QStringLiteral("track-a"));
+    if (!trackAValue.isUndefined()) {
+        CPATrackRef trackARef;
+        QString errorReason;
+        if (!parseTrackRefValue(trackAValue, trackARef, errorReason)) {
+            return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("track_a"), QString(), errorReason);
+        }
+        options.insert(QStringLiteral("track-a"), trackARef.isOwnShip ? QStringLiteral("0") : QString::number(trackARef.trackId));
+    }
+
+    const QJsonValue trackBValue = args.contains(QStringLiteral("track_b")) ? args.value(QStringLiteral("track_b")) : args.value(QStringLiteral("track-b"));
+    if (trackBValue.isUndefined()) {
+        return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("track_b"), QString(), QStringLiteral("required"));
+    }
+    CPATrackRef trackBRef;
+    QString trackBError;
+    if (!parseTrackRefValue(trackBValue, trackBRef, trackBError)) {
+        return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("track_b"), QString(), trackBError);
+    }
+    options.insert(QStringLiteral("track-b"), trackBRef.isOwnShip ? QStringLiteral("0") : QString::number(trackBRef.trackId));
+
+    QString optionValue;
+    const QJsonValue azValue = args.value(QStringLiteral("az"));
+    if (!valueToString(azValue, optionValue)) {
+        return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("az"), QString(), QStringLiteral("required numeric"));
+    }
+    options.insert(QStringLiteral("az"), optionValue);
+
+    const QJsonValue distValue = args.value(QStringLiteral("d"));
+    if (!valueToString(distValue, optionValue)) {
+        return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("d"), QString(), QStringLiteral("required numeric"));
+    }
+    options.insert(QStringLiteral("d"), optionValue);
+
+    const QJsonValue vdValue = args.value(QStringLiteral("vd"));
+    if (!vdValue.isUndefined()) {
+        if (!valueToString(vdValue, optionValue)) {
+            return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("vd"), QString(), QStringLiteral("must be numeric"));
+        }
+        options.insert(QStringLiteral("vd"), optionValue);
+    }
+
+    const QJsonValue duValue = args.value(QStringLiteral("du"));
+    if (!duValue.isUndefined()) {
+        if (!valueToString(duValue, optionValue)) {
+            return JsonResponseBuilder::buildValidationErrorResponse(QStringLiteral("estacionamiento_calc"), QStringLiteral("du"), QString(), QStringLiteral("must be numeric"));
+        }
+        options.insert(QStringLiteral("du"), optionValue);
+    }
+
+    const EstacionamientoService::CalculationResult calcResult = m_estacionamientoService->calculateFromOptions(options);
+    if (!calcResult.success) {
+        return JsonResponseBuilder::buildErrorResponse(
+            QStringLiteral("estacionamiento_calc"),
+            QStringLiteral("VALIDATION_ERROR"),
+            calcResult.errorMessage
+        );
+    }
+
+    QJsonObject responseArgs;
+    responseArgs[QStringLiteral("track_a")] = calcResult.trackAId;
+    responseArgs[QStringLiteral("track_b")] = calcResult.trackBId;
+    responseArgs[QStringLiteral("rumbo")] = calcResult.rumboDeg;
+    responseArgs[QStringLiteral("tiempo_horas")] = calcResult.timeHours;
+    responseArgs[QStringLiteral("tiempo_hms")] = calcResult.timeHms;
+
+    return JsonResponseBuilder::buildSuccessResponse(QStringLiteral("estacionamiento_calc"), responseArgs);
 }

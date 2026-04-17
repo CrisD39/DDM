@@ -26,6 +26,7 @@ public:
 
 private:
     static double normalize360(double deg);
+    void syncOwnShipVirtualTrack();
 
     CommandContext* m_context;
 };

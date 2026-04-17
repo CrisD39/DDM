@@ -34,6 +34,8 @@
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
 #include "ownshipcommand.h"
+#include "estacionamientocommand.h"
+#include "displaymodecommand.h"
 
 #include "addareacommand.h"
 #include "addpolygonocommand.h"
@@ -80,6 +82,8 @@ int main(int argc, char *argv[]) {
   registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CpaCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new OwnShipCommand()));
+  registry->registerCommand(QSharedPointer<ICommand>(new EstacionamientoCommand()));
+  registry->registerCommand(QSharedPointer<ICommand>(new DisplayModeCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddAreaCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddPolygonoCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddCircleCommand()));

@@ -22,6 +22,7 @@ class TrackCommandHandler;
 class OwnShipCommandHandler;
 class ObmService;
 class CPAService;
+class EstacionamientoService;
 struct CPATrackRef;
 
 class JsonCommandHandler : public QObject
@@ -47,6 +48,7 @@ private:
     std::unique_ptr<CursorCommandHandler> m_cursorHandler;
     std::unique_ptr<GeometryCommandHandler> m_geometryHandler;
     std::unique_ptr<CPAService> m_cpaService;
+    std::unique_ptr<EstacionamientoService> m_estacionamientoService;
     QMap<int, QString> m_cpaSlotSessions;
     QMap<QString, CommandHandler> m_commandMap;
     
@@ -58,6 +60,7 @@ private:
     void sendUnknownCommandError(const QString& command);
 
     QByteArray handleCpaStart(const QJsonObject& args);
+    QByteArray handleEstacionamiento(const QJsonObject& args);
     QByteArray handlePppGraph(const QJsonObject& args);
     QByteArray handlePppFinish(const QJsonObject& args);
     QByteArray handlePppClearTrack(const QJsonObject& args);

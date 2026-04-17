@@ -204,6 +204,17 @@ Nota de evolucion:
 - Services: lógica de negocio compartida entre JSON y CLI.
 - CommandContext: estado único del backend (tracks, cursores y figuras).
 - CommandDispatcher: ejecuta comandos de consola sobre el mismo estado.
+- Estacionamiento (EST): cálculo cinemático de interceptación/estación relativa en CLI, con validación separada de la matemática.
+
+## Actualizado - Estacionamiento 17/04
+
+- Nuevo documento funcional/técnico: `docs/STATIONING_SYSTEM.md`.
+- Alcance actual: backend-only (CLI), sin integración frontend.
+- Estructura prevista:
+    - `src/model/estacionamientocalculator.*` para matemática pura.
+    - `src/controller/services/estacionamientoservice.*` para parseo/validación.
+    - `src/controller/commands/estacionamientocommand.*` para interfaz CLI.
+- Regla de validación crítica: modalidad mutuamente excluyente (`VD` o `DU`).
 
 ---
 
@@ -215,3 +226,31 @@ Nota de evolucion:
 - Se centralizó normalización angular en RadarMath::normalizeAngle360.
 - Se resolvieron errores de compilación por tipos incompletos en headers de handlers/services y firmas inconsistentes en entidades.
 - DDMController mantiene formateo de tracks para QML y la eliminación de track vía comando JSON delete_track.
+
+## Actualizado - Movimiento Relativo 17/04
+
+- El motor de extrapolación periódica está en `CommandContext::updateTracks(deltaTime)`.
+- `CommandContext` define `MotionMode`:
+    - `RELATIVE` (default)
+    - `TRUE_MOTION`
+
+En `RELATIVE`:
+
+- El OwnShip (`track id = 0000`) no se desplaza en pantalla: `x=0`, `y=0` forzado en cada tick.
+- Los blancos externos se mueven con desplazamiento relativo:
+
+$$
+\Delta r_{final} = \Delta r_{blanco} - \Delta r_{BP}
+$$
+
+Esto preserva rumbo/velocidad reales del BP en su estado, pero mantiene el centro táctico fijo en `0,0`.
+
+En `TRUE_MOTION`:
+
+- El BP y los blancos se actualizan con movimiento absoluto (solo su propio delta).
+
+Control en runtime por CLI:
+
+```text
+display mode <relative|true|true_motion|show>
+```

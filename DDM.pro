@@ -38,6 +38,8 @@ HEADERS += \
     src/controller/commands/deleteAreaCommand.h \
     src/controller/commands/deleteCircleCommand.h \
     src/controller/commands/cpaCommand.h \
+    src/controller/commands/displaymodecommand.h \
+    src/controller/commands/estacionamientocommand.h \
     src/controller/commands/ownshipcommand.h \
     src/controller/commands/deleteCommand.h \
     src/controller/commands/deletecursorscommand.h \
@@ -61,6 +63,7 @@ HEADERS += \
     src/controller/services/cpaservice.h \
     src/controller/services/ownshipservice.h \
     src/controller/services/obmservice.h \
+    src/controller/services/estacionamientoservice.h \
     src/controller/services/queryservice.h \
     src/controller/handlers/trackcommandhandler.h \
     src/controller/messagerouter.h \
@@ -69,6 +72,7 @@ HEADERS += \
     src/model/commandContext.h \
     src/model/cpa.h \
     src/model/pppcalculator.h \
+    src/model/estacionamientocalculator.h \
     src/model/decoders/concDecoder.h \
     src/model/decoders/iDecoder.h \
     src/model/decoders/lpdEncoder.h \
@@ -113,6 +117,8 @@ SOURCES += \
     src/controller/commands/addpolygonocommand.cpp \
     src/controller/commands/centerCommand.cpp \
     src/controller/commands/cpaCommand.cpp \
+    src/controller/commands/displaymodecommand.cpp \
+    src/controller/commands/estacionamientocommand.cpp \
     src/controller/commands/delete_area_command.cpp \
     src/controller/commands/ownshipcommand.cpp \
     src/controller/services/centerservice.cpp \
@@ -137,6 +143,7 @@ SOURCES += \
     src/controller/services/cpaservice.cpp \
     src/controller/services/ownshipservice.cpp \
     src/controller/services/obmservice.cpp \
+    src/controller/services/estacionamientoservice.cpp \
     src/controller/services/queryservice.cpp \
     src/controller/handlers/trackcommandhandler.cpp \
     src/controller/messagerouter.cpp \
@@ -145,6 +152,7 @@ SOURCES += \
     src/main.cpp \
     src/model/cpa.cpp \
     src/model/pppcalculator.cpp \
+    src/model/estacionamientocalculator.cpp \
     src/model/decoders/concDecoder.cpp \
     src/model/decoders/lpdEncoder.cpp \
     src/model/entities/cursorEntity.cpp \

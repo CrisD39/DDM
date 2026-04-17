@@ -326,6 +326,11 @@ Comandos actuales:
 - addCursor
 - listcursors
 - deletecursors
+- ownship
+- sitrep
+- cpa
+- estacionamiento
+- display
 
 Interfaz base:
 
@@ -485,6 +490,7 @@ ITransport
 | `ppp_graph` | `id` o `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `symbol`, `main_symbol_byte` |
 | `ppp_finish` | `id` | `id`, `status` |
 | `ppp_clear_track` | `track_id` (alias `id`) | `track_id`, `removed_sessions`, `removed_markers` |
+| `estacionamiento_calc` | `track_b`, `az`, `d`, y exactamente uno de `vd` o `du` (`track_a` opcional, default OwnShip) | `track_a`, `track_b`, `rumbo`, `tiempo_horas`, `tiempo_hms` |
 
 Notas:
 
@@ -500,6 +506,41 @@ Notas:
 - Para CPA/PPP entre dos tracks, backend mantiene sesiones y marcadores de graficado en `CommandContext::cpaMarkers`.
 - `ppp_graph` publica marcador con símbolo principal `0x26` para que LPD dibuje `drawSymbolC3F07`.
 - `track_a` puede ser `own_ship` (alias `ownship|os|own`) si `OwnShipState.valid == true`; `track_b` debe ser un track regular.
+- `estacionamiento_calc` comparte la misma lógica de resolución por IDs/OwnShip de la capa de servicios (sin duplicar matemática en JSON handler).
+
+---
+
+## Estacionamiento (CLI)
+
+Comando operativo de consola:
+
+```text
+estacionamiento [--track-a=<id|0000>] --track-b=<id_externo> --az=<deg> --d=<dm> \
+  (--vd=<knots> | --du=<hours>)
+```
+
+Reglas:
+
+- `vd` y `du` son mutuamente excluyentes (exactamente una modalidad).
+- Posicion y cinematica se obtienen por ID desde tracks existentes en backend.
+- `0000` representa OwnShip: `x=0`, `y=0`, rumbo/velocidad desde `CommandContext::ownShip`.
+- Si se omite `--track-a`, el backend asume `0000` por defecto.
+- `--track-b` es obligatorio y debe ser externo (`track-b != 0000`).
+- Si se usa `0000` sin OwnShip inicializado, se requiere ejecutar `ownship set` antes.
+- `ownship set` y `ownship_update` sincronizan un track virtual `id=0000` en `CommandContext`.
+- Salida estandar:
+
+```text
+RUMBO: XXX / TIEMPO: H 00:00:00
+```
+
+Implementación por capas:
+
+- Matemática pura: `src/model/estacionamientocalculator.*`
+- Validación/adaptación CLI: `src/controller/services/estacionamientoservice.*`
+- Comando CLI: `src/controller/commands/estacionamientocommand.*`
+
+Documento detallado: `docs/STATIONING_SYSTEM.md`
 
 ---
 
@@ -524,6 +565,37 @@ Dependencias sobre interfaces:
 - Main Thread → Event loop + red
 - IO Thread → lectura bloqueante de consola
 - Comunicación → signals/slots
+
+### Motor cinemático (Dead Reckoning relativo)
+
+- La actualización periódica se ejecuta desde el timer principal y delega en `CommandContext::updateTracks(deltaTime)`.
+- `CommandContext` expone `MotionMode` con dos estados:
+  - `RELATIVE` (default)
+  - `TRUE_MOTION`
+
+En `RELATIVE`:
+
+- El track reservado `0000` (OwnShip) queda anclado visualmente en `(0,0)` en cada tick.
+- Para cada track externo, el desplazamiento aplicado es:
+
+$$
+\Delta r_{final} = \Delta r_{track} - \Delta r_{ownShip}
+$$
+
+donde ambos deltas se calculan con rumbo/velocidad propios en el mismo intervalo de tiempo.
+
+- De esta forma, el radar opera en paradigma de movimiento relativo centrado en OwnShip.
+
+En `TRUE_MOTION`:
+
+- El track `0000` se actualiza como cualquier otro track (movimiento absoluto).
+- Cada track aplica solo su propio delta cinemático.
+
+Comando CLI para cambio en runtime:
+
+```text
+display mode <relative|true|true_motion|show>
+```
 
 ---
 

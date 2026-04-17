@@ -1,6 +1,7 @@
 #include "ownshipservice.h"
 
 #include "commandContext.h"
+#include "entities/track.h"
 #include "trackpppservice.h"
 
 #include <QtMath>
@@ -19,6 +20,31 @@ double OwnShipService::normalize360(double deg)
         deg += 360.0;
     }
     return deg;
+}
+
+void OwnShipService::syncOwnShipVirtualTrack()
+{
+    auto& own = m_context->ownShip;
+    Track* ownTrack = m_context->findTrackById(0);
+
+    if (!ownTrack) {
+        ownTrack = &m_context->emplaceTrackFront(
+            0,
+            TrackData::SPC,
+            TrackData::Pending,
+            TrackData::Auto,
+            0.0f,
+            0.0f,
+            own.speedKnots,
+            own.courseDeg,
+            TrackData::SPC
+        );
+    }
+
+    ownTrack->setX(0.0f);
+    ownTrack->setY(0.0f);
+    ownTrack->setCourseDeg(own.courseDeg);
+    ownTrack->setSpeedKnots(own.speedKnots);
 }
 
 OwnShipOperationResult OwnShipService::updateFromJson(const QJsonObject& args)
@@ -73,6 +99,7 @@ OwnShipOperationResult OwnShipService::updateFromJson(const QJsonObject& args)
     }
 
     own.valid = true;
+    syncOwnShipVirtualTrack();
 
     // Etapa actual: tracks estaticos.
     // Por eso el PPP de SITREP se recalcula una sola vez cuando cambia OwnShip.
@@ -102,6 +129,7 @@ OwnShipOperationResult OwnShipService::setFromCli(double courseDeg,
     own.speedKnots = speedKnots;
     own.source = source.trimmed().isEmpty() ? QStringLiteral("CLI") : source;
     own.valid = true;
+    syncOwnShipVirtualTrack();
 
     // Etapa actual: tracks estaticos.
     // Por eso el PPP de SITREP se recalcula una sola vez cuando cambia OwnShip.
