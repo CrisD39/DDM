@@ -5,6 +5,7 @@
 #include "lpdEncoder.h"
 #include "messagerouter.h"
 #include "obmHandler.h"
+#include "obmservice.h"
 #include "overlayHandler.h"
 #include "json/jsoncommandhandler.h"
 #include <QCoreApplication>
@@ -32,6 +33,7 @@
 #include "listcursorscommand.h"
 #include "sitrepcommand.h"
 #include "cpaCommand.h"
+#include "ownshipcommand.h"
 
 #include "addareacommand.h"
 #include "addpolygonocommand.h"
@@ -72,11 +74,12 @@ int main(int argc, char *argv[]) {
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CenterCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new ListCommand()));
-  registry->registerCommand(QSharedPointer<ICommand>(new addCursor()));
+  registry->registerCommand(QSharedPointer<ICommand>(new AddCursorCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new ListCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new DeleteCursorsCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new SitrepCommand()));
   registry->registerCommand(QSharedPointer<ICommand>(new CpaCommand()));
+  registry->registerCommand(QSharedPointer<ICommand>(new OwnShipCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddAreaCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddPolygonoCommand()));
     registry->registerCommand(QSharedPointer<ICommand>(new AddCircleCommand()));
@@ -121,6 +124,8 @@ int main(int argc, char *argv[]) {
   ITransport *transport = transportGuard.get();
   transport->start();
 
+  JsonCommandHandler *jsonHandler = nullptr;
+
   QTimer timer;
   QTimer updatePositionTimer;
   QObject::connect(&updatePositionTimer, &QTimer::timeout,
@@ -130,16 +135,20 @@ int main(int argc, char *argv[]) {
                    });
 
   QObject::connect(&timer, &QTimer::timeout, &timer,
-                   [ctx, encoder, transport]() {
+                   [ctx, encoder, transport, &jsonHandler]() {
+                     if (jsonHandler) {
+                       jsonHandler->refreshActiveCpaSessions();
+                     }
                      transport->send(encoder->buildFullMessage(*ctx));
                    });
 
   auto *obmHandler = new OBMHandler();
+  auto *obmService = new ObmService(obmHandler);
   auto *ownCurs = new OwnCurs(ctx, obmHandler);
 
   // 1. Crear los controladores
   auto *dclConcController = new DclConcController(transport, decoder, &app);
-  auto *jsonHandler = new JsonCommandHandler(ctx, transport, &app);
+  jsonHandler = new JsonCommandHandler(ctx, transport, obmService, &app);
 
   // 2. Crear el Router y pasarle los controladores
   auto *router = new MessageRouter(dclConcController, jsonHandler, &app);

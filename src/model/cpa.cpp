@@ -1,4 +1,5 @@
 #include "cpa.h"
+#include "pppcalculator.h"
 
 CPA::CPA(QObject *parent)
     : QObject{parent}
@@ -6,68 +7,25 @@ CPA::CPA(QObject *parent)
 
 CPAResult CPA::computeCPA(const Track& a, const Track& b)
 {
-    // Posiciones
-    QPair<double,double> Pa { a.getX(), a.getY() };
-    QPair<double,double> Pb { b.getX(), b.getY() };
+    PppCalculator::KinematicState aState;
+    aState.xDm = a.getX();
+    aState.yDm = a.getY();
+    aState.speedDmPerHour = a.getVelocidadDmPerHour();
+    aState.courseDeg = a.course();
 
-    // Velocidad en DM/s
-    double Va = a.speedKnots() / 3600.0;
-    double Vb = b.speedKnots() / 3600.0;
+    PppCalculator::KinematicState bState;
+    bState.xDm = b.getX();
+    bState.yDm = b.getY();
+    bState.speedDmPerHour = b.getVelocidadDmPerHour();
+    bState.courseDeg = b.course();
 
-    // Rumbo en radianes
-    double ha = qDegreesToRadians(a.course());
-    double hb = qDegreesToRadians(b.course());
+    const PppCalculator::Result result = PppCalculator::compute(aState, bState);
 
-    // Vectores velocidad
-    QPair<double,double> Va_vec {
-        Va * std::sin(ha),
-        Va * std::cos(ha)
-    };
-
-    QPair<double,double> Vb_vec {
-        Vb * std::sin(hb),
-        Vb * std::cos(hb)
-    };
-
-    // Posición relativa
-    QPair<double,double> Pos_rel {
-        Pb.first - Pa.first,
-        Pb.second - Pa.second
-    };
-
-    // Velocidad relativa
-    QPair<double,double> Vr {
-        Vb_vec.first - Va_vec.first,
-        Vb_vec.second - Va_vec.second
-    };
-
-    // |Vr|^2
-    double vr2 = Vr.first * Vr.first + Vr.second * Vr.second;
-
-    if (vr2 < 1e-9) {
-        double dist = std::sqrt(Pos_rel.first*Pos_rel.first + Pos_rel.second*Pos_rel.second);
-        return {0.0, dist, false};
+    if (result.status != PppCalculator::Result::Valid) {
+        return {result.timeHours * 3600.0, result.distanceDm, false};
     }
 
-    // TCPA
-    double tcpa = - ((Pos_rel.first * Vr.first) + (Pos_rel.second * Vr.second)) / vr2;
-
-    if (tcpa < 0)
-        tcpa = 0;
-
-    // Posición relativa en CPA
-    QPair<double,double> Pcpa {
-        Pos_rel.first + Vr.first * tcpa,
-        Pos_rel.second + Vr.second * tcpa
-    };
-
-    // DCPA
-    double dcpa = std::sqrt(Pcpa.first * Pcpa.first +
-                            Pcpa.second * Pcpa.second);
-
-    qDebug() << "\nRESULTADO CPA:" << tcpa << "-" << dcpa;
-
-    return { tcpa, dcpa, true };
+    return {result.timeHours * 3600.0, result.distanceDm, true};
 }
 
 CPAResult CPA::fromCLI(int idTrack1, int idTrack2, CommandContext &ctx)

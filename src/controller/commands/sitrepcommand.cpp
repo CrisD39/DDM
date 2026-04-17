@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 #include "sitrepcommand.h"
+=======
+#include "Commands/sitrepCommand.h"
+#include "../services/sitrepservice.h"
+>>>>>>> devLink
 
 #include <QThread>
 #include <QTextStream>
@@ -50,9 +55,9 @@ QString fmtNum4(int n) {
 
 void printHeader(QTextStream& out, int tracksCount, int refreshMs, bool showCtrlC) {
     out << "SITREP (refresh=" << refreshMs << "ms)  Tracks=" << tracksCount << "\n";
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
-    out << "| Nro   | Identidad   | Az/Dt(DM) | Rv/Vd     | Link | Lat/Long            | Info Ampliatoria          |\n";
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
+    out << "| Nro   | Identidad   | Az/Dt(DM) | Rv/Vd     | Link | Lat/Long            | Info Ampliatoria          | PPP Az/Dt/T      |\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
     if (!showCtrlC) out.flush();
 }
 
@@ -79,6 +84,16 @@ void printRow(QTextStream& out, const Track& t) {
     const QString info = t.getInformacionAmpliatoria().isEmpty() ? "-" : t.getInformacionAmpliatoria();
     const QString infoCell = QString("%1").arg(info.left(25), 25);
 
+    const Track::SitrepPppData ppp = t.getSitrepPpp();
+    QString pppCell = QStringLiteral("--/--/--:--");
+    if (ppp.status == Track::SitrepPppData::Valid
+        || ppp.status == Track::SitrepPppData::DegenerateRelativeMotion) {
+        pppCell = QStringLiteral("%1/%2/%3")
+                      .arg(ppp.azDeg, 3, 'f', 0)
+                      .arg(ppp.distanceDm, 4, 'f', 1)
+                      .arg(t.getSitrepPppTimeHHMM());
+    }
+
     out
         << "| " << QString("%1").arg(nro, 5) << " "
         << "| " << QString("%1").arg(ident, 11) << " "
@@ -86,11 +101,12 @@ void printRow(QTextStream& out, const Track& t) {
         << "| " << QString("%1").arg(rvvdCell, 9) << " "
         << "| " << QString("%1").arg(link, 4) << " "
         << "| " << QString("%1").arg(ll, 19) << " "
-        << "| " << infoCell << " |\n";
+        << "| " << infoCell << " "
+        << "| " << QString("%1").arg(pppCell, 16) << " |\n";
 }
 
 void printFooter(QTextStream& out, bool showCtrlC) {
-    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+\n";
+    out << "+-------+-------------+-----------+-----------+------+---------------------+---------------------------+------------------+\n";
     if (showCtrlC) out << "\nCTRL+C para salir.\n";
     out.flush();
 }
@@ -109,7 +125,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
     const QString sub = args.isEmpty() ? "list" : args[0].toLower();
 
     if (sub == "list") {
-        const std::deque<Track> snap = ctx.getTracks();
+        SitrepService ss(&ctx);
+        const std::deque<Track> snap = ss.snapshot();
         QString outMsg;
         QTextStream oss(&outMsg);
         static constexpr int REFRESH_MS = 2000;
@@ -120,7 +137,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
     if (sub == "watch") {
         static constexpr int REFRESH_MS = 2000;
         while (true) {
-            const std::deque<Track> snap = ctx.getTracks();
+            SitrepService ss(&ctx);
+            const std::deque<Track> snap = ss.snapshot();
             clearScreen(ctx.out);
             printSitrep(ctx.out, snap, REFRESH_MS, /*showCtrlC*/true);
             QThread::msleep(REFRESH_MS);
@@ -135,11 +153,11 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         const int id = args[1].toInt(&ok);
         if (!ok) return { false, "trackId invalido: " + args[1] };
 
-        const bool erased = ctx.eraseTrackById(id);
+        SitrepService ss(&ctx);
+        const bool erased = ss.deleteTrackById(id);
         if (!erased) return { false, QString("No existe track con id=%1").arg(id) };
 
-        // compat viejo (si existe)
-        ctx.sitrepExtra.erase(id);
+        // compat viejo (si existe) - ya limpiado por SitrepService::deleteTrackById
         return { true, QString("OK delete → id=%1").arg(id) };
     }
 
@@ -150,7 +168,8 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         const int id = args[1].toInt(&ok);
         if (!ok) return { false, "trackId invalido: " + args[1] };
 
-        Track* t = ctx.findTrackById(id);
+        SitrepService ss(&ctx);
+        Track* t = ss.findTrackById(id);
         if (!t) return { false, QString("No existe track con id=%1").arg(id) };
 
         QString text = args[2];
@@ -163,7 +182,7 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         t->setInformacionAmpliatoria(text);
 
         // Compat: mantenemos el map viejo por si alguna otra parte lo usa
-        ctx.setSitrepInfo(id, text);
+        ss.setSitrepInfo(id, text);
 
         return { true, QString("OK sitrep info → id=%1").arg(id) };
     }

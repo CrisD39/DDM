@@ -43,3 +43,8 @@ qfloat16 RadarMath::calculateAngle(const QPointF& start, const QPointF& end) {
 qfloat16 RadarMath::calculateLength(const QPointF& start, const QPointF& end) {
     return qSqrt(qPow(end.x() - start.x(), 2) + qPow(end.y() - start.y(), 2));
 }
+
+double RadarMath::normalizeAngle360(double deg)
+{
+    return normalizeDeg360(deg);
+}

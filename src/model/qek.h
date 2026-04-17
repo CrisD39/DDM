@@ -2,11 +2,9 @@
 #pragma once
 #include "commandContext.h"
 #include "obmHandler.h"
+#include "controller/services/trackpppservice.h"
 #include <QString>
 #include <QDebug>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
 
 using Type      = TrackData::Type;
 using Identity  = TrackData::Identity;
@@ -71,56 +69,28 @@ public:
 
     //quick
     void addTrack(Type type, TrackMode mode) {
+        addTrackWithIdentity(type, mode, Identity::Pending);
+    }
+
+    void addTrackWithIdentity(Type type, TrackMode mode, Identity identity) {
+        if (!ctx || !obmHandler) return;
+
         const auto pos = obmHandler->getPosition(); // QPair<float,float>
-        ctx->emplaceTrackFront(
+        Track& track = ctx->emplaceTrackFront(
             ctx->nextTrackId++,     // id
             type,                   // type
-            Identity::Pending,      // identidad inicial
+            identity,               // identidad inicial
             mode,                   // modo
             pos.first,              // x
-            pos.second              // y
+            pos.second,             // y
+            0.0,                    // speedKnots
+            0.0,                    // courseDeg
+            type                    // creationEnvironment
             );
-        // Si hay transport disponible, notificamos al frontend
-        if (ctx && ctx->transport) {
-            // Helper: translate identity using TrackData helpers
-            auto identityToString = [](const Track& tr) -> QString {
-                return TrackData::toQString(tr.getIdentity());
-            };
-            
-            QJsonObject argsObj;
-            // created id es el id del primer elemento (emplace front)
-            if (!ctx->getTracks().empty()) {
-                argsObj["created_id"] = QString::number(ctx->getTracks().front().getId());
-            } else {
-                argsObj["created_id"] = "";
-            }
 
-            QJsonArray arr;
-            for (const Track& tr : ctx->getTracks()) {
-                QJsonObject trackObj;
-                trackObj["id"] = tr.getId();
-                trackObj["identity"] = identityToString(tr);
-                trackObj["azimut"] = tr.getAzimuthDeg();
-                trackObj["distancia"] = tr.getDistanceDm();
-                trackObj["rumbo"] = tr.getCursoInt();
-                trackObj["velocidad"] = tr.getVelocidadDmPerHour();
-                trackObj["link"] = tr.getEstadoLinkY() == Track::LinkY_Invalid ? "--" :
-                                   QString(QChar("RCTS"[int(tr.getEstadoLinkY())]));
-                trackObj["lat"] = tr.getY();
-                trackObj["lon"] = tr.getX();
-                trackObj["info"] = tr.getInformacionAmpliatoria();
-                arr.append(trackObj);
-            }
-            argsObj["tracks"] = arr;
-
-            QJsonObject response;
-            response["status"] = "success";
-            response["command"] = "create_track";
-            response["args"] = argsObj;
-
-            QJsonDocument doc(response);
-            ctx->transport->send(doc.toJson(QJsonDocument::Compact));
-        }
+            // Mantiene consistencia con altas por CLI/JSON: si OwnShip ya es valido,
+            // el PPP de SITREP se calcula al momento del alta del track.
+            TrackPppService(ctx).recalculateTrackAgainstOwnShip(track);
     }
 
     bool wipeTrack() {

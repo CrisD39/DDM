@@ -1,7 +1,12 @@
 /*
     Comando `delete`/`del`/`rm`: elimina un `Track` por `id` del `ctx.tracks` con validaciones de argumentos.
 */
+<<<<<<< HEAD
 #include "deleteCommand.h"
+=======
+#include "Commands/deleteCommand.h"
+#include "../services/trackservice.h"
+>>>>>>> devLink
 
 CommandResult DeleteCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     const QStringList& args = inv.args;
@@ -15,7 +20,9 @@ CommandResult DeleteCommand::execute(const CommandInvocation& inv, CommandContex
         return {false, "ID inválido"};
     }
 
-    if (ctx.eraseTrackById(id)) {
+    TrackService trackService(&ctx);
+    TrackOperationResult result = trackService.deleteTrackById(id);
+    if (result.success) {
         return {true, QString("OK delete → id=%1").arg(id)};
     }
     return {false, QString("No existe el track id=%1").arg(id)};

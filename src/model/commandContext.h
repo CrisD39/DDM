@@ -13,6 +13,7 @@
 #include "network/iTransport.h"
 #include "entities/areaEntity.h"
 #include "entities/circleEntity.h"
+#include "entities/polygonoentity.h"
 
 struct CommandContext {
     CommandContext() : out(stdout), err(stderr) {
@@ -42,12 +43,38 @@ struct CommandContext {
     std::deque<CursorEntity> cursors;
     std::deque<Track> tracks;
 
+    struct OwnShipState {
+        double xDm = 0.0;
+        double yDm = 0.0;
+        double latitudeDeg = 0.0;
+        double longitudeDeg = 0.0;
+        double speedKnots = 0.0;
+        double courseDeg = 0.0;
+        QString timeUtc = QStringLiteral("00:00:00");
+        QString dateUtc = QStringLiteral("1970-01-01");
+        QString source = QStringLiteral("unknown");
+        bool valid = false;
+    };
+
+    OwnShipState ownShip;
+
+    struct CpaMarkerState {
+        QString sessionId;
+        int trackAId = -1;
+        int trackBId = -1;
+        float xDm = 0.0f;
+        float yDm = 0.0f;
+        bool visible = true;
+    };
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
 
     std::deque<AreaEntity> areas;
     std::deque<CircleEntity> circles;
+    std::deque<PolygonoEntity> polygons;
+    std::deque<CpaMarkerState> cpaMarkers;
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -68,12 +95,22 @@ struct CommandContext {
     inline std::deque<CircleEntity>& getCircles() { return circles; }
     inline const std::deque<CircleEntity>& getCircles() const { return circles; }
 
+    inline std::deque<PolygonoEntity>& getPolygons() { return polygons; }
+    inline const std::deque<PolygonoEntity>& getPolygons() const { return polygons; }
+
+    inline std::deque<CpaMarkerState>& getCpaMarkers() { return cpaMarkers; }
+    inline const std::deque<CpaMarkerState>& getCpaMarkers() const { return cpaMarkers; }
+
     inline void addArea(const AreaEntity& area) {
         areas.push_back(area);
     }
 
     inline void addCircle(const CircleEntity& circle) {
         circles.push_back(circle);
+    }
+
+    inline void addPolygon(const PolygonoEntity& polygon) {
+        polygons.push_back(polygon);
     }
 
     inline CursorEntity& addCursorFront(const CursorEntity& c) {
@@ -136,6 +173,39 @@ struct CommandContext {
         }
         return false;
     }
+
+    inline void upsertCpaMarker(const CpaMarkerState& marker) {
+        for (CpaMarkerState& existing : cpaMarkers) {
+            if (existing.sessionId == marker.sessionId) {
+                existing = marker;
+                return;
+            }
+        }
+        cpaMarkers.push_front(marker);
+    }
+
+    inline bool eraseCpaMarkerBySessionId(const QString& sessionId) {
+        for (auto it = cpaMarkers.begin(); it != cpaMarkers.end(); ++it) {
+            if (it->sessionId == sessionId) {
+                cpaMarkers.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline int eraseCpaMarkersByTrackId(int trackId) {
+        int removed = 0;
+        for (auto it = cpaMarkers.begin(); it != cpaMarkers.end();) {
+            if (it->trackAId == trackId || it->trackBId == trackId) {
+                it = cpaMarkers.erase(it);
+                ++removed;
+            } else {
+                ++it;
+            }
+        }
+        return removed;
+    }
     // transport is declared above; do not redeclare here.
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
@@ -178,6 +248,19 @@ struct CommandContext {
                     eraseCursorById(cid);
                 }
                 circles.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline bool deletePolygon(int polygonId) {
+        for (auto it = polygons.begin(); it != polygons.end(); ++it) {
+            if (it->getId() == polygonId) {
+                for (int cid : it->getCursorIds()) {
+                    eraseCursorById(cid);
+                }
+                polygons.erase(it);
                 return true;
             }
         }

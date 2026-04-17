@@ -33,7 +33,7 @@ public:
     const QPointF& getPointD() const;
     void setPointD(const QPointF& point);
 
-    const int getType() const;
+    int getType() const;
     void setType(int type);
 
     const QString& getColor() const;

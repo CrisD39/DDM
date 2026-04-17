@@ -29,9 +29,8 @@ graph TD
     CTRL[controller/]
     SRC --> CTRL
 
-    ROUT[routing/]
-    CTRL --> ROUT
-    ROUT --> MR[messageRouter.*]
+    MR[messageRouter.*]
+    CTRL --> MR
 
     JSON[json/]
     CTRL --> JSON
@@ -43,7 +42,16 @@ graph TD
 
     HANDLERS[handlers/]
     CTRL --> HANDLERS
-    HANDLERS --> LCH[linecommandhandler.*]
+    HANDLERS --> CCH[cursorcommandhandler.*]
+    HANDLERS --> TCH[trackcommandhandler.*]
+    HANDLERS --> GCH[geometrycommandhandler.*]
+
+    SERVICES[services/]
+    CTRL --> SERVICES
+    SERVICES --> CS[cursorservice.*]
+    SERVICES --> OS[obmservice.*]
+    SERVICES --> TS[trackservice.*]
+    SERVICES --> GS[geometryservice.*]
 
     COMMANDS[commands/]
     CTRL --> COMMANDS
@@ -97,7 +105,7 @@ graph TD
 
 Ubicación:
 ```
-src/controller/routing/messageRouter.*
+src/controller/messagerouter.*
 ```
 
 Responsabilidad:
@@ -133,7 +141,13 @@ Componentes:
 | Clase | Responsabilidad |
 |--------|----------------|
 | JsonCommandHandler | Parseo y dispatch |
-| LineCommandHandler | Lógica de líneas |
+| CursorCommandHandler | Adaptador JSON para line/cursor |
+| TrackCommandHandler | Adaptador JSON para tracks |
+| GeometryCommandHandler | Adaptador JSON para area/circle/polygon |
+| CursorService | Lógica compartida de cursor (CLI+JSON) |
+| ObmService | Lectura del estado actual de OBM para lógica de líneas |
+| TrackService | Lógica compartida de tracks (CLI+JSON) |
+| GeometryService | Lógica compartida de figuras (CLI+JSON) |
 | JsonValidator | Validación |
 | JsonSerializer | Serialización |
 | JsonResponseBuilder | Construcción de respuestas |
@@ -160,31 +174,57 @@ Mapa actual:
 ```cpp
 m_commandMap["create_line"];
 m_commandMap["delete_line"];
+m_commandMap["list_lines"];
+m_commandMap["create_track"];
+m_commandMap["delete_track"];
+m_commandMap["list_tracks"];
+m_commandMap["create_area"];
+m_commandMap["delete_area"];
+m_commandMap["create_circle"];
+m_commandMap["delete_circle"];
+m_commandMap["create_polygon"];
+m_commandMap["delete_polygon"];
+m_commandMap["list_shapes"];
+m_commandMap["ownship_update"];
+m_commandMap["cpa_start"];
+m_commandMap["ppp_graph"];
+m_commandMap["ppp_finish"];
+m_commandMap["ppp_clear_track"];
 ```
+
+Comando `ownship_update`:
+
+- Recibe estado de buque propio desde AR-TDC via JSON.
+- Delega en `OwnShipCommandHandler` + `OwnShipService`.
+- Persiste en `CommandContext::ownShip`.
 
 ---
 
-### 2.2 LineCommandHandler
+### 2.2 Cursor/Track/Geometry Handlers
 
 Ubicación:
 ```
-src/controller/handlers/linecommandhandler.*
+src/controller/handlers/cursorcommandhandler.*
+src/controller/handlers/trackcommandhandler.*
+src/controller/handlers/geometrycommandhandler.*
+src/controller/services/*.cpp
 ```
 
-Métodos:
+Responsabilidad:
 
 ```cpp
+// Handler: parseo + respuesta JSON
 QByteArray createLine(const QJsonObject& args);
-QByteArray deleteLine(const QJsonObject& args);
+
+// Service: lógica de negocio compartida (CLI y JSON)
+CursorOperationResult createCursor(const CursorCreateRequest& request);
 ```
 
-Flujo create_line:
+Flujo refactorizado:
 
-1. Validar azimut (0.0 – 359.9)
-2. Validar length (0.1 – 256.0)
-3. Crear CursorEntity
-4. Serializar
-5. Construir respuesta
+1. Adaptador (CLI/JSON) parsea y valida formato
+2. Service ejecuta reglas de negocio y muta CommandContext
+3. Adaptador construye salida (texto CLI o JSON)
 
 ---
 
@@ -200,6 +240,9 @@ Contiene:
 ```cpp
 std::deque<CursorEntity> cursors;
 std::deque<Track> tracks;
+std::deque<AreaEntity> areas;
+std::deque<CircleEntity> circles;
+std::deque<PolygonoEntity> polygons;
 
 int nextTrackId;
 int nextCursorId;
@@ -215,9 +258,44 @@ emplaceCursorFront(...)
 eraseCursorById(...)
 findTrackById(...)
 eraseTrackById(...)
+addArea(...)
+deleteAreaById(...)
+addCircle(...)
+deleteCircleById(...)
+addPolygono(...)
+deletePolygonoById(...)
 ```
 
 Es el núcleo del estado del backend.
+
+Además incluye estado de buque propio:
+
+```cpp
+OwnShipState ownShip;
+```
+
+Campos relevantes de `OwnShipState`:
+
+- `xDm`, `yDm`
+- `latitudeDeg`, `longitudeDeg`
+- `courseDeg`, `speedKnots`
+- `timeUtc`, `dateUtc`, `source`, `valid`
+
+---
+
+## 4️⃣ Comandos CLI de OwnShip
+
+Comando:
+
+```text
+ownship [show]
+ownship set <course_deg> <speed_knots> [source]
+```
+
+Implementación:
+
+- `src/controller/commands/ownshipcommand.*`
+- Usa `OwnShipService` para que CLI y JSON compartan validaciones y persistencia.
 
 ---
 
@@ -308,7 +386,9 @@ MessageRouter
   ↓
 JsonCommandHandler
   ↓
-LineCommandHandler
+CursorCommandHandler / TrackCommandHandler / GeometryCommandHandler
+  ↓
+Services (CursorService / ObmService / TrackService / GeometryService)
   ↓
 CommandContext
   ↓
@@ -325,13 +405,12 @@ ITransport
 
 ```json
 {
-  "command": "create_line",
+  "command": "create_track",
   "args": {
-    "azimut": 45.0,
-    "length": 100.0,
     "x": 0.0,
     "y": 0.0,
-    "type": 1
+    "type": "SPC",
+    "creation_environment": "SPC"
   }
 }
 ```
@@ -361,6 +440,66 @@ ITransport
   }
 }
 ```
+
+### Request de listado de figuras
+
+```json
+{
+  "command": "list_shapes",
+  "args": {}
+}
+```
+
+### Response Success de figuras
+
+```json
+{
+  "status": "success",
+  "command": "list_shapes",
+  "args": {
+    "areas": [],
+    "circles": [],
+    "polygons": []
+  }
+}
+```
+
+### Contratos JSON (resumen operativo)
+
+| Command | Args requeridos | Respuesta success (args) |
+|--------|------------------|--------------------------|
+| `create_line` | `azimut`, `length` | `created_id`, `lines` |
+| `delete_line` | `id` | `deleted_id`, `lines` |
+| `list_lines` | ninguno | `lines` |
+| `create_track` | `x`, `y` | `created_id`, `tracks` |
+| `delete_track` | `id` | `deleted_id`, `tracks` |
+| `list_tracks` | ninguno | `tracks` |
+| `create_area` | `points` | `created_id`, `areas` |
+| `delete_area` | `id` | `deleted_id`, `areas` |
+| `create_circle` | `x`, `y`, `radius` | `created_id`, `circles` |
+| `delete_circle` | `id` | `deleted_id`, `circles` |
+| `create_polygon` | `points` | `created_id`, `polygons` |
+| `delete_polygon` | `id` | `deleted_id`, `polygons` |
+| `list_shapes` | ninguno | `areas`, `circles`, `polygons` |
+| `cpa_start` | `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `status` |
+| `ppp_graph` | `id` o `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `symbol`, `main_symbol_byte` |
+| `ppp_finish` | `id` | `id`, `status` |
+| `ppp_clear_track` | `track_id` (alias `id`) | `track_id`, `removed_sessions`, `removed_markers` |
+
+Notas:
+
+- Todos los comandos siguen el envelope estándar: `status`, `command`, `args`.
+- Errores de validación usan `status: "error"` con `error_code` y `message`.
+- Para integración de frontend, mantener estables los nombres de `command` y claves de `args`.
+- `create_circle` toma el centro desde la posición OBM actual en backend (via `ObmService`); `x`/`y` del payload no son necesarios para centrar.
+- `create_track.args.type` acepta etiquetas `SPC|LINCO|ASW|OPS|HECO|APC|AAW|EW` o bits `0001..1000`.
+- `create_track.args.creation_environment` (también alias `environment` o `ambiente`) guarda el ambiente de creación del track.
+- Si `creation_environment` no viene en el JSON, se usa el mismo valor de `type`.
+- `tracks` incluye PPP de SITREP (`ppp_az`, `ppp_dt`, `ppp_t_hhmm`, `ppp_status`, `ppp_reason`). Este PPP es Track vs OwnShip.
+- El PPP de SITREP es independiente del modulo visual PPP/CPA entre dos tracks de la GUI.
+- Para CPA/PPP entre dos tracks, backend mantiene sesiones y marcadores de graficado en `CommandContext::cpaMarkers`.
+- `ppp_graph` publica marcador con símbolo principal `0x26` para que LPD dibuje `drawSymbolC3F07`.
+- `track_a` puede ser `own_ship` (alias `ownship|os|own`) si `OwnShipState.valid == true`; `track_b` debe ser un track regular.
 
 ---
 
@@ -398,18 +537,61 @@ Dependencias sobre interfaces:
 
 ---
 
-## Cambios recientes (Feb 2026)
+## Actualizado - PPP 31/03
 
-- `DDMController` ahora realiza formateo de los objetos `tracks` antes de exponerlos a QML y mantiene campos numéricos auxiliares (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
-- Implementado el invocable `deleteTrack(int)` que construye y emite el JSON `{ "command": "delete_track", "args": {"id": <id>} }` al backend para eliminar tracks; así la UI no manipula el modelo localmente.
-- `SitrepWorkspace.qml` incluye filtros cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y una búsqueda textual; el filtrado es visual y no afecta al `CommandContext`.
-- Se estandarizó la salida `identity` desde backend usando `TrackData::toQString(...)` para mantener coherencia entre CLI y GUI.
-- Fix de compilación en `ddmcontroller`: añadidos `QJsonDocument`, `QJsonObject`, `QVariant` en las includes para resolver errores de tipo incompleto.
-- `DDMController` (frontend bridge) formatea los campos de `tracks` antes de entregarlos a la vista QML (p. ej. `azimut`, `distancia`, `rumbo`, `velocidad`) y conserva versiones numéricas para procesamiento (`azimutNum`, `distanciaNum`, `rumboNum`, `velocidadNum`).
-- Se implementó `deleteTrack(int)` como invokable en `DDMController`; la UI envía `{ "command": "delete_track", "args": {"id": <id>} }` al backend en lugar de mutar el modelo localmente.
-- `SitrepWorkspace.qml` añade filtros cliente (TODOS, AMIGOS, DESC., HOSTILES, TX, RX) y búsqueda; el filtrado es únicamente visual.
-- `identity` ahora se normaliza en el backend con `TrackData::toQString(...)` para evitar discrepancias entre la CLI y la GUI.
-- Fix de compilación: incluidas cabeceras faltantes en `ddmcontroller` para resolver errores de tipo con `QJsonDocument`/`QJsonObject`/`QVariant`.
+### PPP como parte del sistema (no modulo aislado)
+
+El backend incorpora PPP/CPA como una capacidad transversal:
+
+- Matematica comun y reutilizable en `PppCalculator` (`src/model/pppcalculator.*`).
+- Integracion de caso de uso SITREP en `TrackPppService` (`src/controller/services/trackpppservice.*`).
+- Persistencia del resultado PPP en `Track` para exposicion consistente a CLI/JSON/frontend.
+
+### Separacion de casos de uso
+
+- SITREP: PPP por fila de track, siempre `Track vs OwnShip`.
+- GUI (herramienta PPP/CPA): calculo operativo `Track vs Track`.
+
+Ambos casos reutilizan la misma cuenta base; lo que cambia es la pareja de entidades y el punto de integracion.
+
+### Puntos de disparo del calculo PPP
+
+- `OwnShipService` (`src/controller/services/ownshipservice.cpp`):
+  - recálculo masivo one-shot al ejecutar `ownship set` o `ownship_update`.
+- `TrackService` (`src/controller/services/trackservice.cpp`):
+  - calculo inmediato al crear track por CLI/JSON si OwnShip ya es valido.
+- `QEK` (`src/model/qek.h`):
+  - calculo inmediato al crear track por flujo botonera/hardware si OwnShip ya es valido.
+
+### Estado operativo actual
+
+- En esta etapa no hay recálculo periodico de PPP.
+- Se asume track estatico para este caso de uso.
+- Para etapa dinamica futura, integrar recálculo en flujo cinemático (`updateTracks()` o equivalente) sin acoplar logica de dominio a presentacion.
+
+### Contrato JSON de tracks (SITREP)
+
+Los listados de tracks exponen:
+
+- `ppp_az`
+- `ppp_dt`
+- `ppp_t_hhmm` (salida `HH:MM`)
+- `ppp_status`
+- `ppp_reason`
+
+---
+
+## Cambios recientes (Mar 2026)
+
+- Se consolidó la lógica de negocio en servicios (`CursorService`, `ObmService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
+- Se agregaron comandos JSON de geometría faltantes: `delete_polygon` y `list_shapes`.
+- Se agrego `TrackPppService` como capa de integracion para persistir PPP de SITREP (Track vs OwnShip) en cada `Track`, reutilizando el motor matematico generico `PppCalculator`.
+- El recálculo de PPP de SITREP se ejecuta una sola vez al setear OwnShip (`ownship set`/`ownship_update`) y al crear track con OwnShip válido.
+- No hay recálculo periódico en esta etapa; para tracks dinámicos futuros, integrar recálculo en el flujo cinemático (`updateTracks()`).
+- `CommandContext` ahora expone también colecciones y helpers para `areas`, `circles` y `polygons`.
+- Se centralizó normalización angular en `RadarMath::normalizeAngle360` para evitar reglas duplicadas.
+- Se corrigieron errores de compilación por tipos incompletos y firmas inconsistentes en la capa de servicios/entidades.
+- `DDMController` mantiene formateo y campos auxiliares de tracks para QML, y la eliminación de track vía comando JSON `delete_track`.
 
 ## Resumen Final
 
@@ -417,7 +599,8 @@ El backend actual implementa una arquitectura limpia donde:
 
 - MessageRouter detecta
 - JsonCommandHandler enruta
-- Handlers ejecutan lógica
+- Handlers adaptan entrada/salida
+- Services ejecutan reglas de negocio y mutan estado
 - CommandContext mantiene estado
 - JsonResponseBuilder construye respuestas
 - Consola y frontend conviven sin interferir

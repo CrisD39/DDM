@@ -6,6 +6,8 @@
 
 class AddPolygonoCommand : public ICommand {
 public:
+    // Este comando se usa para iniciar un poligono tactico desde CLI.
+    // En AR-TDC se invoca con JSON create_polygon.
     QString getName() const override { return "addPolygono"; }
     QString getDescription() const override { return "Crea un polígono interactivo definiendo N puntos, seguido de tipo y color."; }
     // Espera una serie de coordenadas (x,y), luego tipo y color.

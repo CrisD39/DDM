@@ -1,9 +1,7 @@
 #include "addCommand.h"
 #include "enums.h"
-#include "../json/jsonresponsebuilder.h"
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonDocument>
+#include "../services/trackservice.h"
+#include "model/utils/RadarMath.h"
 
 #include <cmath>
 #include <limits>
@@ -41,6 +39,12 @@ QString takeTextUntilNextFlag(const QStringList& args, int& idx) {
         ++idx;
     }
     return out;
+}
+
+TrackData::Type trackTypeFromToken(const QString& token, bool& ok) {
+    TrackData::Type parsedType = TrackData::SPC;
+    ok = TrackData::tryParseType(token, parsedType) || TrackData::tryParseTypeBits(token, parsedType);
+    return parsedType;
 }
 
 TrackData::Identity identityFromCode(const QString& code, bool& ok) {
@@ -87,7 +91,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
     // --- Tipo (obligatorio) ---
     bool hasType = false;
-    TrackData::Type type = TrackData::Surface;
+    TrackData::Type type = TrackData::SPC;
 
     // --- Identidad (opcional) ---
     TrackData::Identity ident = TrackData::Pending; // default P
@@ -132,13 +136,26 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
         const QString f = tok.toLower();
 
-        // Tipo (obligatorio): -f|-e|-u
+        // Tipo (obligatorio): --type o legacy -f|-e|-u
+        if (f == "--type" || f == "-t") {
+            if (hasType) return { false, "Solo un tipo permitido por comando." };
+            if (idx + 1 >= args.size()) return { false, "Falta valor para --type." };
+            bool ok = false;
+            type = trackTypeFromToken(args[idx + 1], ok);
+            if (!ok) {
+                return { false, "Tipo invalido: " + args[idx + 1] + " (esperado SPC/LINCO/ASW/OPS/HECO/APC/AAW/EW o bits 0001..1000)" };
+            }
+            hasType = true;
+            idx += 2;
+            continue;
+        }
+
         if (f == "-f" || f == "-e" || f == "-u") {
             if (hasType) return { false, "Solo un flag de tipo permitido (-f|-e|-u)." };
             hasType = true;
-            if      (f == "-f") type = TrackData::Surface;
-            else if (f == "-e") type = TrackData::Air;
-            else                type = TrackData::Subsurface;
+            if      (f == "-f") type = TrackData::SPC;
+            else if (f == "-e") type = TrackData::AAW;
+            else                type = TrackData::ASW;
             ++idx;
             continue;
         }
@@ -255,7 +272,7 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
 
     // --------- Validación tipo ---------
     if (!hasType) {
-        return { false, "Falta tipo (-f|-e|-u).\nUso:\n" + usage() };
+        return { false, "Falta tipo (--type o -f|-e|-u).\nUso:\n" + usage() };
     }
 
     // --------- Coordenadas ---------
@@ -308,89 +325,54 @@ CommandResult AddCommand::execute(const CommandInvocation& inv, CommandContext& 
     }
 
     // --------- Alta del Track ---------
-    const int id = ctx.nextTrackId++;
+    TrackCreateRequest request;
+    request.type = type;
+    request.identity = ident;
+    request.mode = TrackData::Auto;
+    request.x = x;
+    request.y = y;
+    request.ctorSpeedKnots = hasKt ? spdKnots : (!std::isnan(legacyVelKnots) ? legacyVelKnots : 0.0);
+    request.ctorCourseDeg = RadarMath::normalizeAngle360(!std::isnan(legacyCourseDeg) ? legacyCourseDeg : 0.0);
 
-    // Creamos con legacy (knots/deg) para mantener el ctor existente.
-    // Si luego viene --spd/--crs, los pisan.
-    const double ctorKnots = hasKt ? spdKnots : (!std::isnan(legacyVelKnots) ? legacyVelKnots : 0.0);
-    const double ctorCrs   = (!std::isnan(legacyCourseDeg) ? legacyCourseDeg : 0.0);
+    if (hasSpdDm) request.speedDmPerHour = spdDmPerHour;
+    if (hasCrs) request.courseDeg = crsDegInt;
+    if (hasFc) request.fc = fc;
+    if (hasAsgc) request.asgc = asgc;
+    if (hasLinkY) request.linkY = linkY;
+    if (hasLink14) request.link14 = link14;
+    if (hasInfo) request.info = info;
+    if (hasPriv) request.priv = priv;
 
-    Track& t = ctx.emplaceTrackFront(
-        id,
-        type,
-        ident,
-        TrackData::TrackMode::Auto,
-        static_cast<float>(x),
-        static_cast<float>(y),
-        ctorKnots,
-        ctorCrs
-        );
-
-    // Pisamos con los campos “modelo” si vinieron
-    if (hasSpdDm) t.setVelocidadDmPerHour(spdDmPerHour);
-    if (hasCrs)   t.setCursoInt(crsDegInt);
-    if (hasFc)    t.setAsignacionFc(fc);
-    if (hasAsgc)  t.setCodigoAsignacion(asgc);
-    if (hasLinkY) t.setEstadoLinkY(linkY);
-    if (hasLink14)t.setEstadoLink14(link14);
-    if (hasInfo)  t.setInformacionAmpliatoria(info);
-    if (hasPriv)  t.setCodigoPrivado(priv);
-
-    // (por compatibilidad: también guardamos el info en el map viejo si querés)
-    if (hasInfo) ctx.setSitrepInfo(id, info);
-    // Notificar al frontend vía transport si está disponible
-    if (ctx.transport) {
-        // Helper: translate identity using TrackData helpers (keeps enum mapping correct)
-        auto identityToString = [](const Track& tr) -> QString {
-            return TrackData::toQString(tr.getIdentity());
-        };
-        
-        QJsonObject argsObj;
-        argsObj["created_id"] = QString::number(t.getId());
-
-        QJsonArray arr;
-        for (const Track& tr : ctx.getTracks()) {
-            QJsonObject trackObj;
-            trackObj["id"] = tr.getId();
-            trackObj["identity"] = identityToString(tr);
-            trackObj["azimut"] = tr.getAzimuthDeg();
-            trackObj["distancia"] = tr.getDistanceDm();
-            trackObj["rumbo"] = tr.getCursoInt();
-            trackObj["velocidad"] = tr.getVelocidadDmPerHour();
-            trackObj["link"] = tr.getEstadoLinkY() == Track::LinkY_Invalid ? "--" :
-                               QString(QChar("RCTS"[int(tr.getEstadoLinkY())]));
-            trackObj["lat"] = tr.getY();
-            trackObj["lon"] = tr.getX();
-            trackObj["info"] = tr.getInformacionAmpliatoria();
-            arr.append(trackObj);
-        }
-        argsObj["tracks"] = arr;
-
-        QJsonObject response;
-        response["status"] = "success";
-        response["command"] = "create_track";
-        response["args"] = argsObj;
-
-        QJsonDocument doc(response);
-        ctx.transport->send(doc.toJson(QJsonDocument::Compact));
+    TrackService trackService(&ctx);
+    TrackOperationResult createResult = trackService.createTrack(request);
+    if (!createResult.success) {
+        return {false, createResult.message};
     }
+
+    Track* t = trackService.findTrackById(createResult.trackId);
+    if (!t) {
+        return {false, "No se pudo recuperar el track recien creado"};
+    }
+    // NOTE: CLI command must not perform JSON transport operations.
+    // Notification to frontend is handled by the JSON handlers (TrackCommandHandler) or by
+    // services/handlers responsible for protocol serialization.
 
     return {
         true,
         QString("OK add → nro=%1 tipo=%2 id=%3 x=%4 y=%5 spd=%6DM/h crs=%7 fc=%8 asgc=%9 ly=%10 l14=%11 info=%12 priv=%13")
-            .arg(QString("%1").arg(t.getNumero(), 4, 10, QLatin1Char('0')))
-            .arg(QChar(t.getTipo()))
-            .arg(t.getIdentityCode())
-            .arg(t.getX(), 0, 'f', 3)
-            .arg(t.getY(), 0, 'f', 3)
-            .arg(t.getVelocidadDmPerHour(), 0, 'f', 1)
-            .arg(t.getCursoInt(), 3, 10, QLatin1Char('0'))
-            .arg(t.getAsignacionFc() ? QString::number(t.getAsignacionFc()) : QString("-"))
-            .arg(t.getCodigoAsignacion())
-            .arg(t.getEstadoLinkY() == Track::LinkY_Invalid ? "-" :
-                     QString(QChar("RC TS"[int(t.getEstadoLinkY())]))) // R,C,T,S en orden 0..3
-            .arg(t.getEstadoLink14() == Track::Link14_Invalid ? "-" : "T")
-            .arg(t.getInformacionAmpliatoria())
-            .arg(t.getCodigoPrivado())
+            .arg(QString("%1").arg(t->getNumero(), 4, 10, QLatin1Char('0')))
+            .arg(QChar(t->getTipo()))
+            .arg(t->getIdentityCode())
+            .arg(t->getX(), 0, 'f', 3)
+            .arg(t->getY(), 0, 'f', 3)
+            .arg(t->getVelocidadDmPerHour(), 0, 'f', 1)
+            .arg(t->getCursoInt(), 3, 10, QLatin1Char('0'))
+            .arg(t->getAsignacionFc() ? QString::number(t->getAsignacionFc()) : QString("-"))
+            .arg(t->getCodigoAsignacion())
+            .arg(t->getEstadoLinkY() == Track::LinkY_Invalid ? "-" :
+                     QString(QChar("RC TS"[int(t->getEstadoLinkY())]))) // R,C,T,S en orden 0..3
+            .arg(t->getEstadoLink14() == Track::Link14_Invalid ? "-" : "T")
+            .arg(t->getInformacionAmpliatoria())
+            .arg(t->getCodigoPrivado())
     };
 }

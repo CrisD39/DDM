@@ -5,6 +5,20 @@
 #include <QtMath>
 #include <cmath>
 
+QString Track::formatHoursToHHMM(double hours)
+{
+    if (!std::isfinite(hours) || hours < 0.0) {
+        return QStringLiteral("--:--");
+    }
+
+    const qint64 totalMinutes = static_cast<qint64>(std::round(hours * 60.0));
+    const qint64 hh = totalMinutes / 60;
+    const qint64 mm = totalMinutes % 60;
+    return QStringLiteral("%1:%2")
+        .arg(hh, 2, 10, QLatin1Char('0'))
+        .arg(mm, 2, 10, QLatin1Char('0'));
+}
+
 // ---------- helpers ----------
 double Track::normalize360(double deg)
 {
@@ -60,9 +74,11 @@ Track::Track(int id,
              float xDm,
              float yDm,
              double speedKnots,
-             double courseDeg)
+             double courseDeg,
+             Environment creationEnvironment)
     : m_id(id)
     , m_type(static_cast<uint8_t>(type))
+    , m_creationEnvironment(static_cast<uint8_t>(creationEnvironment))
     , m_identity(static_cast<uint8_t>(identity))
     , m_mode(static_cast<uint8_t>(mode))
     , m_xDm(xDm)
@@ -90,6 +106,7 @@ Track::Track(int id,
 // ---------- getters (compatibilidad) ----------
 int Track::getId() const { return m_id; }
 Track::Type Track::getType() const { return static_cast<Type>(m_type); }
+Track::Environment Track::getCreationEnvironment() const { return static_cast<Environment>(m_creationEnvironment); }
 Track::Identity Track::getIdentity() const { return static_cast<Identity>(m_identity); }
 Track::TrackMode Track::getTrackMode() const { return static_cast<TrackMode>(m_mode); }
 
@@ -164,6 +181,21 @@ QString Track::getCodigoPrivado() const
     return m_codigoPrivado;
 }
 
+Track::SitrepPppData Track::getSitrepPpp() const
+{
+    return m_sitrepPpp;
+}
+
+QString Track::getSitrepPppTimeHHMM() const
+{
+    if (m_sitrepPpp.status == SitrepPppData::NotComputed
+        || m_sitrepPpp.status == SitrepPppData::NoOwnShip) {
+        return QStringLiteral("--:--");
+    }
+
+    return formatHoursToHHMM(m_sitrepPpp.timeHours);
+}
+
 // ---------- setters (compatibilidad) ----------
 void Track::setId(int id)
 {
@@ -172,6 +204,7 @@ void Track::setId(int id)
 }
 
 void Track::setType(Type t) { m_type = static_cast<uint8_t>(t); }
+void Track::setCreationEnvironment(Environment env) { m_creationEnvironment = static_cast<uint8_t>(env); }
 void Track::setIdentity(Identity i) { m_identity = static_cast<uint8_t>(i); }
 void Track::setTrackMode(TrackMode m) { m_mode = static_cast<uint8_t>(m); }
 
@@ -241,6 +274,11 @@ void Track::setCodigoPrivado(const QString& code)
     m_codigoPrivado = code.isEmpty() ? QStringLiteral("-") : code;
 }
 
+void Track::setSitrepPpp(const SitrepPppData& ppp)
+{
+    m_sitrepPpp = ppp;
+}
+
 // ---------- cálculos ----------
 double Track::getAzimuthDeg() const
 {
@@ -277,8 +315,9 @@ QString Track::toString() const
 {
     // Mostramos velocidad en kt (por compatibilidad con logs / SITREP)
     return QStringLiteral(
-               "Track{tipo=%1, numero=%2, ident=%3, pos=(%4,%5)DM, az=%6°, dt=%7DM, spd=%8kt (%9DM/h), crs=%10°, FC=%11, ASG=%12, LY=%13, L14=%14, info=%15, priv=%16}")
+             "Track{tipo=%1, env=%2, numero=%3, ident=%4, pos=(%5,%6)DM, az=%7°, dt=%8DM, spd=%9kt (%10DM/h), crs=%11°, FC=%12, ASG=%13, LY=%14, L14=%15, info=%16, priv=%17}")
         .arg(QLatin1Char(getTipo()))
+         .arg(TrackData::toQString(getCreationEnvironment()))
         .arg(m_id)
         .arg(getIdentityCode())
         .arg(double(m_xDm), 0, 'f', 2)

@@ -1,6 +1,10 @@
 #include "addpolygonocommand.h"
+<<<<<<< HEAD
 #include "model/commandContext.h"
 #include "model/entities/polygonoentity.h"
+=======
+#include "../services/geometryservice.h"
+>>>>>>> devLink
 #include <iostream>
 #include <vector>
 #include <QString>
@@ -57,18 +61,13 @@ CommandResult AddPolygonoCommand::execute(const CommandInvocation& inv, CommandC
 
         QString polyColor = inv.args[colorIdx];
 
-        // Crear la entidad
-        // Usamos ctx.commandCounter++ para generar ID único
-        // Nota: Si PolygonoEntity debe almacenarse en el contexto (no solo sus cursores),
-        // habría que añadir un método en CommandContext para guardarlo.
-        // Por ahora, seguimos el patrón de AreaEntity donde parece que se crean los cursores y ya.
-        
-        PolygonoEntity polygon(ctx.commandCounter++, points, polyType, polyColor);
-        
-        // Calcular y guardar cursores visuales
-        polygon.calculateAndStoreCursors(ctx);
+        GeometryService geometryService(&ctx);
+        GeometryResult result = geometryService.createPolygon(points, polyType, polyColor);
+        if (!result.success) {
+            return {false, QString("Error al crear poligono: %1").arg(result.message)};
+        }
 
-        return {true, QString("Polígono %1 creado exitosamente con %2 puntos.").arg(polygon.getId()).arg(points.size())};
+        return {true, QString("Poligono %1 creado exitosamente con %2 puntos.").arg(result.id).arg(points.size())};
 
     } catch (const std::exception& e) {
         return {false, QString("Error al procesar argumentos: %1").arg(e.what())};
