@@ -8,8 +8,8 @@
 CommandResult ListCursorsCommand::execute(const CommandInvocation& inv, CommandContext& ctx) const {
     Q_UNUSED(inv);
 
-    CursorService cs(&ctx);
-    const QJsonArray serialized = cs.serializeCursors();
+    CursorService cursorService(&ctx);
+    const QJsonArray serialized = cursorService.serializeCursors();
     if (serialized.isEmpty()) return {true, "(sin cursores)"};
 
     QString out;

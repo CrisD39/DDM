@@ -79,6 +79,17 @@ graph TD
     ENT --> CUR[cursorEntity.*]
     ENT --> TRK[track.*]
 
+    REPO[repositories/]
+    MODEL --> REPO
+    REPO --> IREPO[interfaces/*.h]
+    REPO --> DQREPO[deque/Deque*Repository.*]
+
+    SRV[services/]
+    MODEL --> SRV
+    SRV --> DCS[DomainCleanupService.*]
+    SRV --> TS[TrackService.*]
+    SRV --> CS[CursorService.*]
+
     DEC[decoders/]
     MODEL --> DEC
     DEC --> CONC[concDecoder.*]
@@ -96,7 +107,6 @@ graph TD
     VIEW --> IINPUT[iInputParser.h]
 ```
 
-
 ---
 
 ## Arquitectura General
@@ -104,6 +114,7 @@ graph TD
 ### 1️⃣ Routing Layer
 
 Ubicación:
+
 ```
 src/controller/messagerouter.*
 ```
@@ -132,6 +143,7 @@ void MessageRouter::onMessageReceived(const QByteArray& data)
 ### 2️⃣ Pipeline JSON
 
 Ubicación:
+
 ```
 src/controller/json/
 ```
@@ -203,6 +215,7 @@ Comando `ownship_update`:
 ### 2.2 Cursor/Track/Geometry Handlers
 
 Ubicación:
+
 ```
 src/controller/handlers/cursorcommandhandler.*
 src/controller/handlers/trackcommandhandler.*
@@ -231,6 +244,7 @@ Flujo refactorizado:
 ## 3️⃣ Estado Global — CommandContext
 
 Ubicación:
+
 ```
 src/model/commandContext.h
 ```
@@ -296,6 +310,30 @@ Implementación:
 
 - `src/controller/commands/ownshipcommand.*`
 - Usa `OwnShipService` para que CLI y JSON compartan validaciones y persistencia.
+Refactor aplicado (compatible con `main.cpp` y `MessageRouter`):
+
+- `CommandContext` mantiene el estado compartido.
+- `CommandContext` inicializa un contenedor interno de dependencias persistentes (`Dependencies`) con repositorios y servicios.
+- `Dependencies` es interno/privado de `CommandContext` para evitar acoplamiento de otras capas a detalles de infraestructura.
+- El borrado cruzado de `Area/Circle` + `Cursor` se delega a `DomainCleanupService`.
+- Las operaciones de `Track` se delegan a `TrackService` sobre `ITrackRepository`.
+- Las operaciones `addTrackFront`/`emplaceTrackFront` se delegan a `TrackService`.
+- Las operaciones `addCursorFront`/`emplaceCursorFront` y `eraseCursorById` se delegan a `CursorService`.
+- Los consumidores (`commands`, `encoder`) migran gradualmente de acceso directo a `ctx.tracks/ctx.cursors` hacia `getTracks()`, `getCursors()` y métodos de `CommandContext`.
+- Los contenedores `tracks`, `cursors`, `areas` y `circles` quedan encapsulados como estado privado de `CommandContext`.
+- Para este flujo de dominio se usa inyección de dependencias en lugar de señales Qt, manteniendo llamadas síncronas y trazables.
+- El acceso a datos para cleanup se abstrae con repositorios:
+  - `IAreaRepository`
+  - `ICircleRepository`
+  - `ICursorRepository`
+  - `ITrackRepository`
+- La implementación actual es en memoria mediante:
+  - `DequeAreaRepository`
+  - `DequeCircleRepository`
+  - `DequeCursorRepository`
+  - `DequeTrackRepository`
+
+Esto permite migrar lógica de negocio fuera de `CommandContext` sin romper contratos existentes y evita reinstanciar repositorios/servicios en cada método.
 
 ---
 
@@ -345,6 +383,7 @@ public:
 ### DclConcController
 
 Ubicación:
+
 ```
 src/controller/dclConcController.*
 ```
@@ -359,6 +398,7 @@ Responsabilidad:
 ### ConcDecoder
 
 Ubicación:
+
 ```
 src/model/decoders/concDecoder.*
 ```
@@ -506,13 +546,17 @@ Notas:
 ## Principios de Diseño Aplicados
 
 ### Single Responsibility
+
 Cada clase tiene una responsabilidad clara.
 
 ### Open / Closed
+
 Agregar comandos no requiere modificar lógica existente.
 
 ### Dependency Inversion
+
 Dependencias sobre interfaces:
+
 - ITransport
 - ICommand
 - CommandContext

@@ -62,7 +62,7 @@ Track::SitrepPppData TrackPppService::computeTrackAgainstOwnShip(const Track& tr
 
 void TrackPppService::recalculateAllTracksAgainstOwnShip() const
 {
-    for (Track& track : m_context->tracks) {
+    for (Track& track : m_context->getTracks()) {
         recalculateTrackAgainstOwnShip(track);
     }
 }

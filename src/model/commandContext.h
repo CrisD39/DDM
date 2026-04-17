@@ -14,9 +14,45 @@
 #include "entities/areaEntity.h"
 #include "entities/circleEntity.h"
 #include "entities/polygonoentity.h"
+#include "repositories/deque/DequeAreaRepository.h"
+#include "repositories/deque/DequeCircleRepository.h"
+#include "repositories/deque/DequeCursorRepository.h"
+#include "repositories/deque/DequeTrackRepository.h"
+#include "services/cursorrepositoryservice.h"
+#include "services/DomainCleanupService.h"
+#include "services/trackrepositoryservice.h"
 
 struct CommandContext {
-    CommandContext() : out(stdout), err(stderr) {
+private:
+    struct Dependencies {
+        Dependencies(std::deque<CursorEntity>& cursorsRef,
+                     std::deque<Track>& tracksRef,
+                     std::deque<AreaEntity>& areasRef,
+                     std::deque<CircleEntity>& circlesRef)
+            : cursorRepository(cursorsRef)
+            , trackRepository(tracksRef)
+            , areaRepository(areasRef)
+            , circleRepository(circlesRef)
+            , cursorService(cursorRepository)
+            , trackService(trackRepository)
+            , cleanupService(areaRepository, circleRepository, cursorRepository) {}
+
+        DequeCursorRepository cursorRepository;
+        DequeTrackRepository trackRepository;
+        DequeAreaRepository areaRepository;
+        DequeCircleRepository circleRepository;
+
+        CursorRepositoryService cursorService;
+        TrackRepositoryService trackService;
+        DomainCleanupService cleanupService;
+    };
+
+public:
+
+    CommandContext()
+        : out(stdout)
+        , err(stderr)
+        , dependencies(cursors, tracks, areas, circles) {
         out.setEncoding(QStringConverter::Utf8);
         err.setEncoding(QStringConverter::Utf8);
     }
@@ -39,9 +75,6 @@ struct CommandContext {
     QString     lastCommandLine;
     quint64     lastCommandHash = 0;
     int         commandCounter  = 1;
-
-    std::deque<CursorEntity> cursors;
-    std::deque<Track> tracks;
 
     struct OwnShipState {
         double xDm = 0.0;
@@ -71,10 +104,17 @@ struct CommandContext {
 
     int               nextCursorId = 2;
 
+private:
+    std::deque<CursorEntity> cursors;
+    std::deque<Track> tracks;
     std::deque<AreaEntity> areas;
     std::deque<CircleEntity> circles;
     std::deque<PolygonoEntity> polygons;
     std::deque<CpaMarkerState> cpaMarkers;
+
+    Dependencies dependencies;
+
+public:
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -117,29 +157,29 @@ struct CommandContext {
         qDebug() << "agregando cursor ID:" << c.getCursorId()
                  << " Angle:" << c.getCursorAngle()
                  << " Length:" << c.getCursorLength();
-        cursors.push_front(c);
+        CursorEntity& created = dependencies.cursorService.addFront(c);
         qDebug() << "termine de agregar";
-        return cursors.front();
+        return created;
     }
 
     template <typename... Args>
     inline CursorEntity& emplaceCursorFront(Args&&... args) {
         qDebug() << "agregando cursor (emplace)";
-        cursors.emplace_front(std::forward<Args>(args)...);
+        CursorEntity cursor(std::forward<Args>(args)...);
+        CursorEntity& created = dependencies.cursorService.addFront(std::move(cursor));
         qDebug() << "termine de agregar (emplace)";
         qDebug() << "cursors size =" << cursors.size();
-        return cursors.front();
+        return created;
     }
 
     inline Track& addTrackFront(const Track& t) {
-        tracks.push_front(t);
-        return tracks.front();
+        return dependencies.trackService.addFront(t);
     }
 
     template <typename... Args>
     inline Track& emplaceTrackFront(Args&&... args) {
-        tracks.emplace_front(std::forward<Args>(args)...);
-        return tracks.front();
+        Track track(std::forward<Args>(args)...);
+        return dependencies.trackService.addFront(std::move(track));
     }
 
     inline QPointF center() const { return QPointF(centerX, centerY); }
@@ -152,26 +192,18 @@ struct CommandContext {
     inline void resetCenter(){ setCenter({0.0f, 0.0f}); }
 
     inline Track* findTrackById(int id) {
-        for (Track& t : tracks) if (t.getId() == id) return &t;
-        return nullptr;
+        return dependencies.trackService.findById(id);
     }
     inline const Track* findTrackById(int id) const {
-        for (const Track& t : tracks) if (t.getId() == id) return &t;
-        return nullptr;
+        return dependencies.trackService.findById(id);
     }
 
     inline bool eraseTrackById(int id) {
-        for (auto it = tracks.begin(); it != tracks.end(); ++it) {
-            if (it->getId() == id) { tracks.erase(it); return true; }
-        }
-        return false;
+        return dependencies.trackService.eraseById(id);
     }
 
     inline bool eraseCursorById(int id) {
-        for (auto it = cursors.begin(); it != cursors.end(); ++it) {
-            if (it->getCursorId() == id) { cursors.erase(it); return true; }
-        }
-        return false;
+        return dependencies.cursorService.eraseById(id);
     }
 
     inline void upsertCpaMarker(const CpaMarkerState& marker) {
@@ -208,50 +240,19 @@ struct CommandContext {
     }
     // transport is declared above; do not redeclare here.
     inline Track* getNextTrackById(int currentId) {
-        if (tracks.empty()) return nullptr;
-        std::size_t i = 0;
-        for (; i < tracks.size(); ++i) {
-            if (tracks[i].getId() == currentId) break;
-        }
-        if (i == tracks.size()) return nullptr;
-        const std::size_t j = (i + 1) % tracks.size();
-        return &tracks[j];
+        return dependencies.trackService.getNextById(currentId);
     }
 
     inline void updateTracks(double deltaTime){
-        for(Track& track : tracks){
-            track.updatePosition(deltaTime);
-        }
+        dependencies.trackService.updateTracks(deltaTime);
     }
 
     inline bool deleteArea(int areaId) {
-        for (auto it = areas.begin(); it != areas.end(); ++it) {
-            if (it->getId() == areaId) {
-                // Eliminar cursores asociados
-                eraseCursorById(it->getCursorIdAB());
-                eraseCursorById(it->getCursorIdBC());
-                eraseCursorById(it->getCursorIdCD());
-                eraseCursorById(it->getCursorIdDA());
-                // Eliminar area de la lista
-                areas.erase(it);
-                return true;
-            }
-        }
-        return false;
+        return dependencies.cleanupService.deleteAreaWithCursors(areaId);
     }
 
     inline bool deleteCircle(int circleId) {
-        for (auto it = circles.begin(); it != circles.end(); ++it) {
-            if (it->getId() == circleId) {
-                // Eliminar cursores asociados
-                for(int cid : it->getCursorIds()) {
-                    eraseCursorById(cid);
-                }
-                circles.erase(it);
-                return true;
-            }
-        }
-        return false;
+        return dependencies.cleanupService.deleteCircleWithCursors(circleId);
     }
 
     inline bool deletePolygon(int polygonId) {

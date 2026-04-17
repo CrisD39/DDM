@@ -76,6 +76,17 @@ HEADERS += \
     src/model/entities/areaEntity.h \
     src/model/entities/circleEntity.h \
     src/model/entities/polygonoentity.h \
+    src/model/repositories/interfaces/ICursorRepository.h \
+    src/model/repositories/interfaces/IAreaRepository.h \
+    src/model/repositories/interfaces/ICircleRepository.h \
+    src/model/repositories/interfaces/ITrackRepository.h \
+    src/model/repositories/deque/DequeCursorRepository.h \
+    src/model/repositories/deque/DequeAreaRepository.h \
+    src/model/repositories/deque/DequeCircleRepository.h \
+    src/model/repositories/deque/DequeTrackRepository.h \
+    src/model/services/cursorrepositoryservice.h \
+    src/model/services/trackrepositoryservice.h \
+    src/model/services/DomainCleanupService.h \
     src/model/enums/enums.h \
     src/model/network/clientSocket.h \
     src/model/network/iTransport.h \
@@ -151,6 +162,13 @@ SOURCES += \
     src/model/entities/areaEntity.cpp \
     src/model/entities/circleEntity.cpp \
     src/model/entities/polygonoentity.cpp \
+    src/model/repositories/deque/DequeCursorRepository.cpp \
+    src/model/repositories/deque/DequeAreaRepository.cpp \
+    src/model/repositories/deque/DequeCircleRepository.cpp \
+    src/model/repositories/deque/DequeTrackRepository.cpp \
+    src/model/services/cursorrepositoryservice.cpp \
+    src/model/services/trackrepositoryservice.cpp \
+    src/model/services/DomainCleanupService.cpp \
     src/model/network/clientSocket.cpp \
     src/model/network/localipcclient.cpp \
     src/model/network/transportFactory.cpp \
