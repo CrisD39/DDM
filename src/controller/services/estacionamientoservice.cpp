@@ -7,6 +7,7 @@
 #include <QMap>
 #include <QSet>
 #include <QTextStream>
+#include <QtMath>
 
 #include <cmath>
 
@@ -340,8 +341,20 @@ EstacionamientoService::CalculationResult EstacionamientoService::calculateFromO
     out.success = true;
     out.trackAId = input.trackAId;
     out.trackBId = input.trackBId;
+    out.azimuthDeg = input.azRelativeDeg;
+    out.distanceDm = input.distanceDm;
+    out.modalidad = input.hasVd ? QStringLiteral("VD") : QStringLiteral("DU");
+    out.modalidadValue = input.hasVd ? input.vdKnots : input.duHours;
     out.rumboDeg = result.rumboDeg;
     out.timeHours = result.timeHours;
     out.timeHms = formatDurationHms(result.timeHours);
+
+    // Posicion de estacionamiento actual (offset sobre TRACK-B segun azimut relativo).
+    const double stationAzAbsDeg = std::fmod(stateB.courseDeg + input.azRelativeDeg, 360.0);
+    const double normalizedAzAbsDeg = (stationAzAbsDeg < 0.0) ? (stationAzAbsDeg + 360.0) : stationAzAbsDeg;
+    const double stationAzAbsRad = qDegreesToRadians(normalizedAzAbsDeg);
+    out.stationPosXDm = stateB.xDm + (input.distanceDm * std::sin(stationAzAbsRad));
+    out.stationPosYDm = stateB.yDm + (input.distanceDm * std::cos(stationAzAbsRad));
+
     return out;
 }

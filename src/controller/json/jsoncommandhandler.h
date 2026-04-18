@@ -61,6 +61,7 @@ private:
 
     QByteArray handleCpaStart(const QJsonObject& args);
     QByteArray handleEstacionamiento(const QJsonObject& args);
+    QByteArray handleEstacionamientoStop(const QJsonObject& args);
     QByteArray handlePppGraph(const QJsonObject& args);
     QByteArray handlePppFinish(const QJsonObject& args);
     QByteArray handlePppClearTrack(const QJsonObject& args);

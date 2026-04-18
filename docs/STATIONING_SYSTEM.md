@@ -152,6 +152,24 @@ Integracion:
 
 - Registro en `main.cpp` para estar disponible en consola junto a comandos existentes.
 
+Memoria de sesiones (1..10):
+
+- `CommandContext` mantiene `std::map<int, StationingSession> stationingSessions`.
+- Cada `StationingSession` persiste:
+  - `slotIndex`
+  - `trackAId`, `trackBId`
+  - `azimuth`, `distance`
+  - `modalidad` (`VD`/`DU`) y `valorModalidad`
+  - resultados: `rumboDeg`, `tiempoManiobra`, `posicionEstacionX`, `posicionEstacionY`
+- Gestión de slots en `CommandContext`:
+  - `upsertStationingSession(...)`
+  - `removeStationingSession(...)`
+
+Recalculo cinemático por tick:
+
+- En `CommandContext::updateTracks(deltaTime)` se recalculan todas las sesiones activas.
+- Esto permite que la solución de Estacionamiento acompañe el movimiento del Buque Guía y del resto de tracks en cada ciclo de extrapolación.
+
 ---
 
 ## 5. Casos limite contemplados
@@ -169,3 +187,34 @@ Integracion:
 - Reusar el mismo motor para futura API JSON (sin duplicar matematica).
 - Resolver automaticamente datos de TRACK-A/B desde `CommandContext` cuando haya identificadores operativos estables para la unidad guia y el buque propio.
 - Incorporar restricciones tacticas adicionales (ej. limites de rumbo/velocidad por plataforma).
+
+---
+
+## 7. Integracion JSON y slots persistentes
+
+Comandos JSON operativos:
+
+- `estacionamiento_calc`
+  - Requiere: `index` (1..10), `track_b`, `az`, `d`, y exactamente uno de `vd` o `du`.
+  - `track_a` es opcional; si se omite, backend usa `0000` (OwnShip).
+  - Efecto: calcula y persiste (upsert) la sesión en `CommandContext::stationingSessions[index]`.
+- `estacionamiento_stop`
+  - Requiere: `index` (1..10).
+  - Efecto: elimina la sesión del slot (`removeStationingSession`).
+
+Respuesta de `estacionamiento_calc` incluye, además de rumbo/tiempo, la posición de estación instantánea:
+
+- `station_x_dm`
+- `station_y_dm`
+
+---
+
+## 8. Visualizacion LPD (AB2)
+
+Cada sesión EST activa se codifica en salida LPD como marcador AB2:
+
+- Símbolo principal: `0x4C`
+- Etiqueta dinámica: `EST_n` (según slot 1..10)
+- Coordenadas: `posicionEstacionX`, `posicionEstacionY` de la sesión recalculada por tick
+
+Esto permite que el operador vea en pantalla la referencia de estacionamiento asociada a cada slot activo.

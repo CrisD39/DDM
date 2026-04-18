@@ -16,9 +16,15 @@ public:
         QString errorMessage;
         int trackAId = -1;
         int trackBId = -1;
+        double azimuthDeg = 0.0;
+        double distanceDm = 0.0;
+        QString modalidad;
+        double modalidadValue = 0.0;
         double rumboDeg = 0.0;
         double timeHours = 0.0;
         QString timeHms;
+        double stationPosXDm = 0.0;
+        double stationPosYDm = 0.0;
     };
 
     struct OperationResult {

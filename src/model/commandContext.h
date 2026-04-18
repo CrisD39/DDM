@@ -7,9 +7,11 @@
 #include <QtMath>
 #include <cmath>
 #include <deque>
+#include <map>
 #include <utility>
 #include <unordered_map>
 
+#include "estacionamientocalculator.h"
 #include "entities/track.h"
 #include "entities/cursorEntity.h"
 #include "network/iTransport.h"
@@ -74,6 +76,22 @@ struct CommandContext {
         bool visible = true;
     };
 
+    struct StationingSession {
+        int slotIndex = 0;               // 1..10
+        int trackAId = 0;
+        int trackBId = -1;
+        double azimuth = 0.0;            // AZ relativo a track B [deg]
+        double distance = 0.0;           // D [DM]
+        QString modalidad = QStringLiteral("VD"); // VD o DU
+        double valorModalidad = 0.0;     // VD en knots o DU en horas
+
+        // Resultados calculados
+        double rumboDeg = 0.0;
+        double tiempoManiobra = 0.0;     // horas
+        double posicionEstacionX = 0.0;  // DM
+        double posicionEstacionY = 0.0;  // DM
+    };
+
     int               nextTrackId = 1;
 
     int               nextCursorId = 2;
@@ -82,6 +100,7 @@ struct CommandContext {
     std::deque<CircleEntity> circles;
     std::deque<PolygonoEntity> polygons;
     std::deque<CpaMarkerState> cpaMarkers;
+    std::map<int, StationingSession> stationingSessions;
 
     double centerX = 0.0;
     double centerY = 0.0;
@@ -217,6 +236,25 @@ struct CommandContext {
         }
         return removed;
     }
+
+    inline bool upsertStationingSession(const StationingSession& session) {
+        if (session.slotIndex < 1 || session.slotIndex > 10) {
+            return false;
+        }
+
+        StationingSession copy = session;
+        copy.slotIndex = session.slotIndex;
+        stationingSessions[copy.slotIndex] = copy;
+        return true;
+    }
+
+    inline bool removeStationingSession(int slotIndex) {
+        if (slotIndex < 1 || slotIndex > 10) {
+            return false;
+        }
+        return stationingSessions.erase(slotIndex) > 0;
+    }
+
     // transport is declared above; do not redeclare here.
     inline Track* getNextTrackById(int currentId) {
         if (tracks.empty()) return nullptr;
@@ -274,18 +312,92 @@ struct CommandContext {
                 track.setX(newX);
                 track.setY(newY);
             }
+        } else {
+            for (Track& track : tracks) {
+                double trkDx = 0.0;
+                double trkDy = 0.0;
+                displacementDm(track, trkDx, trkDy);
+
+                const float newX = static_cast<float>(track.getX() + trkDx);
+                const float newY = static_cast<float>(track.getY() + trkDy);
+                track.setX(newX);
+                track.setY(newY);
+            }
+        }
+
+        if (stationingSessions.empty()) {
             return;
         }
 
-        for (Track& track : tracks) {
-            double trkDx = 0.0;
-            double trkDy = 0.0;
-            displacementDm(track, trkDx, trkDy);
+        auto normalize360 = [](double deg) {
+            deg = std::fmod(deg, 360.0);
+            if (deg < 0.0) deg += 360.0;
+            return deg;
+        };
 
-            const float newX = static_cast<float>(track.getX() + trkDx);
-            const float newY = static_cast<float>(track.getY() + trkDy);
-            track.setX(newX);
-            track.setY(newY);
+        auto resolveState = [&](int trackId, EstacionamientoCalculator::KinematicState& outState) {
+            Track* track = findTrackById(trackId);
+            if (track) {
+                outState = {
+                    track->getX(),
+                    track->getY(),
+                    track->getVelocidadDmPerHour(),
+                    track->getCourseDeg(),
+                    true
+                };
+                return true;
+            }
+
+            if (trackId == 0 && ownShip.valid
+                && std::isfinite(ownShip.courseDeg)
+                && std::isfinite(ownShip.speedKnots)
+                && ownShip.speedKnots >= 0.0) {
+                outState = {
+                    0.0,
+                    0.0,
+                    ownShip.speedKnots / Track::kDmToNm,
+                    ownShip.courseDeg,
+                    true
+                };
+                return true;
+            }
+
+            return false;
+        };
+
+        for (auto& [slot, session] : stationingSessions) {
+            Q_UNUSED(slot)
+            EstacionamientoCalculator::KinematicState stateA;
+            EstacionamientoCalculator::KinematicState stateB;
+
+            if (!resolveState(session.trackAId, stateA) || !resolveState(session.trackBId, stateB)) {
+                continue;
+            }
+
+            const double stationAzAbsDeg = normalize360(stateB.courseDeg + session.azimuth);
+            const double stationAzAbsRad = qDegreesToRadians(stationAzAbsDeg);
+            session.posicionEstacionX = stateB.xDm + session.distance * std::sin(stationAzAbsRad);
+            session.posicionEstacionY = stateB.yDm + session.distance * std::cos(stationAzAbsRad);
+
+            EstacionamientoCalculator::Input input;
+            input.trackA = stateA;
+            input.trackB = stateB;
+            input.azRelativeDeg = session.azimuth;
+            input.distanceDm = session.distance;
+
+            const bool useVd = session.modalidad.trimmed().compare(QStringLiteral("VD"), Qt::CaseInsensitive) == 0;
+            input.useSpeedMode = useVd;
+            if (useVd) {
+                input.vdDmPerHour = session.valorModalidad / Track::kDmToNm;
+            } else {
+                input.duHours = session.valorModalidad;
+            }
+
+            const EstacionamientoCalculator::Result result = EstacionamientoCalculator::compute(input);
+            if (result.status == EstacionamientoCalculator::Result::Valid) {
+                session.rumboDeg = result.rumboDeg;
+                session.tiempoManiobra = result.timeHours;
+            }
         }
     }
 

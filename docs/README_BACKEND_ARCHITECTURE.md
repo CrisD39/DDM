@@ -274,6 +274,14 @@ Además incluye estado de buque propio:
 OwnShipState ownShip;
 ```
 
+Estado persistente de Estacionamiento:
+
+```cpp
+std::map<int, StationingSession> stationingSessions; // slots 1..10
+```
+
+`StationingSession` persiste inputs operativos (tracks, azimut, distancia, modalidad VD/DU, valor) y resultados de cálculo (rumbo/tiempo/posición de estación).
+
 Campos relevantes de `OwnShipState`:
 
 - `xDm`, `yDm`
@@ -490,7 +498,8 @@ ITransport
 | `ppp_graph` | `id` o `track_a`, `track_b` (`track_a` acepta `own_ship`) | `id`, `track_a`, `track_b`, `tcpa_sec`, `dcpa_dm`, `cpa_mid_x`, `cpa_mid_y`, `symbol`, `main_symbol_byte` |
 | `ppp_finish` | `id` | `id`, `status` |
 | `ppp_clear_track` | `track_id` (alias `id`) | `track_id`, `removed_sessions`, `removed_markers` |
-| `estacionamiento_calc` | `track_b`, `az`, `d`, y exactamente uno de `vd` o `du` (`track_a` opcional, default OwnShip) | `track_a`, `track_b`, `rumbo`, `tiempo_horas`, `tiempo_hms` |
+| `estacionamiento_calc` | `index (1..10)`, `track_b`, `az`, `d`, y exactamente uno de `vd` o `du` (`track_a` opcional, default OwnShip) | `index`, `track_a`, `track_b`, `rumbo`, `tiempo_horas`, `tiempo_hms`, `station_x_dm`, `station_y_dm` |
+| `estacionamiento_stop` | `index (1..10)` | `index`, `status=stopped` |
 
 Notas:
 
@@ -506,7 +515,9 @@ Notas:
 - Para CPA/PPP entre dos tracks, backend mantiene sesiones y marcadores de graficado en `CommandContext::cpaMarkers`.
 - `ppp_graph` publica marcador con símbolo principal `0x26` para que LPD dibuje `drawSymbolC3F07`.
 - `track_a` puede ser `own_ship` (alias `ownship|os|own`) si `OwnShipState.valid == true`; `track_b` debe ser un track regular.
-- `estacionamiento_calc` comparte la misma lógica de resolución por IDs/OwnShip de la capa de servicios (sin duplicar matemática en JSON handler).
+- `estacionamiento_calc` comparte la misma lógica de resolución por IDs/OwnShip de la capa de servicios (sin duplicar matemática en JSON handler) y persiste/actualiza el slot (`upsertStationingSession`).
+- `estacionamiento_stop` elimina una sesión activa de estacionamiento por `index` (`removeStationingSession`).
+- El encoder LPD publica cada sesión EST activa como marcador AB2 con símbolo principal `0x4C` y etiqueta dinámica `EST_n`.
 
 ---
 
@@ -596,6 +607,11 @@ Comando CLI para cambio en runtime:
 ```text
 display mode <relative|true|true_motion|show>
 ```
+
+Integración con Estacionamiento:
+
+- En cada `updateTracks(deltaTime)`, luego de mover tracks, se recalculan las sesiones activas de `stationingSessions` usando `EstacionamientoCalculator`.
+- Esto mantiene actualizado el asesoramiento cuando el Buque Guía (`track_b`) y/o el resto de unidades cambian su posición por extrapolación.
 
 ---
 

@@ -164,6 +164,10 @@ void JsonCommandHandler::initializeCommandMap()
     m_commandMap[QStringLiteral("estacionamiento_calc")] = [this](const QJsonObject& args) {
         return handleEstacionamiento(args);
     };
+
+    m_commandMap[QStringLiteral("estacionamiento_stop")] = [this](const QJsonObject& args) {
+        return handleEstacionamientoStop(args);
+    };
 }
 
 void JsonCommandHandler::routeCommand(const QString& command, const QJsonObject& args)
@@ -448,6 +452,16 @@ QByteArray JsonCommandHandler::handlePppClearTrack(const QJsonObject& args)
 
 QByteArray JsonCommandHandler::handleEstacionamiento(const QJsonObject& args)
 {
+    const int slotIndex = args.value(QStringLiteral("index")).toInt(-1);
+    if (slotIndex < 1 || slotIndex > 10) {
+        return JsonResponseBuilder::buildValidationErrorResponse(
+            QStringLiteral("estacionamiento_calc"),
+            QStringLiteral("index"),
+            QString::number(slotIndex),
+            QStringLiteral("required, must be between 1 and 10")
+        );
+    }
+
     QMap<QString, QString> options;
 
     auto valueToString = [](const QJsonValue& value, QString& outText) -> bool {
@@ -521,12 +535,62 @@ QByteArray JsonCommandHandler::handleEstacionamiento(const QJsonObject& args)
         );
     }
 
+    CommandContext::StationingSession session;
+    session.slotIndex = slotIndex;
+    session.trackAId = calcResult.trackAId;
+    session.trackBId = calcResult.trackBId;
+    session.azimuth = calcResult.azimuthDeg;
+    session.distance = calcResult.distanceDm;
+    session.modalidad = calcResult.modalidad;
+    session.valorModalidad = calcResult.modalidadValue;
+    session.rumboDeg = calcResult.rumboDeg;
+    session.tiempoManiobra = calcResult.timeHours;
+    session.posicionEstacionX = calcResult.stationPosXDm;
+    session.posicionEstacionY = calcResult.stationPosYDm;
+
+    if (!m_context->upsertStationingSession(session)) {
+        return JsonResponseBuilder::buildErrorResponse(
+            QStringLiteral("estacionamiento_calc"),
+            QStringLiteral("INVALID_SLOT"),
+            QStringLiteral("No se pudo persistir la sesion de estacionamiento para index %1").arg(slotIndex)
+        );
+    }
+
     QJsonObject responseArgs;
+    responseArgs[QStringLiteral("index")] = slotIndex;
     responseArgs[QStringLiteral("track_a")] = calcResult.trackAId;
     responseArgs[QStringLiteral("track_b")] = calcResult.trackBId;
     responseArgs[QStringLiteral("rumbo")] = calcResult.rumboDeg;
     responseArgs[QStringLiteral("tiempo_horas")] = calcResult.timeHours;
     responseArgs[QStringLiteral("tiempo_hms")] = calcResult.timeHms;
+    responseArgs[QStringLiteral("station_x_dm")] = calcResult.stationPosXDm;
+    responseArgs[QStringLiteral("station_y_dm")] = calcResult.stationPosYDm;
 
     return JsonResponseBuilder::buildSuccessResponse(QStringLiteral("estacionamiento_calc"), responseArgs);
+}
+
+QByteArray JsonCommandHandler::handleEstacionamientoStop(const QJsonObject& args)
+{
+    const int slotIndex = args.value(QStringLiteral("index")).toInt(-1);
+    if (slotIndex < 1 || slotIndex > 10) {
+        return JsonResponseBuilder::buildValidationErrorResponse(
+            QStringLiteral("estacionamiento_stop"),
+            QStringLiteral("index"),
+            QString::number(slotIndex),
+            QStringLiteral("required, must be between 1 and 10")
+        );
+    }
+
+    if (!m_context->removeStationingSession(slotIndex)) {
+        return JsonResponseBuilder::buildErrorResponse(
+            QStringLiteral("estacionamiento_stop"),
+            QStringLiteral("SESSION_NOT_FOUND"),
+            QStringLiteral("No existe sesion de estacionamiento activa para index %1").arg(slotIndex)
+        );
+    }
+
+    QJsonObject responseArgs;
+    responseArgs[QStringLiteral("index")] = slotIndex;
+    responseArgs[QStringLiteral("status")] = QStringLiteral("stopped");
+    return JsonResponseBuilder::buildSuccessResponse(QStringLiteral("estacionamiento_stop"), responseArgs);
 }

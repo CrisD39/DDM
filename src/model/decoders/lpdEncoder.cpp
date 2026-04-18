@@ -117,6 +117,12 @@ QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
         appendCpaMarkerMessage(bigBuffer, marker);
     }
 
+    // STATIONING SESSIONS (EST_n) - marcador AB2 (en prueba usando simbolo 0x26).
+    for (const auto &entry : ctx.stationingSessions) {
+        const CommandContext::StationingSession& session = entry.second;
+        appendStationingMarkerMessage(bigBuffer, session);
+    }
+
     // CURSORES
     for (const auto &cursor : ctx.cursors){
         appendAB3Message(bigBuffer, cursor);
@@ -280,6 +286,34 @@ void encoderLPD::appendCpaMarkerMessage(QByteArray& dst, const CommandContext::C
     dst.append(static_cast<char>('0' + ((syntheticId >> 3) & 0x7)));
     dst.append(static_cast<char>('0' + (syntheticId & 0x7)));
 
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(EOMM));
+}
+
+void encoderLPD::appendStationingMarkerMessage(QByteArray& dst, const CommandContext::StationingSession& session)
+{
+    // Estructura calcada de appendCpaMarkerMessage.
+    // Palabra 1 (AB2_X): BIT_V=1 y BIT_PV=0 por defecto de appendCoordinate para AB2_ID_X.
+    appendCoordinate(dst, session.posicionEstacionX, AB2_ID_X);
+    // Palabra 2 (AB2_Y): mismo orden de bits/bytes que CPA.
+    appendCoordinate(dst, session.posicionEstacionY, AB2_ID_Y);
+
+    // Simbolo fijo 0x26 para prueba de canal/render (igual a CPA). //cambiar aca
+    dst.append(static_cast<char>(0x24));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+    dst.append(static_cast<char>(0x00));
+
+    // Numero sintetico en 4 digitos octales ASCII (igual formato CPA).
+    const int syntheticId = qBound(0, session.slotIndex, 4095);
+    dst.append(static_cast<char>('0' + ((syntheticId >> 9) & 0x7)));
+    dst.append(static_cast<char>('0' + ((syntheticId >> 6) & 0x7)));
+    dst.append(static_cast<char>('0' + ((syntheticId >> 3) & 0x7)));
+    dst.append(static_cast<char>('0' + (syntheticId & 0x7)));
+
+    // Padding + cierre exacto.
     dst.append(static_cast<char>(0x00));
     dst.append(static_cast<char>(0x00));
     dst.append(static_cast<char>(EOMM));
