@@ -7,7 +7,7 @@ on:
     branches: [ develop ]
 
 jobs:
- build-windows:
+  build-windows:
     name: Compilar en Windows
     runs-on: windows-latest
     #solo corre cuando se sube cosas a develop
