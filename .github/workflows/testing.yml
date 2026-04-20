@@ -23,22 +23,19 @@ jobs:
         version: '6.5.*'
         host: 'windows'
         target: 'desktop'
-        arch: 'win64_msvc2019_64'
-
-    - name: Configurar MSVC
-      uses: ilammy/msvc-dev-cmd@v1
+        arch: 'win64_mingw'
 
     - name: Compilar en Windows
       shell: cmd
       run: |
-        qmake DDM.pro -spec win32-msvc
-        nmake
+        qmake DDM.pro 
+        mingw32-make
 
-    - name: Empaquetar DLLs (Portable)
+    - name: Empaquetar DLLs
       shell: cmd
       run: |
         echo "Recolectando librerías de Qt..."
-        windeployqt release\DDM.exe
+        windeployqt release\DDM.exe --compiler-runtime
         
     - name: Subir Artefacto Windows
       uses: actions/upload-artifact@v4
