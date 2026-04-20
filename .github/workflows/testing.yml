@@ -16,6 +16,12 @@ jobs:
     - name: Descargar codigo (Develop)
       uses: actions/checkout@v4
 
+    - name: Instalar MinGW 11.2.0
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x64
+        version: 11.2.0
+        
     - name: Instalar Qt para Windows (MinGW 6.7.3)
       uses: jurplel/install-qt-action@v3
       with:
