@@ -1,8 +1,6 @@
 stages:
   - build
   - release
-# --- TAREA PARA TU PC (WINDOWS) ---
-# Se activa cuando subís cambios y tu Runner está en "run"
 build_windows:
   stage: build
   tags:
