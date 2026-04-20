@@ -23,7 +23,7 @@ jobs:
         version: '6.7.3'
         host: 'windows'
         target: 'desktop'
-        arch: 'win64_msvc2019_64'
+        arch: 'win64_mingw'
         
     - name: Configurar MSVC
       uses: ilammy/msvc-dev-cmd@v1
