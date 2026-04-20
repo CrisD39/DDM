@@ -5,6 +5,8 @@ build_windows:
   stage: build
   tags:
     - ddm-test-pc
+  only:
+    - develop #solo compila cuando suben a develop
   script:
     - echo "Compilando para Windows en la PC de Maria..."
     # 1. Agregamos Qt al Path para que reconozca qmake
@@ -16,14 +18,17 @@ build_windows:
   artifacts:
     paths:
       - release/
-# --- TAREA PARA EL SERVIDOR DE LA ARMADA (LINUX) ---
-# Esta tarea la va a buscar el runner "infra"
+
+#como no puede usarse el runner infra de la armada usamos uno local
 build_linux:
   stage: build
   # Usamos una imagen oficial y limpia de Ubuntu
   image: ubuntu:22.04
   tags:
     - ddm-linux-local
+  only:
+    - develop        
+    - linux-version  
   before_script:
     # Le decimos a la maquinita Linux que instale Qt6 y los compiladores (C++)
     - apt-get update -y
