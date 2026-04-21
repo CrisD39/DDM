@@ -12,9 +12,16 @@ build_windows:
     - tags
   script:
     - echo "Compilando versión RELEASE para Windows..."
-    - qmake DDM.pro CONFIG+=release
-    - nmake
-    - windeployqt release\DDM.exe --compiler-runtime
+    
+    #Llamamos a qmake con su ruta absoluta
+    - '& "C:\Qt\6.7.3\mingw_64\bin\qmake.exe" DDM.pro CONFIG+=release'
+    
+    #Llamamos al compilador
+    - '& "C:\Qt\Tools\mingw1120_64\bin\mingw32-make.exe"'
+    
+    #Llamamos al empaquetador con su ruta absoluta
+    - '& "C:\Qt\6.7.3\mingw_64\bin\windeployqt.exe" release\DDM.exe --compiler-runtime'
+    
   artifacts:
     name: "DDM-Windows-v$CI_COMMIT_TAG"
     paths:
@@ -25,7 +32,7 @@ build_linux:
   stage: build
   image: rabbitmq:latest # Tu imagen con Qt6
   tags:
-    - linux-runner
+    - ddm-linux-local
   only:
     - linux-version
     - tags
