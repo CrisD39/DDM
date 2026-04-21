@@ -28,7 +28,7 @@ build_windows:
 #Compilacion en linux, linux-version
 build_linux:
   stage: build
-  image: stateoftheartio/qt6:6.7.3-gcc-aqt
+  image: stateoftheartio/qt6:6.7-gcc-aqt
   tags:
     - ddm-linux-local
   only:
