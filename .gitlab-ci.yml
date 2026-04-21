@@ -36,6 +36,8 @@ build_linux:
     - linux-version
     - tags
   script:
+    - echo "Preparando entorno de Linux instalando dependencias gráficas..."
+    - apt-get update -y && apt-get install -y libgl1-mesa-dev
     - echo "Imitando el actions/checkout con ref linux-version..."
     - git config --global --add safe.directory '*'
     - git fetch origin linux-version
