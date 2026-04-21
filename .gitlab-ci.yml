@@ -14,10 +14,12 @@ build_windows:
     - develop
     - tags
   script:
+    - echo "Inyectando Qt y MinGW al PATH del sistema..."
+    - $env:Path = "C:\Qt\6.7.3\mingw_64\bin;C:\Qt\Tools\mingw1120_64\bin;" + $env:Path
     - echo "Compilando versión RELEASE para Windows..."
-    - '& "C:\Qt\6.7.3\mingw_64\bin\qmake.exe" DDM.pro CONFIG+=release'
-    - '& "C:\Qt\Tools\mingw1120_64\bin\mingw32-make.exe"'
-    - '& "C:\Qt\6.7.3\mingw_64\bin\windeployqt.exe" release\DDM.exe --compiler-runtime'
+    - qmake DDM.pro CONFIG+=release
+    - mingw32-make
+    - windeployqt release\DDM.exe --compiler-runtime
   artifacts:
     name: "DDM-Windows-v$CI_COMMIT_TAG"
     paths:
@@ -26,6 +28,7 @@ build_windows:
 #Compilacion en linux, linux-version
 build_linux:
   stage: build
+  image: stateoftheartio/qt6:6.7-gcc-aqt
   tags:
     - ddm-linux-local
   only:
