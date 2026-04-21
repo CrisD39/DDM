@@ -53,26 +53,42 @@ build_linux:
     paths:
       - build_linux/
 
-#Generacion de releases
-create_release:
+#Release para windows
+release_windows:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   tags:
     - ddm-test-pc
-    - ddm-linux-local
-  # Saqué el tag ddm-test-pc para que use los runners compartidos de GitLab con Docker
   rules:
     - if: $CI_COMMIT_TAG
   script:
-    - echo "Creando Release unificada para Windows y Linux..."
+    - echo "Generando Release oficial para Windows..."
   release:
-    name: 'DDM Release $CI_COMMIT_TAG'
-    description: 'Versión oficial para la ARA. Esta release contiene los binarios optimizados (release) para ambos sistemas operativos.'
-    tag_name: '$CI_COMMIT_TAG'
+    name: 'DDM Windows Release $CI_COMMIT_TAG'
+    description: 'Binarios oficiales para Windows (compilados en ddm-test-pc).'
+    tag_name: '$CI_COMMIT_TAG-win' # Tag diferenciado
     ref: '$CI_COMMIT_SHA'
     assets:
       links:
-        - name: 'Descargar para Windows'
+        - name: 'Descargar DDM Windows (.exe)'
           url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows'
-        - name: 'Descargar para Linux'
+
+#Release para linux
+release_linux:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  tags:
+    - ddm-linux-local
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "Generando Release oficial para Linux..."
+  release:
+    name: 'DDM Linux Release $CI_COMMIT_TAG'
+    description: 'Binarios oficiales para Linux (compilados en ddm-linux-local).'
+    tag_name: '$CI_COMMIT_TAG-linux' # Tag diferenciado
+    ref: '$CI_COMMIT_SHA'
+    assets:
+      links:
+        - name: 'Descargar DDM Linux (Ubuntu)'
           url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_linux'
