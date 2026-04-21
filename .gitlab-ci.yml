@@ -37,7 +37,7 @@ build_linux:
     - tags
   script:
     - echo "Imitando el actions/checkout con ref linux-version..."
-    # Forzamos a que descargue siempre la rama de Linux, igual que hacias en GitHub
+    - git config --global --add safe.directory '*'
     - git fetch origin linux-version
     - git checkout linux-version
     
