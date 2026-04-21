@@ -21,7 +21,7 @@ jobs:
       with:
         platform: x64
         version: 11.2.0
-        
+
     - name: Instalar Qt para Windows (MinGW 6.7.3)
       uses: jurplel/install-qt-action@v3
       with:
@@ -51,7 +51,7 @@ jobs:
     name: Compilar en Ubuntu 
     runs-on: ubuntu-latest
     #evita que una falla en Linux nos ponga todo el pipeline en rojo
-    continue-on-error: true 
+    #continue-on-error: true 
 
     steps:
     - name: Descargar codigo
