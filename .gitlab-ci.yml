@@ -1,64 +1,63 @@
 stages:
   - build
   - release
+
+#Compilacion para windows (con las restricciones de versiones)
 build_windows:
   stage: build
   tags:
     - ddm-test-pc
   only:
-    - develop #solo compila cuando suben a develop
+    - develop
+    - tags
   script:
-    - echo "Compilando para Windows en la PC de Maria..."
-    # 1. Agregamos Qt al Path para que reconozca qmake
-    - $env:Path += ";C:\Qt\6.5.3\msvc2019_64\bin" 
-    # 2. Despertamos al compilador de Visual Studio y compilamos en un solo paso
-    - cmd.exe /c '"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" && qmake DDM.pro -spec win32-msvc && nmake'
-    - echo "Recolectando dependencias (DLLs) de Qt..."
-    - windeployqt release\DDM.exe
+    - echo "Compilando versión RELEASE para Windows..."
+    - qmake DDM.pro CONFIG+=release
+    - nmake
+    - windeployqt release\DDM.exe --compiler-runtime
   artifacts:
+    name: "DDM-Windows-v$CI_COMMIT_TAG"
     paths:
       - release/
 
-#como no puede usarse el runner infra de la armada usamos uno local
+#Compilacion para linux (linux-version)
 build_linux:
   stage: build
-  # Usamos una imagen oficial y limpia de Ubuntu
-  image: ubuntu:22.04
+  image: rabbitmq:latest # Tu imagen con Qt6
   tags:
-    - ddm-linux-local
+    - linux-runner
   only:
-    - develop        
-    - linux-version  
-  before_script:
-    # Le decimos a la maquinita Linux que instale Qt6 y los compiladores (C++)
-    - apt-get update -y
-    - apt-get install -y qt6-base-dev qt6-tools-dev build-essential
+    - linux-version
+    - tags
   script:
-    - echo "Compilando para Linux con Ubuntu en la PC de Maria..."
-    # En Ubuntu, qmake para la versión 6 se llama qmake6
-    - qmake6 DDM.pro
-    - make
+    - echo "Compilando versión RELEASE para Linux..."
+    - mkdir -p build_linux
+    - cd build_linux
+    - qmake ../DDM.pro CONFIG+=release
+    - make -j$(nproc)
   artifacts:
+    name: "DDM-Linux-v$CI_COMMIT_TAG"
     paths:
-      - DDM
-  allow_failure: true
+      - build_linux/
 
+#Generacion de release
 create_release:
   stage: release
-  image: 
-    name: registry.gitlab.com/gitlab-org/release-cli:latest
-    entrypoint: [""]
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   tags:
-    - ddm-linux-local
+    - ddm-test-pc
   rules:
-    - if: $CI_COMMIT_TAG
-  variables:
-    ADDITIONAL_CA_CERT_BUNDLE: ""
-    GITLAB_HTTPS_INSECURE: "true" 
+    - if: $CI_COMMIT_TAG #solo se ejecuta si ejecuto el tag
   script:
-    - echo "Generando Release oficial ignorando certificados..."
-    - |
-      release-cli --insecure-https create --name "Release $CI_COMMIT_TAG" \
-        --description "Build automático de DDM" \
-        --tag-name "$CI_COMMIT_TAG" \
-       --assets-link "{\"name\":\"Descargar DDM Portable\",\"url\":\"${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows\"}"
+    - echo "Creando Release unificada para Windows y Linux..."
+  release:
+    name: 'DDM Release $CI_COMMIT_TAG'
+    description: 'Versión oficial para la ARA. Esta release contiene los binarios optimizados (release) para ambos sistemas operativos.'
+    tag_name: '$CI_COMMIT_TAG'
+    ref: '$CI_COMMIT_SHA'
+    assets:
+      links:
+        - name: 'Descargar para Windows'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows'
+        - name: 'Descargar para Linux'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_linux'
