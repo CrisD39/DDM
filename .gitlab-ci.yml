@@ -57,6 +57,9 @@ build_linux:
 create_release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
+  tags:
+    - ddm-test-pc
+    - ddm-linux-local
   # Saqué el tag ddm-test-pc para que use los runners compartidos de GitLab con Docker
   rules:
     - if: $CI_COMMIT_TAG
