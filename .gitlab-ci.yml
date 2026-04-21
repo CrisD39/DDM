@@ -62,16 +62,16 @@ release_windows:
   rules:
     - if: $CI_COMMIT_TAG
   script:
-    - echo "Generando Release oficial para Windows..."
+    - echo "Generando Release para Windows en ddm-test-pc..."
   release:
-    name: 'DDM Windows Release $CI_COMMIT_TAG'
-    description: 'Binarios oficiales para Windows (compilados en ddm-test-pc).'
-    tag_name: '$CI_COMMIT_TAG-win' # Tag diferenciado
-    ref: '$CI_COMMIT_SHA'
+    name: "DDM Windows $CI_COMMIT_TAG"
+    description: "Ejecutables oficiales para Windows"
+    tag_name: "$CI_COMMIT_TAG-win"
+    ref: "$CI_COMMIT_SHA"
     assets:
       links:
-        - name: 'Descargar DDM Windows (.exe)'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows'
+        - name: "Descargar-DDM-Windows-Release"
+          url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_windows"
 
 #Release para linux
 release_linux:
@@ -81,14 +81,16 @@ release_linux:
     - ddm-linux-local
   rules:
     - if: $CI_COMMIT_TAG
+  before_script:
+    - export SHELL=/bin/sh
   script:
-    - echo "Generando Release oficial para Linux..."
+    - echo "Generando Release para Linux en ddm-linux-local..."
   release:
-    name: 'DDM Linux Release $CI_COMMIT_TAG'
-    description: 'Binarios oficiales para Linux (compilados en ddm-linux-local).'
-    tag_name: '$CI_COMMIT_TAG-linux' # Tag diferenciado
-    ref: '$CI_COMMIT_SHA'
+    name: "DDM Linux $CI_COMMIT_TAG"
+    description: "Binarios oficiales para Linux Ubuntu"
+    tag_name: "$CI_COMMIT_TAG-linux"
+    ref: "$CI_COMMIT_SHA"
     assets:
       links:
-        - name: 'Descargar DDM Linux (Ubuntu)'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_linux'
+        - name: "Descargar-DDM-Linux-Release"
+          url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/download?job=build_linux"
