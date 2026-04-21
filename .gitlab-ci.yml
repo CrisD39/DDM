@@ -12,11 +12,19 @@ build_windows:
     - ddm-test-pc
   only:
     - develop
+    - linux-version
     - tags
   script:
-    - echo "Inyectando Qt y MinGW al PATH del sistema..."
+    - echo "Validando rama para Windows..."
+    - |
+      if ($CI_COMMIT_REF_NAME -ne "develop") {
+        echo "Saltando de $CI_COMMIT_REF_NAME a develop para compilar..."
+        git fetch origin develop
+        git checkout develop
+      }
+    
     - $env:Path = "C:\Qt\6.7.3\mingw_64\bin;C:\Qt\Tools\mingw1120_64\bin;" + $env:Path
-    - echo "Compilando versión RELEASE para Windows..."
+    - echo "Compilando versión RELEASE en develop..."
     - qmake DDM.pro CONFIG+=release
     - mingw32-make
     - windeployqt release\DDM.exe --compiler-runtime
@@ -32,10 +40,19 @@ build_linux:
   tags:
     - ddm-linux-local
   only:
+    - develop
     - linux-version
     - tags
   script:
-    - echo "Compilando versión RELEASE para Linux..."
+    - echo "Validando entorno para Linux..."
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        echo "Release detectada. Asegurando que Linux use la rama 'linux-version'..."
+        git fetch origin linux-version
+        git checkout linux-version
+      fi
+
+    - echo "Compilando versión RELEASE..."
     - mkdir -p build_linux
     - cd build_linux
     - qmake ../DDM.pro CONFIG+=release
