@@ -1,9 +1,9 @@
 # INSTRUCCIONES DE COMPILACIÓN Y PRUEBA END-TO-END
 
-## 🔵 Paso 1: Compilar el Backend (DesformatConcentrator)
+## 🔵 Paso 1: Compilar el Backend (DDM)
 
 ```powershell
-cd "C:\Users\jruma\OneDrive\Documentos\SIAG\DesformatConcentrator"
+cd "C:\Users\jruma\OneDrive\Documentos\SIAG\DDM"
 
 # Regenerar Makefile con qmake
 qmake DDM.pro
@@ -56,7 +56,7 @@ El frontend **NO requiere cambios** en esta tanda. Los builders JSON ya existía
 
 **Terminal 1: Ejecutar Backend**
 ```powershell
-cd "C:\Users\jruma\OneDrive\Documentos\SIAG\DesformatConcentrator\build\Desktop_Qt_6_7_3_MinGW_64_bit-Debug\debug"
+cd "C:\Users\jruma\OneDrive\Documentos\SIAG\DDM\build\Desktop_Qt_6_7_3_MinGW_64_bit-Debug\debug"
 
 .\DDM.exe
 # Esperado: Backend escuchando en UDP port 6340

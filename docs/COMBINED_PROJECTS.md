@@ -1,11 +1,4 @@
-# DesformatConcentrator + tdc-botonera — Combined Project Documentation
-
-Este documento reúne la información esencial de los dos proyectos del workspace: el backend C++/Qt (DesformatConcentrator / DDM) y la interfaz QML (tdc-botonera / Botonera). Está pensado como referencia rápida para desarrolladores que trabajan en ambas partes.
-
----
-
-## Resumen ejecutivo
-- Backend: "DesformatConcentrator" / DDM — Qt6 C++17, procesa datos binarios del concentrador (DCL), expone comandos JSON y una consola (stdin) con comandos tipo `sitrep`, `add`, `delete`.
+- Backend: "DDM" — Qt6 C++17, procesa datos binarios del concentrador (DCL), expone comandos JSON y una consola (stdin) con comandos tipo `sitrep`, `add`, `delete`.
 - Frontend: "tdc-botonera" — QML UI (Botonera / DDM) que envía/recibe JSON vía `ITransport` y muestra el SITREP en pantalla.
 
 El flujo principal: Mensajes entrantes → `MessageRouter` (backend) → adaptadores (handlers JSON / dispatcher CLI) → services de dominio → `CommandContext` (estado) → respuestas JSON + encoder binario hacia hardware.
@@ -17,8 +10,8 @@ flowchart TD
   CLI[STDIN Console] --> Dispatcher[CommandDispatcher]
 
   Router --> JsonH[JsonCommandHandler]
-  JsonH --> Handlers[Cursor/Track/Geometry Handlers]
-  Handlers --> Services[CursorService / TrackService / GeometryService]
+  JsonH --> Handlers[Line/Track/Geometry Handlers]
+  Handlers --> Services[LineService / TrackService / GeometryService]
   Dispatcher --> Services
 
   Services --> Ctx[CommandContext]
@@ -30,7 +23,7 @@ flowchart TD
 ---
 
 ## Estructura de carpetas (resumen)
-- DesformatConcentrator/
+- DDM/
   - DDM.pro
   - docs/
     - architecture.md
@@ -64,9 +57,9 @@ flowchart TD
 
 ### Backend (DDM)
 - MessageRouter (`src/controller/messagerouter.cpp`) decide si el mensaje es JSON (frontend) o binario (DCL) y lo enruta.
-- `JsonCommandHandler` mantiene un `m_commandMap` con comandos de cursor, track y geometría (`create_line`, `delete_track`, `create_polygon`, `delete_polygon`, `list_shapes`, etc.).
-- Los handlers (`CursorCommandHandler`, `TrackCommandHandler`, `GeometryCommandHandler`) funcionan como adaptadores de entrada/salida y delegan la lógica de negocio en services.
-- `CommandContext` (header-only) es el estado único compartido: `cursors`, `tracks`, `areas`, `circles`, `polygons`, centro X/Y y contadores de IDs.
+- `JsonCommandHandler` mantiene un `m_commandMap` con comandos de linea, track y geometría (`create_line`, `delete_track`, `create_polygon`, `delete_polygon`, `list_shapes`, etc.).
+- Los handlers (`LineCommandHandler`, `TrackCommandHandler`, `GeometryCommandHandler`) funcionan como adaptadores de entrada/salida y delegan la lógica de negocio en services.
+- `CommandContext` (header-only) es el estado único compartido: `lines`, `tracks`, `areas`, `circles`, `polygons`, centro X/Y y contadores de IDs.
 - Decoders/Encoders:
   - `concDecoder` decodifica mensajes binarios del hardware.
   - `lpdEncoder` genera paquetes periódicos hacia hardware (cada 40 ms por timer).
@@ -76,7 +69,7 @@ Referencias clave:
 - [src/main.cpp](../src/main.cpp)
 - [src/controller/messagerouter.cpp](../src/controller/messagerouter.cpp)
 - [src/controller/json/jsoncommandhandler.cpp](../src/controller/json/jsoncommandhandler.cpp)
-- [src/controller/services/cursorservice.cpp](../src/controller/services/cursorservice.cpp)
+- [src/controller/services/lineservice.cpp](../src/controller/services/lineservice.cpp)
 - [src/controller/services/trackservice.cpp](../src/controller/services/trackservice.cpp)
 - [src/controller/services/geometryservice.cpp](../src/controller/services/geometryservice.cpp)
 - [src/model/commandContext.h](../src/model/commandContext.h)
@@ -97,7 +90,7 @@ Comunicación estándar JSON entre backend y frontend:
 
 ### Comandos disponibles (backend)
 
-- Cursor: `create_line`, `delete_line`
+- Lineas: `create_line`, `delete_line`
 - Tracks: `create_track`, `delete_track`, `list_tracks`
 - Geometría: `create_area`, `delete_area`, `create_circle`, `delete_circle`, `create_polygon`, `delete_polygon`, `list_shapes`
 
@@ -167,11 +160,11 @@ Cambios clave (recientes):
 
 ## Build & Run
 
-### Backend (DesformatConcentrator / DDM)
+### Backend (DDM)
 Requisitos: Qt6, qmake, MinGW (en Windows) o equivalente.
 Comandos:
 ```bash
-cd DesformatConcentrator
+cd DDM
 qmake DDM.pro
 mingw32-make
 # Ejecutar:
@@ -204,7 +197,7 @@ Para desarrollo QML puro, puedes abrir `DDM/` en QtCreator y ejecutar la interfa
   - Añadido filtrado visual y búsqueda en `SitrepWorkspace.qml`.
 - Backend:
   - Normalizado el string de identidad usando `TrackData::toQString(...)` en puntos donde se construye JSON para evitar discrepancias.
-  - Refactor a capa de servicios (`CursorService`, `TrackService`, `GeometryService`) para compartir lógica entre CLI y JSON.
+  - Refactor a capa de servicios (`LineService`, `TrackService`, `GeometryService`) para compartir lógica entre CLI y JSON.
   - Se agregaron rutas JSON `delete_polygon` y `list_shapes`.
   - `CommandContext` extendido para manejar `areas`, `circles` y `polygons`.
   - PPP/CPA se refactorizó para reutilizar un unico motor matematico (`PppCalculator`) tanto en `Track vs OwnShip` (SITREP) como en `Track vs Track` (modulo GUI/CPA).
@@ -214,11 +207,11 @@ Archivos modificados (localizados):
 - `tdc-botonera/botonera/src/controller/protocol/ddmcontroller.cpp`
 - `tdc-botonera/botonera/src/controller/protocol/ddmcontroller.h`
 - `tdc-botonera/botonera/DDM/SitrepWorkspace.qml`
-- `DesformatConcentrator/src/controller/handlers/trackcommandhandler.cpp` (ajuste de identity)
-- `DesformatConcentrator/src/controller/commands/addCommand.cpp` (ajuste de identity)
-- `DesformatConcentrator/src/controller/services/cursorservice.cpp`
-- `DesformatConcentrator/src/controller/services/trackservice.cpp`
-- `DesformatConcentrator/src/controller/services/geometryservice.cpp`
+- `DDM/src/controller/handlers/trackcommandhandler.cpp` (ajuste de identity)
+- `DDM/src/controller/commands/addCommand.cpp` (ajuste de identity)
+- `DDM/src/controller/services/lineservice.cpp`
+- `DDM/src/controller/services/trackservice.cpp`
+- `DDM/src/controller/services/geometryservice.cpp`
 
 ---
 

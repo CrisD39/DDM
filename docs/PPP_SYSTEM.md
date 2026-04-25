@@ -229,8 +229,7 @@ Motor y dominio:
 
 - `src/model/pppcalculator.h`
 - `src/model/pppcalculator.cpp`
-- `src/model/cpa.cpp` (reuso del motor para Track vs Track)
-- `src/model/entities/track.h`
+- `src/model/cpa.cpp` (reuso del motor para Track vs Track)- `src/model/entities/track.h`
 
 Integracion aplicacion:
 

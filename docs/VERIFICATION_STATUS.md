@@ -13,12 +13,10 @@
    - ✅ `handlePppGraph()`: Procesa `{"command":"ppp_graph","args":{"calc_index":N}}`
    - ✅ `handlePppFinish()`: Procesa `{"command":"ppp_finish","args":{"calc_index":N}}`
    - ✅ `handlePppClearTrack()`: Procesa `{"command":"ppp_clear_track","args":{"calc_index":N,"field":"track_a|track_b"}}`
-
 2. **CPAService** (`cpaservice.cpp/h`)
    - ✅ `startCPA(trackA, trackB)`: Calcula CPA, almacena sesión, devuelve resultado
    - ✅ `graphCPA(sessionId)`: Grafica sesión existente, upserta marcador
-   - ✅ `finishCPA(sessionId)`: Marca sesión como 
- inactiva, borra marcadores
+   - ✅ `finishCPA(sessionId)`: Marca sesión como inactiva, borra marcadores
    - ✅ `clearTrack(trackRef)`: Limpia todas las sesiones/marcadores del track
    - ✅ Almacenamiento de sesiones: `m_sessions["CPA_SLOT_N"]`
 

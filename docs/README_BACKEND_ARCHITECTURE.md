@@ -42,13 +42,13 @@ graph TD
 
     HANDLERS[handlers/]
     CTRL --> HANDLERS
-    HANDLERS --> CCH[cursorcommandhandler.*]
+    HANDLERS --> LCH[linecommandhandler.*]
     HANDLERS --> TCH[trackcommandhandler.*]
     HANDLERS --> GCH[geometrycommandhandler.*]
 
     SERVICES[services/]
     CTRL --> SERVICES
-    SERVICES --> CS[cursorservice.*]
+    SERVICES --> LS[lineservice.*]
     SERVICES --> OS[obmservice.*]
     SERVICES --> TS[trackservice.*]
     SERVICES --> GS[geometryservice.*]
@@ -76,7 +76,7 @@ graph TD
 
     ENT[entities/]
     MODEL --> ENT
-    ENT --> CUR[cursorEntity.*]
+    ENT --> LIN[lineEntity.*]
     ENT --> TRK[track.*]
 
     DEC[decoders/]
@@ -140,11 +140,10 @@ Componentes:
 
 | Clase | Responsabilidad |
 |--------|----------------|
-| JsonCommandHandler | Parseo y dispatch |
-| CursorCommandHandler | Adaptador JSON para line/cursor |
+| LineCommandHandler | Adaptador JSON para line/cursor |
 | TrackCommandHandler | Adaptador JSON para tracks |
 | GeometryCommandHandler | Adaptador JSON para area/circle/polygon |
-| CursorService | Lógica compartida de cursor (CLI+JSON) |
+| LineService | Lógica compartida de lineas (CLI+JSON) |
 | ObmService | Lectura del estado actual de OBM para lógica de líneas |
 | TrackService | Lógica compartida de tracks (CLI+JSON) |
 | GeometryService | Lógica compartida de figuras (CLI+JSON) |
@@ -204,7 +203,7 @@ Comando `ownship_update`:
 
 Ubicación:
 ```
-src/controller/handlers/cursorcommandhandler.*
+src/controller/handlers/linecommandhandler.*
 src/controller/handlers/trackcommandhandler.*
 src/controller/handlers/geometrycommandhandler.*
 src/controller/services/*.cpp
@@ -217,7 +216,7 @@ Responsabilidad:
 QByteArray createLine(const QJsonObject& args);
 
 // Service: lógica de negocio compartida (CLI y JSON)
-CursorOperationResult createCursor(const CursorCreateRequest& request);
+LineOperationResult createLine(const LineCreateRequest& request);
 ```
 
 Flujo refactorizado:
@@ -238,14 +237,14 @@ src/model/commandContext.h
 Contiene:
 
 ```cpp
-std::deque<CursorEntity> cursors;
+std::deque<LineEntity> lines;
 std::deque<Track> tracks;
 std::deque<AreaEntity> areas;
 std::deque<CircleEntity> circles;
 std::deque<PolygonoEntity> polygons;
 
 int nextTrackId;
-int nextCursorId;
+int nextLineId;
 
 double centerX;
 double centerY;
@@ -254,8 +253,8 @@ double centerY;
 Funciones principales:
 
 ```cpp
-emplaceCursorFront(...)
-eraseCursorById(...)
+emplaceLineFront(...)
+eraseLineById(...)
 findTrackById(...)
 eraseTrackById(...)
 addArea(...)
@@ -399,9 +398,9 @@ MessageRouter
   ↓
 JsonCommandHandler
   ↓
-CursorCommandHandler / TrackCommandHandler / GeometryCommandHandler
+LineCommandHandler / TrackCommandHandler / GeometryCommandHandler
   ↓
-Services (CursorService / ObmService / TrackService / GeometryService)
+Services (LineService / ObmService / TrackService / GeometryService)
   ↓
 CommandContext
   ↓
@@ -671,7 +670,7 @@ Los listados de tracks exponen:
 
 ## Cambios recientes (Mar 2026)
 
-- Se consolidó la lógica de negocio en servicios (`CursorService`, `ObmService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
+- Se consolidó la lógica de negocio en servicios (`LineService`, `ObmService`, `TrackService`, `GeometryService`) para evitar duplicación entre CLI y JSON.
 - Se agregaron comandos JSON de geometría faltantes: `delete_polygon` y `list_shapes`.
 - Se agrego `TrackPppService` como capa de integracion para persistir PPP de SITREP (Track vs OwnShip) en cada `Track`, reutilizando el motor matematico generico `PppCalculator`.
 - El recálculo de PPP de SITREP se ejecuta una sola vez al setear OwnShip (`ownship set`/`ownship_update`) y al crear track con OwnShip válido.

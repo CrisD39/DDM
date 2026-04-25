@@ -77,7 +77,6 @@ QByteArray JsonCommandBuilder::buildPppStartCommand(int calcIndex, int trackA, i
 ## 5️⃣ PARSING EN EL BACKEND
 
 **Ubicación**: [DesformatConcentrator/src/controller/json/jsoncommandhandler.cpp#L40](../src/controller/json/jsoncommandhandler.cpp#L40)
-
 ```cpp
 void JsonCommandHandler::processJsonCommand(const QByteArray& jsonData) {
     QJsonObject obj;
@@ -94,7 +93,6 @@ void JsonCommandHandler::processJsonCommand(const QByteArray& jsonData) {
 ## 6️⃣ ROUTING DEL COMANDO
 
 **Ubicación**: [DesformatConcentrator/src/controller/json/jsoncommandhandler.cpp#L145](../src/controller/json/jsoncommandhandler.cpp#L145)
-
 ```cpp
 void JsonCommandHandler::routeCommand(const QString& command, const QJsonObject& args) {
     auto it = m_commandMap.find("cpa_start");
@@ -109,7 +107,6 @@ void JsonCommandHandler::routeCommand(const QString& command, const QJsonObject&
 ## 7️⃣ HANDLER DE CPA_START
 
 **Ubicación**: [DesformatConcentrator/src/controller/json/jsoncommandhandler.cpp#L268](../src/controller/json/jsoncommandhandler.cpp#L268)
-
 ```cpp
 QByteArray JsonCommandHandler::handleCpaStart(const QJsonObject& args) {
     // Extrae: index=1, track_a=42, track_b=7
@@ -152,7 +149,6 @@ QByteArray JsonCommandHandler::handleCpaStart(const QJsonObject& args) {
 ## 8️⃣ SERVICIO CPA
 
 **Ubicación**: [DesformatConcentrator/src/controller/services/cpaservice.cpp#L186](../src/controller/services/cpaservice.cpp#L186)
-
 ```cpp
 CPAComputationResult CPAService::startCPA(const CPATrackRef& trackA, const CPATrackRef& trackB) {
     // 1. Valida que trackA y trackB sean válidos
@@ -168,7 +164,6 @@ CPAComputationResult CPAService::startCPA(const CPATrackRef& trackA, const CPATr
 ## 9️⃣ ALMACENAMIENTO DE MARCADORES
 
 **Ubicación**: [DesformatConcentrator/src/controller/json/jsoncommandhandler.cpp#L297](../src/controller/json/jsoncommandhandler.cpp#L297)
-
 ```cpp
 QByteArray JsonCommandHandler::handlePppGraph(const QJsonObject& args) {
     const int calcIndex = args.value("calc_index").toInt();
@@ -201,7 +196,6 @@ CommandContext::CpaMarkerState marker {
 ## 🔟 CODIFICACIÓN PARA LPD
 
 **Ubicación**: [DesformatConcentrator/src/model/decoders/lpdEncoder.cpp#L109](../src/model/decoders/lpdEncoder.cpp#L109)
-
 ```cpp
 QByteArray encoderLPD::buildFullMessage(const CommandContext &ctx) {
     // ... (procesa tracks, cursores, etc.)

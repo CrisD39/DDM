@@ -37,7 +37,7 @@ classDiagram
     }
 
     class CursorCommandHandler {
-        -CursorService m_service
+        -LineCommandHandler* m_lineHandler
         +createLine(QJsonObject) QByteArray
         +deleteLine(QJsonObject) QByteArray
     }
@@ -60,9 +60,10 @@ classDiagram
         +listShapes(QJsonObject) QByteArray
     }
 
-    class CursorService {
-        +createCursor(CursorCreateRequest) CursorOperationResult
-        +deleteCursorById(int) CursorOperationResult
+    class LineCommandHandler {
+        -LineService m_service
+        +createLine(QJsonObject) QByteArray
+        +deleteLine(QJsonObject) QByteArray
     }
 
     class TrackService {
@@ -117,15 +118,15 @@ classDiagram
     MessageRouter --> DclConcController
     MessageRouter --> JsonCommandHandler
 
-    JsonCommandHandler --> CursorCommandHandler
+    JsonCommandHandler --> LineCommandHandler
     JsonCommandHandler --> TrackCommandHandler
     JsonCommandHandler --> GeometryCommandHandler
 
-    CursorCommandHandler --> CursorService
+    LineCommandHandler --> LineService
     TrackCommandHandler --> TrackService
     GeometryCommandHandler --> GeometryService
 
-    CursorService --> CommandContext
+    LineService --> CommandContext
     TrackService --> CommandContext
     GeometryService --> CommandContext
 
@@ -146,7 +147,7 @@ flowchart TD
     B --> F[JsonCommandHandler]
     B --> G[DclConcController]
 
-    F --> H[Cursor/Track/Geometry Handlers]
+    F --> H[Line/Track/Geometry Handlers]
     H --> I[Services Layer]
     D --> I
 
@@ -202,7 +203,7 @@ Nota de evolucion:
 - JsonCommandHandler: despacha comandos JSON a handlers específicos.
 - Handlers: adaptadores de protocolo (parseo/validación/respuesta).
 - Services: lógica de negocio compartida entre JSON y CLI.
-- CommandContext: estado único del backend (tracks, cursores y figuras).
+- CommandContext: estado único del backend (tracks, lineas y figuras).
 - CommandDispatcher: ejecuta comandos de consola sobre el mismo estado.
 - Estacionamiento (EST): cálculo cinemático de interceptación/estación relativa en CLI, con validación separada de la matemática.
 
@@ -220,9 +221,9 @@ Nota de evolucion:
 
 ## Cambios recientes (Mar 2026)
 
-- Se eliminó duplicación entre CLI y JSON moviendo reglas de negocio a CursorService, TrackService y GeometryService.
+- Se eliminó duplicación entre CLI y JSON moviendo reglas de negocio a LineService, TrackService y GeometryService.
 - Se añadieron comandos JSON de geometría faltantes: delete_polygon y list_shapes.
-- CommandContext incorporó colecciones de areas, circles y polygons además de tracks/cursors.
+- CommandContext incorporó colecciones de areas, circles y polygons además de tracks/lineas.
 - Se centralizó normalización angular en RadarMath::normalizeAngle360.
 - Se resolvieron errores de compilación por tipos incompletos en headers de handlers/services y firmas inconsistentes en entidades.
 - DDMController mantiene formateo de tracks para QML y la eliminación de track vía comando JSON delete_track.

@@ -42,7 +42,6 @@ ID reservado:
 - Se toma estado desde `CommandContext::ownShip`.
 - Coordenadas para `0000`: `xDm = 0.0`, `yDm = 0.0`.
 - `ownship set` (y `ownship_update`) sincroniza un track virtual con `id=0000` dentro del estado backend.
-
 Validaciones obligatorias:
 
 - `vd` y `du` son excluyentes (exactamente uno debe estar presente).

@@ -36,7 +36,7 @@ devLink -> feature/link
 devFiguras -> feature/figuras
 cpa -> feature/cpa
 refactorARQ -> feature/refactor-arq
-SITREP -> feature/SITREP
+SITREP -> feature/sitrep
 
 Para que no les de error al subir cambios tienen que actualizar (no van a perder cambios).
 1. Guarden lo que estaban haciendo con un commit
