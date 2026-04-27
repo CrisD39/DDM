@@ -77,6 +77,47 @@ En ambos casos el estado converge en `CommandContext::tracks` y la lógica de ne
 
 ## Flujo de datos
 
+```mermaid
+stateDiagram-v2
+    [*] --> Creado
+
+    state "Creado" as Creado
+    state "Activo" as Activo
+    state "ConPPP" as ConPPP
+    state "EnSesionCPA" as EnSesionCPA
+    state "Eliminado" as Eliminado
+
+    Creado: track existe en CommandContext.tracks
+    Activo: posición, rumbo y velocidad válidos
+
+    note right of Activo
+      Se actualizan coordenadas por extrapolación cinemática.
+      También pueden cambiar rumbo/velocidad según mutaciones del track.
+    end note
+
+    note right of EnSesionCPA
+      El track participa en una sesión CPA activa.
+      Se recalculan TCPA/DCPA y se mantiene marcador en CommandContext.
+    end note
+
+    Creado --> Activo: alta exitosa\n(TrackService::createTrack)
+    Activo --> Activo: updatePosition(deltaTime)\nextrapolación cinemática periódica
+    Activo --> ConPPP: setSitrepPpp()\nresultado PPP calculado por TrackPppService
+    ConPPP --> ConPPP: recálculo PPP\nen cada updateTracks()
+    ConPPP --> Activo: ownship eliminado\no PPP inválido
+
+    Activo --> EnSesionCPA: CPAService::startCPA()\nreferencia este track
+    ConPPP --> EnSesionCPA: CPAService::startCPA()\nreferencia este track
+    EnSesionCPA --> EnSesionCPA: graphCPA()\nrecálculo periódico
+    EnSesionCPA --> Activo: CPAService::finishCPA() o clearTrack()
+    EnSesionCPA --> ConPPP: CPAService::finishCPA() o clearTrack()\n(si tenía PPP)
+
+    Activo --> Eliminado: TrackService::deleteTrackById()
+    ConPPP --> Eliminado: TrackService::deleteTrackById()
+    EnSesionCPA --> Eliminado: TrackService::deleteTrackById()\n(también cancela sesión CPA)
+    Eliminado --> [*]
+```
+
 ### Alta de track (CLI)
 
 1. `CommandDispatcher` recibe línea `add ...`.

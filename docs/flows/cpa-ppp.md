@@ -75,6 +75,57 @@ En el backend hay dos rutas principales:
 
 ## Flujo de datos
 
+```mermaid
+sequenceDiagram
+   participant Frontend
+   participant JsonCommandHandler
+   participant CPAService
+   participant PppCalculator
+   participant CommandContext
+
+   Note over Frontend,CommandContext: Sub-flujo 1 — cpa_start exitoso
+   Frontend->>JsonCommandHandler: cpa_start {index, track_a, track_b}
+   JsonCommandHandler->>CPAService: startCPA(trackA, trackB)
+   CPAService->>PppCalculator: compute(stateA, stateB)
+   alt track_not_found
+      CPAService-->>JsonCommandHandler: error track_not_found
+      JsonCommandHandler-->>Frontend: error de validación de tracks
+   else cpa_expired
+      PppCalculator-->>CPAService: TCPA negativo
+      CPAService-->>JsonCommandHandler: error cpa_expired
+      JsonCommandHandler-->>Frontend: error cpa_expired
+   else cálculo válido
+      PppCalculator-->>CPAService: Result {tcpa, dcpa, midX, midY}
+      CPAService->>CommandContext: upsertCpaMarker(sessionId, ...)
+      CPAService-->>JsonCommandHandler: CPAComputationResult (válido)
+      JsonCommandHandler-->>Frontend: {tcpa_sec, dcpa_dm, cpa_mid_x, cpa_mid_y, status: active}
+   end
+
+   Note over Frontend,CommandContext: Sub-flujo 2 — ppp_graph (recálculo)
+   Frontend->>JsonCommandHandler: ppp_graph {calc_index}
+   JsonCommandHandler->>CPAService: graphCPA(sessionId)
+   alt session_not_found
+      CPAService-->>JsonCommandHandler: error session_not_found
+      JsonCommandHandler-->>Frontend: error session_not_found
+   else sesión encontrada
+      CPAService->>PppCalculator: compute(stateA, stateB)
+      PppCalculator-->>CPAService: Result actualizado
+      CPAService->>CommandContext: upsertCpaMarker(sessionId, ...)
+      JsonCommandHandler-->>Frontend: valores CPA actualizados
+   end
+
+   Note over Frontend,CommandContext: Sub-flujo 3 — ppp_finish
+   Frontend->>JsonCommandHandler: ppp_finish {calc_index}
+   JsonCommandHandler->>CPAService: finishCPA(sessionId)
+   alt session_not_found
+      CPAService-->>JsonCommandHandler: error session_not_found
+      JsonCommandHandler-->>Frontend: error session_not_found
+   else sesión finalizada
+      CPAService->>CommandContext: eliminar marcador
+      JsonCommandHandler-->>Frontend: {status: finished}
+   end
+```
+
 ### Flujo JSON CPA/PPP
 
 1. `JsonCommandHandler` recibe `cpa_start`.

@@ -15,6 +15,55 @@ El módulo existe para desacoplar UI, lógica táctica y protocolo de hardware. 
 
 Dentro de la arquitectura general del backend, `src/main.cpp` realiza el cableado de todos los componentes, `MessageRouter` es el punto único de entrada de mensajes de red, y `CommandContext` es la fuente de verdad compartida para tracks, cursores, geometrías, ownship, sesiones CPA y estacionamiento.
 
+```mermaid
+flowchart TD
+  subgraph "Entradas"
+    FE["Frontend Qt\n(comandos JSON vía ITransport)"]
+    CLI["Consola CLI\n(comandos de texto vía StdinReader)"]
+    DCL["Concentrador DCL\n(tramas binarias vía DclConcController)"]
+  end
+
+  subgraph "Procesamiento"
+    MR["MessageRouter"]
+    JCH["JsonCommandHandler"]
+    CD["CommandDispatcher"]
+    CR["CommandRegistry"]
+    TH["TrackCommandHandler"]
+    CH["CursorCommandHandler"]
+    GH["GeometryCommandHandler"]
+    OH["OwnShipCommandHandler"]
+    SVC["Services\n(CPAService, EstacionamientoService, TrackService, etc.)"]
+  end
+
+  subgraph "Estado y salida"
+    CTX["CommandContext\n(estado táctico central)"]
+    LPD["LpdEncoder"]
+    DISP["Display físico"]
+  end
+
+  FE -->|"JSON"| MR
+  DCL -->|"binario DCL"| MR
+  CLI -->|"CLI"| CD
+
+  MR -->|"despacho"| JCH
+  JCH -->|"despacho"| TH
+  JCH -->|"despacho"| CH
+  JCH -->|"despacho"| GH
+  JCH -->|"despacho"| OH
+
+  CD -->|"despacho"| CR
+  TH -->|"estado compartido"| CTX
+  CH -->|"estado compartido"| CTX
+  GH -->|"estado compartido"| CTX
+  OH -->|"estado compartido"| CTX
+  JCH -->|"despacho"| SVC
+  CR -->|"despacho"| SVC
+  SVC -->|"estado compartido"| CTX
+
+  CTX -->|"trama LPD"| LPD
+  LPD -->|"salida"| DISP
+```
+
 ## Lista de archivos y clases
 
 | Archivo | Clase/Struct | Responsabilidad |

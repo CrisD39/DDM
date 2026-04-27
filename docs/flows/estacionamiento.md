@@ -75,6 +75,89 @@ El pipeline pasa por `EstacionamientoCommand`/`JsonCommandHandler`, `Estacionami
 
 ## Flujo de datos
 
+```mermaid
+flowchart TD
+   A([Inicio: Comando estacionamiento recibido<br/>(JSON o CLI)])
+   B{"¿Origen del comando?"}
+
+   J1[JsonCommandHandler]
+   J2[EstacionamientoService::calculateFromOptions()]
+
+   C1[EstacionamientoCommand]
+   C2[EstacionamientoService::executeFromCliArgs()]
+
+   V1[EstacionamientoService valida parámetros]
+   D1{"¿Track A válido en CommandContext?"}
+   E1[Error: track_a no encontrado]
+   FE1([Fin con error])
+
+   D2{"¿Se especificó Track B?"}
+   P1[Usar OwnShip como referencia]
+   D3{"¿Track B válido?"}
+   E2[Error: track_b no encontrado]
+   FE2([Fin con error])
+
+   P2[EstacionamientoCalculator::calculate(input)]
+   D4{"¿Modalidad de cálculo?"}
+   M1[Con VD: Calcular duración desde velocidad]
+   M2[Con DU: Calcular velocidad desde duración]
+   M3[Sin modalidad: Cálculo geométrico puro<br/>(rumbo y distancia)]
+
+   P3[EstacionamientoCalculator retorna Result]
+   D5{"¿Result válido?"}
+   E3[Error: movimiento relativo degenerado]
+   FE3([Fin con error])
+
+   P4[Construir respuesta: rumbo, tiempo,<br/>posición de estación]
+   P5[Respuesta enviada al solicitante<br/>(JSON o stdout CLI)]
+   Z([Fin exitoso])
+
+   A --> B
+
+   B -->|JSON| J1
+   J1 --> J2
+   J2 --> V1
+
+   B -->|CLI| C1
+   C1 --> C2
+   C2 --> V1
+
+   V1 --> D1
+   D1 -->|No| E1
+   E1 --> FE1
+   D1 -->|Sí| D2
+
+   D2 -->|No| P1
+   P1 --> P2
+   D2 -->|Sí| D3
+   D3 -->|No| E2
+   E2 --> FE2
+   D3 -->|Sí| P2
+
+   P2 --> D4
+   D4 -->|Con VD| M1
+   D4 -->|Con DU| M2
+   D4 -->|Sin modalidad| M3
+
+   M1 --> P3
+   M2 --> P3
+   M3 --> P3
+
+   P3 --> D5
+   D5 -->|No| E3
+   E3 --> FE3
+   D5 -->|Sí| P4
+
+   P4 --> P5
+   P5 --> Z
+
+   classDef error fill:#ffcccc,stroke:#cc0000,color:#800000
+   classDef ok fill:#ccffcc,stroke:#007700,color:#004400
+
+   class E1,E2,E3,FE1,FE2,FE3 error
+   class Z ok
+```
+
 ### Flujo CLI
 
 1. Usuario ejecuta `estacionamiento --track-a=... --track-b=... --az=... --d=... (--vd=... | --du=...)`.
