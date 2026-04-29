@@ -159,5 +159,6 @@ El módulo usa manejo defensivo de bajo costo (sin excepciones de control de flu
 
 - `docs/architecture.md`: vista global del backend y su orquestación.
 - `docs/README_BACKEND_ARCHITECTURE.md`: documentación arquitectónica ampliada.
+- `docs/modules/ownship.md`: referencia operativa específica del estado ownship.
 - `docs/PPP_SYSTEM.md`: modelo y flujo del cálculo PPP/CPA.
 - `docs/STATIONING_SYSTEM.md`: cálculo de estacionamiento y sesiones.

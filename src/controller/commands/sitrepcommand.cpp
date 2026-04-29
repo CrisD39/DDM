@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QTextStream>
 #include <QStringList>
+#include <QtMath>
 #include <deque>
 
 namespace {
@@ -40,9 +41,31 @@ QString linkUI(const Track& t) {
     return "--";
 }
 
-QString latLongUI(const Track& /*t*/) {
-    // Placeholder: aún no calculamos Lat/Long
-    return "--";
+QString latLongUI(const Track& t, const CommandContext& ctx) {
+    if (!ctx.ownShip.valid
+        || !std::isfinite(ctx.ownShip.latitudeDeg)
+        || !std::isfinite(ctx.ownShip.longitudeDeg)) {
+        return "--";
+    }
+
+    const double ownLatDeg = ctx.ownShip.latitudeDeg;
+    const double ownLonDeg = ctx.ownShip.longitudeDeg;
+    const double xDm = static_cast<double>(t.getX());
+    const double yDm = static_cast<double>(t.getY());
+
+    const double deltaLatDeg = (yDm * Track::kDmToNm) / 60.0;
+    const double cosLat = qCos(qDegreesToRadians(ownLatDeg));
+
+    double latitudeDeg = ownLatDeg + deltaLatDeg;
+    double longitudeDeg = ownLonDeg;
+    if (qAbs(cosLat) > 1e-9) {
+        const double deltaLonDeg = (xDm * Track::kDmToNm) / (60.0 * cosLat);
+        longitudeDeg = ownLonDeg + deltaLonDeg;
+    }
+
+    return QStringLiteral("%1/%2")
+        .arg(latitudeDeg, 0, 'f', 4)
+        .arg(longitudeDeg, 0, 'f', 4);
 }
 
 QString fmtNum4(int n) {
@@ -57,7 +80,7 @@ void printHeader(QTextStream& out, int tracksCount, int refreshMs, bool showCtrl
     if (!showCtrlC) out.flush();
 }
 
-void printRow(QTextStream& out, const Track& t) {
+void printRow(QTextStream& out, const Track& t, const CommandContext& ctx) {
     const QString nro = fmtNum4(t.getNumero());
 
     const QString ident = QString("%1").arg(identidadUI(t.getIdentity()), 11);
@@ -75,7 +98,7 @@ void printRow(QTextStream& out, const Track& t) {
 
     const QString link = QString("%1").arg(linkUI(t), 4);
 
-    const QString ll = QString("%1").arg(latLongUI(t), 19);
+    const QString ll = QString("%1").arg(latLongUI(t, ctx), 19);
 
     const QString info = t.getInformacionAmpliatoria().isEmpty() ? "-" : t.getInformacionAmpliatoria();
     const QString infoCell = QString("%1").arg(info.left(25), 25);
@@ -107,9 +130,9 @@ void printFooter(QTextStream& out, bool showCtrlC) {
     out.flush();
 }
 
-void printSitrep(QTextStream& out, const std::deque<Track>& tracksSnap, int refreshMs, bool showCtrlC) {
+void printSitrep(QTextStream& out, const std::deque<Track>& tracksSnap, const CommandContext& ctx, int refreshMs, bool showCtrlC) {
     printHeader(out, static_cast<int>(tracksSnap.size()), refreshMs, showCtrlC);
-    for (const Track& t : tracksSnap) printRow(out, t);
+    for (const Track& t : tracksSnap) printRow(out, t, ctx);
     printFooter(out, showCtrlC);
 }
 
@@ -126,7 +149,7 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
         QString outMsg;
         QTextStream oss(&outMsg);
         static constexpr int REFRESH_MS = 2000;
-        printSitrep(oss, snap, REFRESH_MS, /*showCtrlC*/false);
+        printSitrep(oss, snap, ctx, REFRESH_MS, /*showCtrlC*/false);
         return { true, outMsg };
     }
 
@@ -136,7 +159,7 @@ CommandResult SitrepCommand::execute(const CommandInvocation& inv, CommandContex
             SitrepService ss(&ctx);
             const std::deque<Track> snap = ss.snapshot();
             clearScreen(ctx.out);
-            printSitrep(ctx.out, snap, REFRESH_MS, /*showCtrlC*/true);
+            printSitrep(ctx.out, snap, ctx, REFRESH_MS, /*showCtrlC*/true);
             QThread::msleep(REFRESH_MS);
         }
         // no retorna (CTRL+C)

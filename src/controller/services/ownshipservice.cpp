@@ -4,6 +4,7 @@
 #include "entities/track.h"
 #include "trackpppservice.h"
 
+#include <QDate>
 #include <QtMath>
 #include <cmath>
 
@@ -20,6 +21,71 @@ double OwnShipService::normalize360(double deg)
         deg += 360.0;
     }
     return deg;
+}
+
+void OwnShipService::splitCoordinate(double value,
+                                     int& degrees,
+                                     int& minutes,
+                                     int& seconds,
+                                     QChar& hemisphere,
+                                     QChar positiveHemisphere,
+                                     QChar negativeHemisphere)
+{
+    const double absValue = qAbs(value);
+    degrees = static_cast<int>(absValue);
+    const double minuteFloat = (absValue - static_cast<double>(degrees)) * 60.0;
+    minutes = static_cast<int>(minuteFloat);
+    const double secondFloat = (minuteFloat - static_cast<double>(minutes)) * 60.0;
+    seconds = static_cast<int>(secondFloat);
+    hemisphere = (value >= 0.0) ? positiveHemisphere : negativeHemisphere;
+}
+
+void OwnShipService::refreshDerivedFields()
+{
+    auto& own = m_context->ownShip;
+
+    splitCoordinate(
+        own.latitudeDeg,
+        own.latitudeDegrees,
+        own.latitudeMinutes,
+        own.latitudeSeconds,
+        own.nsIndicator,
+        QChar('N'),
+        QChar('S')
+    );
+
+    splitCoordinate(
+        own.longitudeDeg,
+        own.longitudeDegrees,
+        own.longitudeMinutes,
+        own.longitudeSeconds,
+        own.ewIndicator,
+        QChar('E'),
+        QChar('W')
+    );
+
+    const QDate parsedDate = QDate::fromString(own.dateUtc, QStringLiteral("yyyy-MM-dd"));
+    if (parsedDate.isValid()) {
+        static const QString monthNames[13] = {
+            QString(),
+            QStringLiteral("JAN"),
+            QStringLiteral("FEB"),
+            QStringLiteral("MAR"),
+            QStringLiteral("APR"),
+            QStringLiteral("MAY"),
+            QStringLiteral("JUN"),
+            QStringLiteral("JUL"),
+            QStringLiteral("AUG"),
+            QStringLiteral("SEP"),
+            QStringLiteral("OCT"),
+            QStringLiteral("NOV"),
+            QStringLiteral("DEC")
+        };
+
+        own.day = QStringLiteral("%1").arg(parsedDate.day(), 2, 10, QLatin1Char('0'));
+        own.month = monthNames[parsedDate.month()];
+        own.year = QString::number(parsedDate.year());
+    }
 }
 
 void OwnShipService::syncOwnShipVirtualTrack()
@@ -65,8 +131,19 @@ OwnShipOperationResult OwnShipService::updateFromJson(const QJsonObject& args)
     }
 
     auto& own = m_context->ownShip;
-    own.xDm = 0.0;
-    own.yDm = 0.0;
+
+    if (args.contains("x_dm") && args.value("x_dm").isDouble()) {
+        own.xDm = args.value("x_dm").toDouble();
+    } else {
+        own.xDm = 0.0;
+    }
+
+    if (args.contains("y_dm") && args.value("y_dm").isDouble()) {
+        own.yDm = args.value("y_dm").toDouble();
+    } else {
+        own.yDm = 0.0;
+    }
+
     own.courseDeg = normalize360(courseValue.toDouble());
     own.speedKnots = speedKnots;
 
@@ -98,6 +175,7 @@ OwnShipOperationResult OwnShipService::updateFromJson(const QJsonObject& args)
         own.source = args.value("source").toString();
     }
 
+    refreshDerivedFields();
     own.valid = true;
     syncOwnShipVirtualTrack();
 
@@ -128,6 +206,7 @@ OwnShipOperationResult OwnShipService::setFromCli(double courseDeg,
     own.courseDeg = normalize360(courseDeg);
     own.speedKnots = speedKnots;
     own.source = source.trimmed().isEmpty() ? QStringLiteral("CLI") : source;
+    refreshDerivedFields();
     own.valid = true;
     syncOwnShipVirtualTrack();
 
@@ -149,10 +228,21 @@ QJsonObject OwnShipService::serializeOwnShip() const
     ownObj["y_dm"] = own.yDm;
     ownObj["latitude_deg"] = own.latitudeDeg;
     ownObj["longitude_deg"] = own.longitudeDeg;
+    ownObj["latitude_degrees"] = own.latitudeDegrees;
+    ownObj["latitude_minutes"] = own.latitudeMinutes;
+    ownObj["latitude_seconds"] = own.latitudeSeconds;
+    ownObj["longitude_degrees"] = own.longitudeDegrees;
+    ownObj["longitude_minutes"] = own.longitudeMinutes;
+    ownObj["longitude_seconds"] = own.longitudeSeconds;
+    ownObj["ns_indicator"] = QString(own.nsIndicator);
+    ownObj["ew_indicator"] = QString(own.ewIndicator);
     ownObj["course_deg"] = own.courseDeg;
     ownObj["speed_knots"] = own.speedKnots;
     ownObj["time_utc"] = own.timeUtc;
     ownObj["date_utc"] = own.dateUtc;
+    ownObj["day"] = own.day;
+    ownObj["month"] = own.month;
+    ownObj["year"] = own.year;
     ownObj["source"] = own.source;
     return ownObj;
 }
@@ -160,15 +250,26 @@ QJsonObject OwnShipService::serializeOwnShip() const
 QString OwnShipService::formatOwnShip() const
 {
     const auto& own = m_context->ownShip;
-    return QStringLiteral("OwnShip{valid=%1, pos=(%2,%3)DM, lat=%4, lon=%5, crs=%6deg, spd=%7kt, time=%8, date=%9, source=%10}")
+    return QStringLiteral("OwnShip{valid=%1, pos=(%2,%3)DM, lat=%4 (%5/%6/%7%8), lon=%9 (%10/%11/%12%13), crs=%14deg, spd=%15kt, time=%16, date=%17 (%18/%19/%20), source=%21}")
         .arg(own.valid ? QStringLiteral("true") : QStringLiteral("false"))
         .arg(own.xDm, 0, 'f', 3)
         .arg(own.yDm, 0, 'f', 3)
         .arg(own.latitudeDeg, 0, 'f', 6)
+        .arg(own.latitudeDegrees)
+        .arg(own.latitudeMinutes)
+        .arg(own.latitudeSeconds)
+        .arg(QString(own.nsIndicator))
         .arg(own.longitudeDeg, 0, 'f', 6)
+        .arg(own.longitudeDegrees)
+        .arg(own.longitudeMinutes)
+        .arg(own.longitudeSeconds)
+        .arg(QString(own.ewIndicator))
         .arg(own.courseDeg, 0, 'f', 2)
         .arg(own.speedKnots, 0, 'f', 2)
         .arg(own.timeUtc)
         .arg(own.dateUtc)
+        .arg(own.day)
+        .arg(own.month)
+        .arg(own.year)
         .arg(own.source);
 }

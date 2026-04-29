@@ -117,4 +117,5 @@ Dentro del backend DDM, los handlers son la capa intermedia entre `JsonCommandHa
 - `docs/architecture.md`
 - `docs/modules/services.md`
 - `docs/modules/command-context.md`
+- `docs/modules/ownship.md`
 - `docs/README_BACKEND_ARCHITECTURE.md`

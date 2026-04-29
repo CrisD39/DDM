@@ -167,5 +167,6 @@ Incluye servicios de tracks, cursores, geometría, ownship, CPA/PPP, estacionami
 - `docs/architecture.md`
 - `docs/modules/handlers.md`
 - `docs/modules/command-context.md`
+- `docs/modules/ownship.md`
 - `docs/PPP_SYSTEM.md`
 - `docs/STATIONING_SYSTEM.md`

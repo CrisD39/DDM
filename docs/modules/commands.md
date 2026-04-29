@@ -167,4 +167,5 @@ En la arquitectura general, este módulo es la entrada CLI paralela al pipeline 
 - `docs/architecture.md`
 - `docs/modules/command-context.md`
 - `docs/modules/services.md`
+- `docs/modules/ownship.md`
 - `docs/README_BACKEND_ARCHITECTURE.md`

@@ -4,6 +4,7 @@
 #include "entities/track.h"
 #include "trackpppservice.h"
 #include <QJsonObject>
+#include <QtMath>
 
 TrackService::TrackService(CommandContext* context)
     : m_context(context)
@@ -121,8 +122,35 @@ QJsonArray TrackService::serializeTracks() const
         trackObj["velocidad"] = tr.getVelocidadDmPerHour();
         trackObj["link"] = tr.getEstadoLinkY() == Track::LinkY_Invalid ? "--" :
                            QString(QChar("RCTS"[int(tr.getEstadoLinkY())]));
-        trackObj["lat"] = tr.getY();
-        trackObj["lon"] = tr.getX();
+
+        // Preserve raw relative coordinates and expose georeferenced position when ownship is valid.
+        const double xDm = static_cast<double>(tr.getX());
+        const double yDm = static_cast<double>(tr.getY());
+        trackObj["x_dm"] = xDm;
+        trackObj["y_dm"] = yDm;
+
+        double latitudeDeg = yDm;
+        double longitudeDeg = xDm;
+        if (m_context->ownShip.valid
+            && std::isfinite(m_context->ownShip.latitudeDeg)
+            && std::isfinite(m_context->ownShip.longitudeDeg)) {
+            const double ownLatDeg = m_context->ownShip.latitudeDeg;
+            const double ownLonDeg = m_context->ownShip.longitudeDeg;
+
+            const double deltaLatDeg = (yDm * Track::kDmToNm) / 60.0;
+            const double cosLat = qCos(qDegreesToRadians(ownLatDeg));
+
+            latitudeDeg = ownLatDeg + deltaLatDeg;
+            if (qAbs(cosLat) > 1e-9) {
+                const double deltaLonDeg = (xDm * Track::kDmToNm) / (60.0 * cosLat);
+                longitudeDeg = ownLonDeg + deltaLonDeg;
+            } else {
+                longitudeDeg = ownLonDeg;
+            }
+        }
+
+        trackObj["lat"] = latitudeDeg;
+        trackObj["lon"] = longitudeDeg;
         trackObj["info"] = tr.getInformacionAmpliatoria();
         trackObj["ppp_az"] = ppp.azDeg;
         trackObj["ppp_dt"] = ppp.distanceDm;

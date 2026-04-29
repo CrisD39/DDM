@@ -26,6 +26,14 @@ public:
 
 private:
     static double normalize360(double deg);
+    static void splitCoordinate(double value,
+                                int& degrees,
+                                int& minutes,
+                                int& seconds,
+                                QChar& hemisphere,
+                                QChar positiveHemisphere,
+                                QChar negativeHemisphere);
+    void refreshDerivedFields();
     void syncOwnShipVirtualTrack();
 
     CommandContext* m_context;
